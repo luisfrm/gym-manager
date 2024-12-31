@@ -1,8 +1,26 @@
 services:
   backend:
     build: ./backend
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017/gym-manager
     ports:
       - "3000:3000"
     volumes:
       - ./backend:/app
-  
+    depends_on:
+      - mongo
+    networks:
+      - app-network
+  mongo:
+    image: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - back-network
+networks:
+  app-network:
+    driver: bridge
+volumes:
+  mongo-data:
