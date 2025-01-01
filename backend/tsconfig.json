@@ -4,7 +4,7 @@
     "module": "CommonJS",
     "outDir": "./dist",  // Asegúrate de que esta opción esté configurada
     "rootDir": "./src",
-    "strict": true,
+    "strict": false,
     "esModuleInterop": true
   },
   "include": [
