@@ -3,6 +3,7 @@ import cors from 'cors';
 import morgan from 'morgan';
 import { PORT } from './config';
 import authRouter from './routes/auth.routes';
+import { connectDB } from './models/db';
 
 const createApp = () => {
   const app = express();
@@ -13,8 +14,15 @@ const createApp = () => {
   // Routes
   app.use('/api/auth', authRouter);
 
-  app.get('/', (req, res) => {
+  app.get('/', (_, res) => {
     res.send('Hello World!');
+  });
+
+  connectDB().then((message) => {
+    console.log(message);
+  })
+  .catch((error) => {
+    console.log('Error connecting to MongoDB: ', error);
   });
 
   app.listen(PORT, () => {
