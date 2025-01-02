@@ -1,15 +1,37 @@
 services:
   mongo:
     image: mongo:latest
-    container_name: mongo_gym_manager
+    container_name: mongo_gym
+    restart: always
     ports:
-      - "27017:27017"
+      - 27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
     volumes:
-      - mongo-data:/data/db
+      - ./volumes/mongodb_data:/data/db
+      - ./volumes/mongodb_config:/data/configdb
     networks:
-      - back-network
+      - mongo-network
+
+  mongo-express:
+    image: mongo-express:latest
+    restart: always
+    ports:
+      - 8081:8081
+    environment:
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: admin
+      ME_CONFIG_MONGODB_URL: mongodb://admin:admin@mongo:27017/
+    depends_on:
+      - mongo
+    networks:
+      - mongo-network
+
 networks:
-  back-network:
+  mongo-network:
     driver: bridge
+
 volumes:
   mongo-data:
+  mongo-config:
