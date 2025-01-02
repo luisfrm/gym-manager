@@ -9,12 +9,15 @@
     "start-all": "concurrently 'cd frontend && bun run dev' 'cd backend && bun run dev'",
     "start-frontend": "cd frontend && bun run dev",
     "start-backend": "cd backend && bun run dev",
-    "build-backend": "cd backend && bun run build"
+    "build-backend": "cd backend && bun run build",
+    "format": "prettier --write ."
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "concurrently": "^9.1.2"
+    "@types/bcryptjs": "^2.4.6",
+    "concurrently": "^9.1.2",
+    "prettier": "^3.4.2"
   }
 }

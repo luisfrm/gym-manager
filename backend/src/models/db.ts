@@ -5,10 +5,10 @@ export const connectDB = async () => {
   return new Promise((resolve, reject) => {
     mongoose
       .connect(MONGODB_URI)
-      .then(() => {        
+      .then(() => {
         resolve("Connected to MongoDB");
       })
-      .catch((error) => {
+      .catch(error => {
         reject(error.message);
       });
   });

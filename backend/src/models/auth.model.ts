@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const authSchema = new mongoose.Schema({
   username: {
@@ -7,13 +7,13 @@ const authSchema = new mongoose.Schema({
     unique: true,
   },
   password: {
-    tpye: String,
+    type: String,
     required: true,
   },
   role: {
     type: String,
-    required: true,
-    enum: ['admin', 'employee'],
+    enum: ["admin", "employee"],
+    default: "employee",
   },
   createdAt: {
     type: Date,
@@ -22,7 +22,7 @@ const authSchema = new mongoose.Schema({
   updatedAt: {
     type: Date,
     default: Date.now,
-  }
-})
+  },
+});
 
-export default mongoose.model('Auth', authSchema);
+export default mongoose.model("Auth", authSchema);

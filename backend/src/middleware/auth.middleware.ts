@@ -1,3 +1,1 @@
-const authMiddleware = (allowedRoles = []) => {
-
-}
+const authMiddleware = (allowedRoles = []) => {};
