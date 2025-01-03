@@ -14,8 +14,8 @@ const Dashboard = () => {
         </h2>
         <p className="text-neutral-900 text-sm">Aquí podrás ver los datos de los clientes.</p>
       </header>
-      <section className="flex gap-4">
-        <Card className="bg-slate-900 w-1/5">
+      <section className="flex flex-col lg:flex-row gap-4">
+        <Card className="bg-slate-900 w-full lg:w-1/3 xl:w-1/5">
           <CardHeader className="flex items-start">
             <div className="bg-white p-4 rounded-md">
               <UsersRound className="text-slate-900 w-8 h-8" />
@@ -31,7 +31,7 @@ const Dashboard = () => {
             </Link>
           </CardFooter>
         </Card>
-        <Card className="bg-lime-500 w-1/5">
+        <Card className="bg-lime-500 w-full lg:w-1/3 xl:w-1/5">
           <CardHeader className="flex items-start">
             <div className="bg-slate-900 p-4 rounded-md">
               <ChartNoAxesCombined className="text-white w-8 h-8" />
@@ -47,7 +47,7 @@ const Dashboard = () => {
             </Link>
           </CardFooter>
         </Card>
-        <Card className="w-1/5">
+        <Card className="w-full lg:w-1/3 xl:w-1/5">
           <CardHeader className="flex items-start">
             <div className="bg-slate-300 p-4 rounded-md">
               <Trash2 className="text-slate-900 w-8 h-8" />
