@@ -12,7 +12,7 @@ const createApp = () => {
   app.use(morgan("dev"));
 
   // Routes
-  app.use("/api/auth", authRouter);
+  app.use("/v1/auth", authRouter);
 
   app.get("/", (_, res) => {
     res.send("Hello World!");
