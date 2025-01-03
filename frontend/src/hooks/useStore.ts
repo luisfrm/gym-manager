@@ -2,14 +2,20 @@ import { create } from "zustand";
 import { AuthState } from "@/lib/types";
 import { devtools } from "zustand/middleware";
 
-interface AppState {
+export interface AppState {
   auth: AuthState;
   setAuth: (auth: AuthState) => void;
+  logout: () => void;
 }
 
 const AUTH_INITIAL_STATE: AuthState = {
   isAuthenticated: false,
-  user: null,
+  user: {
+    id: '',
+    email: '',
+    username: '',
+    role: '',
+  },
   error: null,
   token: null,
 };
@@ -19,6 +25,7 @@ export const useStore = create<AppState>()(
     set => ({
       auth: AUTH_INITIAL_STATE,
       setAuth: (auth: AuthState) => set((state)=>({...state, auth})),
+      logout: () => set((state)=>({...state, auth: AUTH_INITIAL_STATE})),
     }),
     { name: "AppStore" },
   ),

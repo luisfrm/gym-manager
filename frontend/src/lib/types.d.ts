@@ -1,13 +1,13 @@
 export interface User {
   id: string;
   email: string;
-  name: string;
+  username: string;
   role: string;
 }
 
 export interface AuthState {
   isAuthenticated: boolean;
-  user: User | null;
+  user: User;
   error: string | null;
   token: string | null;
 }

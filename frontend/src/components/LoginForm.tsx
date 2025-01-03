@@ -15,6 +15,7 @@ import { loginRequest } from "@/api/api";
 import { LoginResponse } from "@/lib/types";
 import { AxiosError } from "axios";
 import { TIME_TO_HIDE_ERROR } from "@/lib/config";
+import { useNavigate } from "react-router-dom";
 
 const loginSchema = z.object({
   email: z.string().email({
@@ -41,11 +42,9 @@ export default function LoginForm() {
     resolver: zodResolver(loginSchema),
     defaultValues: initialValues,
   });
-
+  const navigate = useNavigate();
   const { setAuth, auth } = useStore();
-
   const eyeClasses = "absolute top-1/2 right-2 cursor-pointer";
-
   const [isLoading] = useState(false);
 
   const changePasswordType = () => {
@@ -57,6 +56,8 @@ export default function LoginForm() {
     mutationFn: loginRequest,
     onSuccess: (data: LoginResponse) => {
       setAuth({ isAuthenticated: true, user: data.user, error: null, token: data.token });
+
+      navigate("/dashboard");
     },
     onError: (error: AxiosError) => {
       console.error(error);
