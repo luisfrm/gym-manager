@@ -1,0 +1,22 @@
+### Petición POST a /v1/auth/login
+
+POST http://localhost:3000/v1/auth/register
+Content-Type: application/json
+
+{
+    "username": "Luisito",
+    "email": "luisito@gmail.com",
+    "password": "123456",
+    "role": "admin",
+    "name": "Luis Rivas"
+}
+
+### Petición POST a /v1/auth/login
+
+POST http://localhost:3000/v1/auth/login
+Content-Type: application/json
+
+{
+    "email": "luisito@gmail.com",
+    "password": "123456"
+}
