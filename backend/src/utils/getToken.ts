@@ -9,4 +9,4 @@ const getToken = (req: any): string | null => {
   return authHeader.split(" ")[1];
 };
 
-module.exports = getToken;
+export default getToken;
