@@ -4,7 +4,7 @@ import { UsersRound } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 const Clients = () => {
-  const { username } = useStore(state => state.auth?.user);
+  const username = useStore(state => state.auth?.user?.username);
   return (
     <Template>
       <header>
