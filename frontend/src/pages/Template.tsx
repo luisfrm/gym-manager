@@ -1,12 +1,13 @@
 import { Navigation } from "@/components/Navigation";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import { cn } from "@/lib/utils";
 
-const Template = ({ children }: { children: React.ReactNode }) => {
+const Template = ({ children, className }: { children: React.ReactNode, className?: string }) => {
   return (
     <SidebarProvider>
       <Navigation />
 
-      <main className="px-2 py-4 md:px-6 pt-20 lg:pt-4 flex-1">
+      <main className={cn("px-2 py-4 md:px-6 pt-20 lg:pt-4 flex-1", className)}>
         {children}
       </main>
     </SidebarProvider>
