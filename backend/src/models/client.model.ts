@@ -9,15 +9,25 @@ const clientSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  cedula: {
+    type: String,
+    required: true,
+  },
   email: {
     type: String,
+    default: "",
   },
   phone: {
     type: String,
+    default: "",
   },
   address: {
     type: String,
-  }
+    default: "",
+  },
+  expiredDate: {
+    type: String,
+  },
 },
 {
   timestamps: true,

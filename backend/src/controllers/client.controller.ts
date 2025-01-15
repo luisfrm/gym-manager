@@ -28,7 +28,7 @@ class ClientController {
     try {
       const clients = await Client.find();
 
-      return res.status(200).json({ message: "Clients retrieved successfully", clients });
+      return res.status(200).json(clients);
     } catch (error) {
       console.error(error);
       return res.status(500).json({ message: "Error retrieving clients" });

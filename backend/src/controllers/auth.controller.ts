@@ -1,7 +1,9 @@
 import { Request, Response } from "express";
 import Auth from "../models/auth.model";
 import bcrypt from "bcryptjs";
-import { generateJwt } from "../utils/jwt";
+import { generateJwt, verifyJwt } from "../utils/jwt";
+import getToken from "../utils/getToken";
+import { JWT_EXPIRATION_TIME } from "../config";
 
 class AuthController {
   static register = async (req: Request, res: any) => {
@@ -50,11 +52,16 @@ class AuthController {
         return res.status(400).json({ message: "Email o contraseña inválidos." });
       }
 
+      const tokenExpiration = new Date(Date.now() + JWT_EXPIRATION_TIME * 1000);
+
       const token = generateJwt({
         userId: user.id,
         role: user.role,
         email: user.email,
+        username: user.username,
+        tokenExpiration,
       });
+
 
       const userResponse = {
         id: user._id,
@@ -63,10 +70,21 @@ class AuthController {
         username: user.username,
       };
 
-      res.status(200).json({ token, user: userResponse });
+      res.status(200).json({ token, user: userResponse, tokenExpiration });
     } catch (error) {
       console.error("Error logging in:", error);
       res.status(500).json({ message: "Error logging in" });
+    }
+  };
+
+  static validateToken = async (req: Request, res: any) => {
+    try {
+      const token = getToken(req);
+      const decoded = verifyJwt(token);
+      res.status(200).json(decoded);
+    } catch (error) {
+      console.log(error.message);
+      res.status(401).json({ message: "Token invalid." });
     }
   };
 }

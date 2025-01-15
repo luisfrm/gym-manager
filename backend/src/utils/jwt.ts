@@ -19,24 +19,7 @@ export const verifyJwt = (token: string) => {
     const decoded = jwt.verify(token, TOKEN_SECRET_JWT);
     return decoded;
   } catch (error) {
-    console.error("Error verifying JWT:", error);
     throw new Error("Error verifying JWT");
   }
 };
 
-export const isTokenExpiringSoon = (token, thresholdMinutes = 5) => {
-  try {
-    const decoded = jwt.decode(token) as JwtPayload | null;
-    if (!decoded || !decoded.exp) {
-      return true; // If there's no expiration, assume it's expiring soon
-    }
-    
-    const expirationTime = decoded.exp * 1000; // Convert to milliseconds
-    const currentTime = Date.now();
-    const timeUntilExpiration = expirationTime - currentTime;
-    return timeUntilExpiration < thresholdMinutes * 60 * 1000; // Check if it's within the threshold minutes
-  } catch (error) {
-    console.error("Error checking token expiration:", error);
-    return true; // Assume it's expiring soon if there's an error
-  }
-};
