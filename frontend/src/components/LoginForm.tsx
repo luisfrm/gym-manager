@@ -16,6 +16,7 @@ import { LoginResponse } from "@/lib/types";
 import { AxiosError } from "axios";
 import { TIME_TO_HIDE_ERROR } from "@/lib/config";
 import { useNavigate } from "react-router-dom";
+import useLocalStorage from "@/hooks/useLocalStorage";
 
 const loginSchema = z.object({
   email: z.string().email({
@@ -46,6 +47,7 @@ export default function LoginForm() {
   const { setAuth, auth } = useStore();
   const eyeClasses = "absolute top-1/2 right-2 cursor-pointer";
   const [isLoading] = useState(false);
+  const [, setToken] = useLocalStorage("token", '');
 
   const changePasswordType = () => {
     if (passwordType === "password") setPasswordType("text");
@@ -55,19 +57,26 @@ export default function LoginForm() {
   const loginMutation = useMutation({
     mutationFn: loginRequest,
     onSuccess: (data: LoginResponse) => {
-      setAuth({ isAuthenticated: true, user: data.user, error: null, token: data.token });
+      setAuth({ 
+        isAuthenticated: true, 
+        user: data.user, 
+        error: null, 
+        token: data.token,
+        tokenExpiration: data.tokenExpiration
+      });
+      setToken(data.token)
 
       navigate("/dashboard");
     },
     onError: (error: AxiosError) => {
       console.error(error);
       if(error.response?.status === 400) {
-        const errorMessage = error.response?.data?.message ?? "Correo o contraseña incorrectos";
+        const errorMessage = (error.response?.data as { message: string })?.message ?? "Correo o contraseña incorrectos";
         resetField("password");
-        setAuth({ isAuthenticated: false, user: null, error: errorMessage, token: null });
+        setAuth({ isAuthenticated: false, user: null, error: errorMessage, token: null, tokenExpiration: null });
 
         setTimeout(() => {
-          setAuth({ isAuthenticated: false, user: null, error: null, token: null });
+          setAuth({ isAuthenticated: false, user: null, error: null, token: null, tokenExpiration: null });
         }, TIME_TO_HIDE_ERROR);
       };
     },
@@ -94,7 +103,7 @@ export default function LoginForm() {
               </FormLabel>
               <Input id="name" placeholder="Ingresa tu correo" type="email" {...register("email")} />
             </FormGroup>
-            <FormGroup className="relative">
+            <FormGroup className="relative flex flex-col gap-2">
               <FormLabel>
                 <Label htmlFor="password">
                   Contraseña
