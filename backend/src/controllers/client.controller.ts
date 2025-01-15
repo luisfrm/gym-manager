@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import Client from "../models/client.model";
-import getToken from "../utils/getToken";
 
 class ClientController {
   static create = async (req: Request, res: any) => {
@@ -49,19 +48,6 @@ class ClientController {
     } catch (error) {
       console.error(error);
       return res.status(500).json({ message: "Error retrieving client" });
-    }
-  }
-
-  static testFunction = async (req: Request, res: any) => {
-    try {
-      const token = getToken(req);
-
-      console.log(token);
-
-      return res.status(200).json({ message: "Test function executed successfully" });
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({ message: "Error executing test function" });
     }
   }
 

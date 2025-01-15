@@ -8,8 +8,6 @@ clientRouter.post("/", authMiddleware(["admin", "employee"]), ClientController.c
 
 clientRouter.get("/", authMiddleware(["admin", "employee"]), ClientController.getAll);
 
-clientRouter.get("/test", authMiddleware(["admin"]), ClientController.testFunction);
-
 clientRouter.get("/:id", authMiddleware(["admin", "employee"]), ClientController.getById);
 
 clientRouter.put("/:id", authMiddleware(["admin", "employee"]), ClientController.update);
