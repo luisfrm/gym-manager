@@ -10,14 +10,10 @@ export interface AppState {
 
 const AUTH_INITIAL_STATE: AuthState = {
   isAuthenticated: false,
-  user: {
-    id: '',
-    email: '',
-    username: '',
-    role: '',
-  },
+  user: null,
   error: null,
   token: null,
+  tokenExpiration: null,
 };
 
 export const useStore = create<AppState>()(
