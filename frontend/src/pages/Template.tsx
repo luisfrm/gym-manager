@@ -7,7 +7,7 @@ const Template = ({ children, className }: { children: React.ReactNode, classNam
     <SidebarProvider>
       <Navigation />
 
-      <main className={cn("px-4 py-4 md:px-6 pt-20 lg:pt-4 flex-1", className)}>
+      <main className={cn("px-4 py-4 md:px-6 pt-20 lg:pt-4 flex-1 flex flex-col gap-4", className)}>
         {children}
       </main>
     </SidebarProvider>
