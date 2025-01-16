@@ -103,7 +103,7 @@ class ClientController {
   static update = async (req: any, res: any) => {
     try {
       const { id } = req.params;
-      const { firstname, lastname, email, phone, address, expiredDate } = req.body;
+      const { firstname, lastname, email, phone, address, expiredDate, cedula } = req.body;
 
       const client = await Client.findByIdAndUpdate(id, {
         firstname: firstname.trim(),
@@ -112,6 +112,7 @@ class ClientController {
         phone: phone.trim(),
         address: address.trim(),
         expiredDate: expiredDate.trim(),
+        cedula: cedula.trim(),
       });
 
       if (!client) {
