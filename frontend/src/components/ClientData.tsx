@@ -20,10 +20,10 @@ const ClientData = ({ isLoading, clients, limit = 10 }: ClientDataProps) => {
   return (
     <>
       {innerWidth > 981 ? (
-        <Table className="border" style={{ borderRadius: "0.5rem" }}>
+        <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="cursor-pointer w-[50px]">#</TableHead>
+              <TableHead className="cursor-pointer w-[50px] py-4">#</TableHead>
               <TableHead className="cursor-pointer">Cedula</TableHead>
               <TableHead className="cursor-pointer">Nombre</TableHead>
               <TableHead className="cursor-pointer">Apellido</TableHead>
@@ -68,7 +68,7 @@ const ClientBody = ({ clients }: ClientBodyProps) => {
       {clients.length > 0 &&
         clients.map((client: Client, index: number) => (
           <TableRow key={client.cedula}>
-            <TableCell key={client.cedula} className="font-bold text-ellipsis whitespace-nowrap">
+            <TableCell key={client.cedula} className="font-bold text-ellipsis whitespace-nowrap py-2">
               {index + 1}
             </TableCell>
             <TableCell className="font-bold text-ellipsis whitespace-nowrap">
@@ -111,10 +111,10 @@ const ClientWaitingBody = ({ limit = 10 }: { limit?: number }) => {
     <>
       {Array(limit).fill(0).map((_, i) => (
         <TableRow key={i}>
-          <TableCell className="font-bold">
+          <TableCell className="font-bold py-4">
             <Skeleton className="h-[20px] w-[10px]" />
           </TableCell>
-          <TableCell className="font-bold">
+          <TableCell className="font-bold py-4">
             <Skeleton className="h-[20px] w-[80px]" />
           </TableCell>
           <TableCell className="max-w-[200px] text-start">
