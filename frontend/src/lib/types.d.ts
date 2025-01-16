@@ -70,3 +70,49 @@ export interface UpdateClientRequest extends CreateClientRequest {
 export interface DeleteClientRequest {
   _id: string;
 }
+
+export interface ClientStatisticsResponse {
+  newClientsLastMonth: number;
+  clientsExpiringNextWeek: number;
+  totalClients: number;
+}
+
+export interface LogUser {
+  _id: string;
+  name: string;
+  email: string;
+}
+
+export interface Log {
+  _id: string;
+  message: string;
+  user: LogUser;
+  type: "created" | "updated" | "deleted";
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GetLogsResponse {
+  info: {
+    total: number;
+    pages: number;
+    next: string | null;
+    prev: string | null;
+  };
+  results: Log[];
+}
+
+export interface Payment {
+  _id: string;
+  client: Client | string; // Puede ser el objeto poblado o solo el ID
+  amount: number;
+  date: string;
+  service: string;
+  description?: string;
+  paymentMethod: string;
+  paymentReference: string;
+  paymentStatus: "pending" | "paid" | "failed";
+  currency: "USD" | "VES";
+  createdAt?: Date;
+  updatedAt?: Date;
+}

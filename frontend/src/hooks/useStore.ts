@@ -21,7 +21,11 @@ export const useStore = create<AppState>()(
     set => ({
       auth: AUTH_INITIAL_STATE,
       setAuth: (auth: AuthState) => set((state)=>({...state, auth})),
-      logout: () => set((state)=>({...state, auth: AUTH_INITIAL_STATE})),
+      logout: () => {
+        set((state)=>({...state, auth: AUTH_INITIAL_STATE}))
+        localStorage.removeItem("token")
+        localStorage.removeItem("tokenExpiration")
+      },
     }),
     { name: "AppStore" },
   ),
