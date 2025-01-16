@@ -21,6 +21,7 @@ import { useState } from "react";
 import { ClientRemoveDialog } from "@/components/dialogs/ClientRemoveDialog";
 import { Client } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
+import formatNumber from "@/lib/formatNumber";
 
 export default function ClientDetails() {
   const { cedula = "" } = useParams();
@@ -113,7 +114,7 @@ export default function ClientDetails() {
                 <div className="flex items-center justify-between">
                   <div>
                     <h2 className="text-2xl font-bold">{`${client?.firstname} ${client?.lastname}`}</h2>
-                    <p className="text-muted-foreground">Cédula: {client?.cedula}</p>
+                    <p className="text-muted-foreground">Cédula: {formatNumber(client?.cedula ?? "")}</p>
                   </div>
                   <Badge
                     variant="default"
