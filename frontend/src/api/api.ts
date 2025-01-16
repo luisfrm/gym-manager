@@ -1,9 +1,11 @@
 import { API_URL } from "@/lib/config";
 import {
   Client,
+  ClientStatisticsResponse,
   CreateClientRequest,
   DeleteClientRequest,
   GetClientsResponse,
+  GetLogsResponse,
   LoginRequest,
   LoginResponse,
   UpdateClientRequest,
@@ -63,3 +65,14 @@ export const deleteClientRequest = async ({ _id }: DeleteClientRequest): Promise
   const res = await api.delete(`/clients/${_id}`);
   return res.data;
 };
+
+export const getClientStatisticsRequest = async (): Promise<ClientStatisticsResponse> => {
+  const res = await api.get("/statistics/clients");
+  return res.data;
+};
+
+export const getLogsRequest = async (page = 1, limit = 5, search = "", sortField = "updatedAt", sortOrder = "desc"): Promise<GetLogsResponse> => {
+  const res = await api.get(`/logs?page=${page}&limit=${limit}&search=${search}&sortField=${sortField}&sortOrder=${sortOrder}`);
+  return res.data;
+};
+
