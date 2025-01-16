@@ -11,7 +11,7 @@ export const Modal = ({
   isOpen,
   onOpenChange,
   children,
-  className = "sm:max-w-3xl ",
+  className = "sm:max-w-3xl",
 }: {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
