@@ -20,11 +20,16 @@ import { ClientUpdateDialog } from "@/components/dialogs/ClientUpdateDialog";
 import { useState } from "react";
 import { ClientRemoveDialog } from "@/components/dialogs/ClientRemoveDialog";
 import { Client } from "@/lib/types";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ClientDetails() {
   const { cedula = "" } = useParams();
   const navigate = useNavigate();
-  const { data: client, isLoading, refetch } = useQuery({
+  const {
+    data: client,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: ["client", cedula],
     queryFn: () => getClientByIdRequest(cedula),
   });
@@ -50,7 +55,6 @@ export default function ClientDetails() {
     },
   });
 
-
   const handleUpdateClientOpen = () => {
     setIsUpdateClientOpen(!isUpdateClientOpen);
   };
@@ -73,8 +77,6 @@ export default function ClientDetails() {
     });
   };
 
-  if (isLoading) return <div>Loading...</div>;
-
   return (
     <Template>
       <div className="container mx-auto p-6 max-w-5xl">
@@ -88,73 +90,79 @@ export default function ClientDetails() {
             <h1 className="text-2xl font-bold">Detalles del Cliente</h1>
           </div>
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+            <DropdownMenuTrigger className={`${isLoading ? "hidden" : ""}`} asChild>
               <Button variant="ghost" size="icon">
                 <MoreVertical className="h-5 w-5" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={handleUpdateClientOpen}>Editar cliente</DropdownMenuItem>
-              <DropdownMenuItem onClick={handleRemoveClientOpen} className="text-destructive">Eliminar cliente</DropdownMenuItem>
+              <DropdownMenuItem onClick={handleRemoveClientOpen} className="text-destructive">
+                Eliminar cliente
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
 
         <div className="grid gap-6">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-2xl font-bold">{`${client?.firstname} ${client?.lastname}`}</h2>
-                  <p className="text-muted-foreground">Cédula: {client?.cedula}</p>
-                </div>
-                <Badge
-                  variant="default"
-                  className={`text-white ${isDateActive(client?.expiredDate) ? "bg-green-500" : "bg-red-500"}`}
-                >
-                  {isDateActive(client?.expiredDate) ? "Activo" : "Inactivo"}
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="grid gap-6">
-              <div className="grid gap-4">
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-5 w-5 text-muted-foreground" />
+          {isLoading ? (
+            <ClientDetailsSkeleton />
+          ) : (
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium">Fecha de vencimiento</p>
-                    <p className="text-sm text-muted-foreground">{client?.expiredDate}</p>
+                    <h2 className="text-2xl font-bold">{`${client?.firstname} ${client?.lastname}`}</h2>
+                    <p className="text-muted-foreground">Cédula: {client?.cedula}</p>
                   </div>
+                  <Badge
+                    variant="default"
+                    className={`text-white ${isDateActive(client?.expiredDate) ? "bg-green-500" : "bg-red-500"}`}
+                  >
+                    {isDateActive(client?.expiredDate) ? "Activo" : "Inactivo"}
+                  </Badge>
                 </div>
-                {client?.email && (
+              </CardHeader>
+              <CardContent className="grid gap-6">
+                <div className="grid gap-4">
                   <div className="flex items-center gap-2">
-                    <Mail className="h-5 w-5 text-muted-foreground" />
+                    <Calendar className="h-5 w-5 text-muted-foreground" />
                     <div>
-                      <p className="text-sm font-medium">Email</p>
-                      <p className="text-sm text-muted-foreground">{client?.email}</p>
+                      <p className="text-sm font-medium">Fecha de vencimiento</p>
+                      <p className="text-sm text-muted-foreground">{client?.expiredDate}</p>
                     </div>
                   </div>
-                )}
-                {client?.phone && (
-                  <div className="flex items-center gap-2">
-                    <Phone className="h-5 w-5 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm font-medium">Teléfono</p>
-                      <p className="text-sm text-muted-foreground">{client?.phone}</p>
+                  {client?.email && (
+                    <div className="flex items-center gap-2">
+                      <Mail className="h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <p className="text-sm font-medium">Email</p>
+                        <p className="text-sm text-muted-foreground">{client?.email}</p>
+                      </div>
                     </div>
-                  </div>
-                )}
-                {client?.address && (
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-5 w-5 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm font-medium">Dirección</p>
-                      <p className="text-sm text-muted-foreground">{client.address}</p>
+                  )}
+                  {client?.phone && (
+                    <div className="flex items-center gap-2">
+                      <Phone className="h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <p className="text-sm font-medium">Teléfono</p>
+                        <p className="text-sm text-muted-foreground">{client?.phone}</p>
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+                  )}
+                  {client?.address && (
+                    <div className="flex items-center gap-2">
+                      <MapPin className="h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <p className="text-sm font-medium">Dirección</p>
+                        <p className="text-sm text-muted-foreground">{client.address}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           <div className="grid gap-6 md:grid-cols-2">
             <Card>
@@ -177,8 +185,89 @@ export default function ClientDetails() {
           </div>
         </div>
       </div>
-      <ClientUpdateDialog isOpen={isUpdateClientOpen} onOpenChange={handleUpdateClientOpen} client={client} onClientUpdated={handleClientUpdated} />
-      <ClientRemoveDialog isOpen={isRemoveClientOpen} onOpenChange={handleRemoveClientOpen} client={client} onClientRemoved={handleClientRemoved} />
+      <ClientUpdateDialog
+        isOpen={isUpdateClientOpen}
+        onOpenChange={handleUpdateClientOpen}
+        client={client}
+        onClientUpdated={handleClientUpdated}
+      />
+      <ClientRemoveDialog
+        isOpen={isRemoveClientOpen}
+        onOpenChange={handleRemoveClientOpen}
+        client={client}
+        onClientRemoved={handleClientRemoved}
+      />
     </Template>
   );
 }
+
+const ClientDetailsSkeleton = () => {
+  return (
+    <div className="grid gap-6">
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <Skeleton className="h-[30px] w-[150px]" />
+            </div>
+            <Skeleton className="h-[20px] w-[50px]" />
+          </div>
+        </CardHeader>
+        <CardContent className="grid gap-6">
+          <div className="grid gap-4">
+            <div className="flex items-center gap-2">
+              <Calendar className="h-5 w-5 text-muted-foreground" />
+              <div>
+                <p className="text-sm font-medium">Fecha de vencimiento</p>
+                <Skeleton className="h-[20px] w-[150px]" />
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Mail className="h-5 w-5 text-muted-foreground" />
+              <div>
+                <p className="text-sm font-medium">Email</p>
+                <Skeleton className="h-[20px] w-[150px]" />
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Phone className="h-5 w-5 text-muted-foreground" />
+              <div>
+                <p className="text-sm font-medium">Teléfono</p>
+                <Skeleton className="h-[20px] w-[150px]" />
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <MapPin className="h-5 w-5 text-muted-foreground" />
+              <div>
+                <p className="text-sm font-medium">Dirección</p>
+                <Skeleton className="h-[20px] w-[150px]" />
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <h3 className="text-lg font-semibold">Historial de pagos</h3>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">Aquí se mostrará el historial de pagos del cliente</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <h3 className="text-lg font-semibold">Asistencias</h3>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">Aquí se mostrará el registro de asistencias del cliente</p>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+};
