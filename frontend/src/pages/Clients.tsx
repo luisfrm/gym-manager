@@ -5,47 +5,79 @@ import SquareWidget from "@/components/SquareWidget";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import ClientData from "@/components/ClientData";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ClientDialog } from "@/components/dialogs/ClientDialog";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { getClientsRequest, deleteClientRequest } from "@/api/api";
-import { Client, GetClientsResponse } from "@/lib/types";
+import { useQuery } from "@tanstack/react-query";
+import { getClientsRequest } from "@/api/api";
+import { GetClientsResponse } from "@/lib/types";
+import Pagination from "@/components/Pagination";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useDebounce } from "@/hooks/useDebounce";
 
-const Dashboard = () => {
+const DEFAULT_PAGE = 1;
+const DEFAULT_LIMIT = 10;
+
+const InitialClientsResponse: GetClientsResponse = {
+  info: {
+    total: 0,
+    pages: 0,
+    next: null,
+    prev: null
+  },
+  results: []
+};
+
+const Clients = () => {
   const username = useStore(state => state.auth.user?.username ?? "");
   const [isNewClientModalOpen, setIsNewClientModalOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const [sortField, setSortField] = useState("name");
+  const [sortOrder, setSortOrder] = useState("asc");
+  const [page, setPage] = useState(DEFAULT_PAGE);
+  const [limit, setLimit] = useState(DEFAULT_LIMIT);
+  const debouncedSearch = useDebounce(search, 500);
 
-
-
-  const { data, isLoading, refetch } = useQuery<GetClientsResponse>({
-    queryKey: ["clients"],
-    queryFn: getClientsRequest,
+  const { data, isLoading, refetch: refetchClients } = useQuery<GetClientsResponse>({
+    queryKey: ["clients", page, limit, debouncedSearch, sortField, sortOrder],
+    queryFn: () => getClientsRequest(page, limit, debouncedSearch, sortField, sortOrder),
   });
 
-  const { total = 0, clients = [], expiringClients = 0, newClientsLastMonth = 0 } = data ?? { total: "0", clients: [], expiringClients: 0, newClientsLastMonth: 0 };
+  const { info: { total = 0, pages = 0, next = null, prev = null }, results: clients = [] } = data ?? InitialClientsResponse;
 
   const handleOpenNewClientModal = () => {
     setIsNewClientModalOpen(!isNewClientModalOpen);
   };
 
-  const deleteClientMutation = useMutation({
-    mutationFn: deleteClientRequest,
-    onSuccess: () => {
-      console.log("Cliente eliminado");
-    },
-    onError: () => {
-      console.log("Error al eliminar cliente");
-    },
-  });
-
-  const handleDeleteClient = (_id: string) => {
-    deleteClientMutation.mutateAsync({ _id }).then(() => {
-      refetch();
-    });
+  const handleChangeLimit = (value: string) => {
+    setLimit(parseInt(value));
+    setPage(DEFAULT_PAGE);
   };
 
-  const handleUpdateClient = (client: Client) => {
-    console.log(client);
+  const handleSearchClient = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearch(e.target.value);
+    setPage(DEFAULT_PAGE);
+  };
+
+  useEffect(() => {
+    refetchClients();
+  }, [page, limit, refetchClients, debouncedSearch, sortField, sortOrder]);
+
+  const handlePageNext = () => {
+    setPage(page + 1);
+  };
+
+  const handlePagePrev = () => {
+    setPage(page - 1);
+  };
+
+  const handleChangeSortField = (value: string) => {
+    setSortField(value);
+    setPage(DEFAULT_PAGE);
+  };
+
+  const handleChangeSortOrder = (value: string) => {
+    setSortOrder(value);
+    setPage(DEFAULT_PAGE);
   };
 
   return (
@@ -67,7 +99,7 @@ const Dashboard = () => {
         />
         <SquareWidget
           className="bg-lime-500 flex-1"
-          title={newClientsLastMonth.toString()}
+          title={'0'}
           subtitle="Nuevos clientes"
           link="/payments"
           icon={<ChartNoAxesCombined className="text-white w-8 h-8" />}
@@ -76,7 +108,7 @@ const Dashboard = () => {
         />
         <SquareWidget
           className="bg-white flex-1"
-          title={expiringClients.toString()}
+          title={'0'}
           subtitle="Clientes vencidos la siguiente semana"
           link="/clients"
           icon={<Trash2 className="text-slate-900 w-8 h-8" />}
@@ -88,17 +120,57 @@ const Dashboard = () => {
         <Button variant="default" className="w-full lg:w-auto" onClick={handleOpenNewClientModal}>
           Agregar nuevo
         </Button>
-        <Input placeholder="Buscar cliente" className="w-full lg:w-[200px]" />
+        <Input placeholder="Buscar cliente" className="" onChange={handleSearchClient} />
+        <Select onValueChange={handleChangeSortField}>
+          <SelectTrigger className="w-full lg:w-[250px]">
+            <SelectValue defaultValue="updatedAt" placeholder="Ordenar por" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="updatedAt">Última actualización</SelectItem>
+            <SelectItem value="firstname">Nombre</SelectItem>
+            <SelectItem value="lastname">Apellido</SelectItem>
+            <SelectItem value="email">Email</SelectItem>
+            <SelectItem value="expiredDate">Fecha de vencimiento</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select onValueChange={handleChangeSortOrder}>
+          <SelectTrigger className="w-[250px]">
+            <SelectValue defaultValue="asc" placeholder="Ordenar de forma" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="asc">Ascendente</SelectItem>
+            <SelectItem value="desc">Descendente</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select onValueChange={handleChangeLimit}>
+          <SelectTrigger className="w-full lg:w-[250px]">
+            <SelectValue defaultValue="10" placeholder="Limite de clientes" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="10">10</SelectItem>
+            <SelectItem value="20">20</SelectItem>
+            <SelectItem value="30">30</SelectItem>
+          </SelectContent>
+        </Select>
       </section>
       <section className="data-table w-full max-w-7xl">
         <ClientData
           isLoading={isLoading}
           clients={clients ?? []}
         />
+        <Pagination
+          total={total}
+          pages={pages}
+          next={next}
+          prev={prev}
+          currentPage={page}
+          onPageNext={handlePageNext}
+          onPagePrev={handlePagePrev}
+        />
       </section>
-      <ClientDialog onClientCreated={refetch} isOpen={isNewClientModalOpen} onOpenChange={handleOpenNewClientModal} />
+      <ClientDialog onClientCreated={refetchClients} isOpen={isNewClientModalOpen} onOpenChange={handleOpenNewClientModal} />
     </Template>
   );
 };
 
-export default Dashboard;
+export default Clients;
