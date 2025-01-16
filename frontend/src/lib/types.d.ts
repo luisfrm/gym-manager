@@ -54,10 +54,13 @@ export interface CreateClientRequest {
 }
 
 export interface GetClientsResponse {
-  total: number;
-  clients: Client[];
-  expiringClients: number;
-  newClientsLastMonth: number;
+  info: {
+    total: number;
+    pages: number;
+    next: string | null;
+    prev: string | null;
+  };
+  results: Client[];
 }
 
 export interface UpdateClientRequest extends CreateClientRequest {
