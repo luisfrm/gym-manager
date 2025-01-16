@@ -2,22 +2,16 @@ import { useStore } from "@/hooks/useStore";
 import Template from "./Template";
 import { ChartNoAxesCombined, Trash2, UsersRound } from "lucide-react";
 import SquareWidget from "@/components/SquareWidget";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import ClientData from "@/components/ClientData";
-import { useEffect, useState } from "react";
-import { ClientDialog } from "@/components/dialogs/ClientDialog";
 import { useQuery } from "@tanstack/react-query";
-import { getClientsRequest } from "@/api/api";
-import { GetClientsResponse } from "@/lib/types";
+import { getLogsRequest } from "@/api/api";
+import { GetLogsResponse } from "@/lib/types";
+import ActivityLogs from "@/components/ActivityLogs";
+import { useEffect, useState } from "react";
 import Pagination from "@/components/Pagination";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useDebounce } from "@/hooks/useDebounce";
 
 const DEFAULT_PAGE = 1;
-const DEFAULT_LIMIT = 10;
 
-const InitialClientsResponse: GetClientsResponse = {
+const InitialLogsResponse: GetLogsResponse = {
   info: {
     total: 0,
     pages: 0,
@@ -29,38 +23,19 @@ const InitialClientsResponse: GetClientsResponse = {
 
 const Dashboard = () => {
   const username = useStore(state => state.auth.user?.username ?? "");
-  const [isNewClientModalOpen, setIsNewClientModalOpen] = useState(false);
-  const [search, setSearch] = useState("");
-  const [sortField, setSortField] = useState("name");
-  const [sortOrder, setSortOrder] = useState("asc");
   const [page, setPage] = useState(DEFAULT_PAGE);
-  const [limit, setLimit] = useState(DEFAULT_LIMIT);
-  const debouncedSearch = useDebounce(search, 500);
 
-  const { data, isLoading, refetch: refetchClients } = useQuery<GetClientsResponse>({
-    queryKey: ["clients", page, limit, debouncedSearch, sortField, sortOrder],
-    queryFn: () => getClientsRequest(page, limit, debouncedSearch, sortField, sortOrder),
+  const { data, isLoading, refetch: refetchLogs } = useQuery<GetLogsResponse>({
+    queryKey: ["logs"],
+    queryFn: () => getLogsRequest(page),
   });
 
-  const { info: { total = 0, pages = 0, next = null, prev = null }, results: clients = [] } = data ?? InitialClientsResponse;
+  const { info: { total, pages, next, prev }, results: logs = [] } = data ?? InitialLogsResponse;
 
-  const handleOpenNewClientModal = () => {
-    setIsNewClientModalOpen(!isNewClientModalOpen);
-  };
-
-  const handleChangeLimit = (value: string) => {
-    setLimit(parseInt(value));
-    setPage(DEFAULT_PAGE);
-  };
-
-  const handleSearchClient = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearch(e.target.value);
-    setPage(DEFAULT_PAGE);
-  };
 
   useEffect(() => {
-    refetchClients();
-  }, [page, limit, refetchClients, debouncedSearch, sortField, sortOrder]);
+    refetchLogs();
+  }, [page, refetchLogs]);
 
   const handlePageNext = () => {
     setPage(page + 1);
@@ -70,18 +45,9 @@ const Dashboard = () => {
     setPage(page - 1);
   };
 
-  const handleChangeSortField = (value: string) => {
-    setSortField(value);
-    setPage(DEFAULT_PAGE);
-  };
-
-  const handleChangeSortOrder = (value: string) => {
-    setSortOrder(value);
-    setPage(DEFAULT_PAGE);
-  };
 
   return (
-    <Template className="flex flex-col gap-4">
+    <Template>
       <header>
         <h2 className="text-2xl font-medium">
           Hola, <span className="capitalize">{username}</span>!
@@ -91,7 +57,7 @@ const Dashboard = () => {
       <section className="flex flex-col lg:flex-row gap-4 w-full max-w-7xl">
         <SquareWidget
           className="bg-slate-900 flex-1"
-          title={total.toString() ?? "0"}
+          title={"0"}
           subtitle="Total de clientes"
           link="/clients"
           icon={<UsersRound className="text-slate-900 w-8 h-8" />}
@@ -116,7 +82,7 @@ const Dashboard = () => {
           iconBgColor="bg-slate-300"
         />
       </section>
-      <section className="flex flex-col-reverse lg:flex-row justify-between items-center gap-4 w-full max-w-7xl">
+      {/* <section className="flex flex-col-reverse lg:flex-row justify-between items-center gap-4 w-full max-w-7xl">
         <Button variant="default" className="w-full lg:w-auto" onClick={handleOpenNewClientModal}>
           Agregar nuevo
         </Button>
@@ -152,13 +118,9 @@ const Dashboard = () => {
             <SelectItem value="30">30</SelectItem>
           </SelectContent>
         </Select>
-      </section>
-      <section className="data-table w-full max-w-7xl">
-        <ClientData
-          isLoading={isLoading}
-          clients={clients ?? []}
-          limit={limit}
-        />
+      </section> */}
+      <section className="data-table w-full max-w-7xl flex flex-col gap-4">
+        <ActivityLogs isLoading={isLoading} logs={logs} />
         <Pagination
           total={total}
           pages={pages}
@@ -169,7 +131,6 @@ const Dashboard = () => {
           onPagePrev={handlePagePrev}
         />
       </section>
-      <ClientDialog onClientCreated={refetchClients} isOpen={isNewClientModalOpen} onOpenChange={handleOpenNewClientModal} />
     </Template>
   );
 };
