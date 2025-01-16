@@ -11,9 +11,10 @@ import { Skeleton } from "./ui/skeleton";
 interface ClientDataProps {
   isLoading: boolean;
   clients: Client[];
+  limit?: number;
 }
 
-const ClientData = ({ isLoading, clients }: ClientDataProps) => {
+const ClientData = ({ isLoading, clients, limit = 10 }: ClientDataProps) => {
   const [innerWidth] = useSize();
 
   return (
@@ -33,7 +34,7 @@ const ClientData = ({ isLoading, clients }: ClientDataProps) => {
               <TableHead className="cursor-pointer text-right">Estado</TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody>{isLoading ? <ClientWaitingBody /> : <ClientBody clients={clients} />}</TableBody>
+          <TableBody>{isLoading ? <ClientWaitingBody limit={limit} /> : <ClientBody clients={clients} />}</TableBody>
           <TableCaption>Lista de clientes.</TableCaption>
         </Table>
       ) : (
@@ -105,10 +106,10 @@ const ClientBody = ({ clients }: ClientBodyProps) => {
   );
 };
 
-const ClientWaitingBody = () => {
+const ClientWaitingBody = ({ limit = 10 }: { limit?: number }) => {
   return (
     <>
-      {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(i => (
+      {Array(limit).fill(0).map((_, i) => (
         <TableRow key={i}>
           <TableCell className="font-bold">
             <Skeleton className="h-[20px] w-[10px]" />

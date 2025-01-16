@@ -157,6 +157,7 @@ const Clients = () => {
         <ClientData
           isLoading={isLoading}
           clients={clients ?? []}
+          limit={limit}
         />
         <Pagination
           total={total}
