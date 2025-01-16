@@ -5,6 +5,7 @@ import { PORT } from "./config";
 import authRouter from "./routes/auth.routes";
 import { connectDB } from "./models/db";
 import clientRouter from "./routes/client.routes";
+import paymentRouter from "./routes/payment.routes";
 
 const createApp = () => {
   const app = express();
@@ -15,7 +16,7 @@ const createApp = () => {
   // Routes
   app.use("/v1/auth", authRouter);
   app.use("/v1/clients", clientRouter);
-
+  app.use("/v1/payments", paymentRouter);
   app.get("/", (_, res) => {
     res.send("Hello World!");
   });
