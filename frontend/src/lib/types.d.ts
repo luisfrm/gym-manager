@@ -1,5 +1,5 @@
 export interface User {
-  id: string;
+  _id: string;
   email: string;
   username: string;
   role: string;
@@ -25,7 +25,7 @@ export interface LoginRequest {
 }
 
 export interface ValidateTokenResponse {
-  id: string;
+  _id: string;
   email: string;
   username: string;
   role: string;
@@ -33,13 +33,37 @@ export interface ValidateTokenResponse {
 }
 
 export interface Client {
-  id: string;
+  _id: string;
   cedula: string;
-  firstName: string;
-  lastName: string;
+  firstname: string;
+  lastname: string;
   email: string;
   phone: string;
   address: string;
-  expiredDate?: string;
-  isActive?: boolean;
+  expiredDate: string;
+}
+
+export interface CreateClientRequest {
+  cedula: string;
+  firstname: string;
+  lastname: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  expiredDate: string;
+}
+
+export interface GetClientsResponse {
+  total: number;
+  clients: Client[];
+  expiringClients: number;
+  newClientsLastMonth: number;
+}
+
+export interface UpdateClientRequest extends CreateClientRequest {
+  _id: string;
+}
+
+export interface DeleteClientRequest {
+  _id: string;
 }
