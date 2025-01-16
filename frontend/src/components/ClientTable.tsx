@@ -34,8 +34,8 @@ const ClientTable = ({ clients }: Props) => {
           clients.map((client: Client) => (
             <TableRow key={client.cedula}>
               <TableCell className="font-medium">{formatNumber("123456789")}</TableCell>
-              <TableCell>{client.firstName}</TableCell>
-              <TableCell>{client.lastName}</TableCell>
+              <TableCell>{client.firstname}</TableCell>
+              <TableCell>{client.lastname}</TableCell>
               <TableCell>{client.email}</TableCell>
               <TableCell>{client.phone}</TableCell>
               <TableCell>{client.address}</TableCell>
