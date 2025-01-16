@@ -12,7 +12,7 @@ clientRouter.get("/", authMiddleware(["admin", "employee"]), ClientController.ge
 
 clientRouter.get("/:cedula", authMiddleware(["admin", "employee"]), ClientController.getById);
 
-clientRouter.put("/:id", authMiddleware(["admin", "employee"]), ClientController.update);
+clientRouter.put("/:id", authMiddleware(["admin", "employee"]), validateSchema(clientSchema), ClientController.update);
 
 clientRouter.delete("/:id", authMiddleware(["admin", "employee"]), ClientController.delete);
 

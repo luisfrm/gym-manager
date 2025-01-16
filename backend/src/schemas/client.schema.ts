@@ -10,6 +10,10 @@ export const clientSchema = z.object({
     required_error: "Last name is required.",
     invalid_type_error: "Last name must be a string.",
   }),
+  cedula: z.string({
+    required_error: "Cedula is required.",
+    invalid_type_error: "Cedula must be a string.",
+  }),
   email: z.string().optional(),
   phone: z.string(),
   address: z.string(),
