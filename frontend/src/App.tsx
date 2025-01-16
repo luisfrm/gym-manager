@@ -12,6 +12,7 @@ import DotSpinner from "./components/DotSpinner";
 import { useEffect } from "react";
 import { useStore } from "./hooks/useStore";
 import useLocalStorage from "./hooks/useLocalStorage";
+import ClientDetails from "./pages/ClientDetails";
 
 function App() {
   const { setAuth } = useStore(state => state);
@@ -50,6 +51,7 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/clients" element={<Clients />} />
+          <Route path="/clients/:cedula" element={<ClientDetails />} />
           <Route path="/payments" element={<Payments />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/settings" element={<Settings />} />
