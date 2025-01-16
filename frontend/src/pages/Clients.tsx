@@ -8,8 +8,8 @@ import ClientData from "@/components/ClientData";
 import { useEffect, useState } from "react";
 import { ClientDialog } from "@/components/dialogs/ClientDialog";
 import { useQuery } from "@tanstack/react-query";
-import { getClientsRequest } from "@/api/api";
-import { GetClientsResponse } from "@/lib/types";
+import { getClientsRequest, getClientStatisticsRequest } from "@/api/api";
+import { ClientStatisticsResponse, GetClientsResponse } from "@/lib/types";
 import Pagination from "@/components/Pagination";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -27,12 +27,18 @@ const InitialClientsResponse: GetClientsResponse = {
   results: []
 };
 
+const InitialClientStatisticsResponse: ClientStatisticsResponse = {
+  newClientsLastMonth: 0,
+  clientsExpiringNextWeek: 0,
+  totalClients: 0,
+};
+
 const Clients = () => {
   const username = useStore(state => state.auth.user?.username ?? "");
   const [isNewClientModalOpen, setIsNewClientModalOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const [sortField, setSortField] = useState("name");
-  const [sortOrder, setSortOrder] = useState("asc");
+  const [sortField, setSortField] = useState("updatedAt");
+  const [sortOrder, setSortOrder] = useState("desc");
   const [page, setPage] = useState(DEFAULT_PAGE);
   const [limit, setLimit] = useState(DEFAULT_LIMIT);
   const debouncedSearch = useDebounce(search, 500);
@@ -42,7 +48,14 @@ const Clients = () => {
     queryFn: () => getClientsRequest(page, limit, debouncedSearch, sortField, sortOrder),
   });
 
+  const { data: clientStatistic } = useQuery<ClientStatisticsResponse>({
+    queryKey: ["clientStatistics"],
+    queryFn: () => getClientStatisticsRequest(),
+  });
+
   const { info: { total = 0, pages = 0, next = null, prev = null }, results: clients = [] } = data ?? InitialClientsResponse;
+
+  const { newClientsLastMonth, clientsExpiringNextWeek, totalClients } = clientStatistic ?? InitialClientStatisticsResponse;
 
   const handleOpenNewClientModal = () => {
     setIsNewClientModalOpen(!isNewClientModalOpen);
@@ -81,7 +94,7 @@ const Clients = () => {
   };
 
   return (
-    <Template className="flex flex-col gap-4">
+    <Template>
       <header>
         <h2 className="text-2xl font-medium">
           Hola, <span className="capitalize">{username}</span>!
@@ -91,7 +104,7 @@ const Clients = () => {
       <section className="flex flex-col lg:flex-row gap-4 w-full max-w-7xl">
         <SquareWidget
           className="bg-slate-900 flex-1"
-          title={total.toString() ?? "0"}
+          title={totalClients.toString() ?? "0"}
           subtitle="Total de clientes"
           link="/clients"
           icon={<UsersRound className="text-slate-900 w-8 h-8" />}
@@ -99,7 +112,7 @@ const Clients = () => {
         />
         <SquareWidget
           className="bg-lime-500 flex-1"
-          title={'0'}
+          title={newClientsLastMonth.toString() ?? "0"}
           subtitle="Nuevos clientes"
           link="/payments"
           icon={<ChartNoAxesCombined className="text-white w-8 h-8" />}
@@ -108,7 +121,7 @@ const Clients = () => {
         />
         <SquareWidget
           className="bg-white flex-1"
-          title={'0'}
+          title={clientsExpiringNextWeek.toString() ?? "0"}
           subtitle="Clientes vencidos la siguiente semana"
           link="/clients"
           icon={<Trash2 className="text-slate-900 w-8 h-8" />}
@@ -116,7 +129,7 @@ const Clients = () => {
           iconBgColor="bg-slate-300"
         />
       </section>
-      <section className="flex flex-col-reverse lg:flex-row justify-between items-center gap-4 w-full max-w-7xl">
+      <section id="clients-filter-bar" className="flex flex-col-reverse lg:flex-row justify-between items-center gap-4 w-full max-w-7xl">
         <Button variant="default" className="w-full lg:w-auto" onClick={handleOpenNewClientModal}>
           Agregar nuevo
         </Button>
