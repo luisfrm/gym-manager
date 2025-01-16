@@ -1,11 +1,11 @@
 import mongoose from "mongoose";
 
 const clientSchema = new mongoose.Schema({
-  firstName: {
+  firstname: {
     type: String,
     required: true,
   },
-  lastName: {
+  lastname: {
     type: String,
     required: true,
   },
@@ -27,6 +27,7 @@ const clientSchema = new mongoose.Schema({
   },
   expiredDate: {
     type: String,
+    default: ""
   },
 },
 {

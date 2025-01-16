@@ -1,22 +1,26 @@
 import { Request, Response } from "express";
 import Client from "../models/client.model";
+import countExpiringClientsInNext7Days from "../utils/countExpiringClientsInNext7Days";
+import countNewClientsLastMonth from "../utils/countNewClientsLastMonth";
 
 class ClientController {
   static create = async (req: Request, res: any) => {
     try {
-      const { firstName, lastName, email, phone, address } = req.body;
+      const { cedula, firstname, lastname, email, phone, address, expiredDate } = req.body;
 
       const client = new Client({
-        firstName: firstName.trim(),
-        lastName: lastName.trim(),
+        cedula: cedula.trim(),
+        firstname: firstname.trim(),
+        lastname: lastname.trim(),
         email: email.trim(),
         phone: phone.trim(),
         address: address.trim(),
+        expiredDate: expiredDate.trim(),
       });
 
       await client.save();
 
-      return res.status(201).json({ message: "Client created successfully", client });
+      return res.status(201).json({ client });
     } catch (error) {
       console.error(error);
       return res.status(500).json({ message: "Error creating client" });
@@ -25,9 +29,24 @@ class ClientController {
 
   static getAll = async (req: Request, res: any) => {
     try {
-      const clients = await Client.find();
+      const clients = await Client.find().lean();
 
-      return res.status(200).json(clients);
+      const transformedClients = clients.map(client => ({ 
+        ...client, 
+        _id: client._id.toString()
+      }));
+
+      const expiringClients = countExpiringClientsInNext7Days(transformedClients);
+      const newClientsLastMonth = countNewClientsLastMonth(transformedClients);
+
+      const total = await Client.countDocuments();
+
+      return res.status(200).json({
+        total,
+        clients,
+        expiringClients,
+        newClientsLastMonth,
+      });
     } catch (error) {
       console.error(error);
       return res.status(500).json({ message: "Error retrieving clients" });
@@ -36,15 +55,17 @@ class ClientController {
 
   static getById = async (req: Request, res: any) => {
     try {
-      const { id } = req.params;
+      const { cedula } = req.params;
 
-      const client = await Client.findById(id);
+      console.log(cedula);
+
+      const client = await Client.findOne({ cedula: cedula });
 
       if (!client) {
         return res.status(404).json({ message: "Client not found" });
       }
 
-      return res.status(200).json({ message: "Client retrieved successfully", client });
+      return res.status(200).json(client);
     } catch (error) {
       console.error(error);
       return res.status(500).json({ message: "Error retrieving client" });
@@ -54,14 +75,15 @@ class ClientController {
   static update = async (req: any, res: any) => {
     try {
       const { id } = req.params;
-      const { firstName, lastName, email, phone, address } = req.body;
+      const { firstname, lastname, email, phone, address, expiredDate } = req.body;
 
       const client = await Client.findByIdAndUpdate(id, {
-        firstName: firstName.trim(),
-        lastName: lastName.trim(),
+        firstname: firstname.trim(),
+        lastname: lastname.trim(),
         email: email.trim(),
         phone: phone.trim(),
         address: address.trim(),
+        expiredDate: expiredDate.trim(),
       });
 
       if (!client) {
@@ -72,6 +94,18 @@ class ClientController {
     } catch (error) {
       console.error(error);
       return res.status(500).json({ message: "Error updating client" });
+    }
+  }
+
+  static delete = async (req: Request, res: any) => {
+    try {
+      const { id } = req.params;
+      await Client.findByIdAndDelete(id);
+
+      return res.status(200).json({ message: "Client deleted successfully" });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: "Error deleting client" });
     }
   }
 }
