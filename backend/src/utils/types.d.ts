@@ -1,23 +1,24 @@
 import { Request } from 'express';
+import { Types } from 'mongoose';
 
 interface AppRequest extends Request {
   user: {
-    id: string;
+    userId: string;
     email: string;
     username: string;
     role: string;
   };
 }
 
-export type Client = {
-  _id: string;
+export interface Client {
+  _id: Types.ObjectId;
   firstname: string;
   lastname: string;
   cedula: string;
   email: string;
   phone: string;
   address: string;
-  expiredDate: string;
-  createdAt: Date;
-  updatedAt: Date;
-};
+  expiredDate: string | Date;
+  createdAt?: Date;
+  updatedAt?: Date;
+}

@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const paymentSchema = new mongoose.Schema({
-  clientId: {
+  client: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Client",
     required: true,

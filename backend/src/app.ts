@@ -6,6 +6,8 @@ import authRouter from "./routes/auth.routes";
 import { connectDB } from "./models/db";
 import clientRouter from "./routes/client.routes";
 import paymentRouter from "./routes/payment.routes";
+import logRouter from "./routes/log.routes";
+import statisticsRouter from "./routes/statistics.routes";
 
 const createApp = () => {
   const app = express();
@@ -17,6 +19,8 @@ const createApp = () => {
   app.use("/v1/auth", authRouter);
   app.use("/v1/clients", clientRouter);
   app.use("/v1/payments", paymentRouter);
+  app.use("/v1/logs", logRouter);
+  app.use("/v1/statistics", statisticsRouter);
   app.get("/", (_, res) => {
     res.send("Hello World!");
   });

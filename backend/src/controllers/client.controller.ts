@@ -1,10 +1,10 @@
-import { Request, Response } from "express";
 import Client from "../models/client.model";
-import countExpiringClientsInNext7Days from "../utils/countExpiringClientsInNext7Days";
-import countNewClientsLastMonth from "../utils/countNewClientsLastMonth";
+import Log from "../models/log.model";
+import { AppRequest } from "../utils/types";
+import formatNumber from "../utils/formatNumber";
 
 class ClientController {
-  static create = async (req: Request, res: any) => {
+  static create = async (req: AppRequest, res: any) => {
     try {
       const { cedula, firstname, lastname, email, phone, address, expiredDate } = req.body;
 
@@ -26,6 +26,12 @@ class ClientController {
 
       await client.save();
 
+      await Log.create({
+        message: `Cliente ${client.firstname} ${client.lastname}, cedula: ${formatNumber(client.cedula)} creado.`,
+        user: req.user.userId,
+        type: "created",
+      });
+
       return res.status(201).json(client);
     } catch (error) {
       console.error(error);
@@ -33,13 +39,13 @@ class ClientController {
     }
   };
 
-  static getAll = async (req: Request, res: any) => {
+  static getAll = async (req: AppRequest, res: any) => {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 20;
     const startIndex = (page - 1) * limit;
     const search = req.query.search as string || '';
     const regex = new RegExp(search, 'i');
-    const sortField = req.query.sortField as string || 'updatedAt';
+    const sortField = (req.query.sortField as string) || 'expiredDate';
     const sortOrder = req.query.sortOrder === 'desc' ? -1 : 1;
     try {
       const match = search ? {
@@ -81,11 +87,9 @@ class ClientController {
     }
   };
 
-  static getById = async (req: Request, res: any) => {
+  static getById = async (req: AppRequest, res: any) => {
     try {
       const { cedula } = req.params;
-
-      console.log(cedula);
 
       const client = await Client.findOne({ cedula: cedula });
 
@@ -119,6 +123,12 @@ class ClientController {
         return res.status(404).json({ message: "Client not found" });
       }
 
+      await Log.create({
+        message: `Cliente ${client.firstname} ${client.lastname}, cedula: ${formatNumber(client.cedula)} actualizado.`,
+        user: req.user.userId,
+        type: "updated",
+      });
+
       return res.status(200).json({ message: "Client updated successfully", client });
     } catch (error) {
       console.error(error);
@@ -126,7 +136,7 @@ class ClientController {
     }
   };
 
-  static delete = async (req: Request, res: any) => {
+  static delete = async (req: AppRequest, res: any) => {
     try {
       const { id } = req.params;
       const client = await Client.findByIdAndDelete(id);
@@ -134,6 +144,12 @@ class ClientController {
       if (!client) {
         return res.status(404).json({ message: "Client not found" });
       }
+
+      await Log.create({
+        message: `Cliente ${client.firstname} ${client.lastname}, cedula: ${formatNumber(client.cedula)} eliminado.`,
+        user: req.user.userId,
+        type: "deleted",
+      });
 
       return res.status(200).json({ message: "Client deleted successfully" });
     } catch (error) {
