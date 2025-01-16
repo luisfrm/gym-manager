@@ -6,6 +6,7 @@ import formatNumber from "@/lib/formatNumber";
 import { Badge } from "./ui/badge";
 import { formatDate, isDateActive } from "@/lib/utils";
 import { Link } from "react-router-dom";
+import { Skeleton } from "./ui/skeleton";
 
 interface ClientDataProps {
   isLoading: boolean;
@@ -15,17 +16,14 @@ interface ClientDataProps {
 const ClientData = ({ isLoading, clients }: ClientDataProps) => {
   const [innerWidth] = useSize();
 
-  if (isLoading) {
-    return <div>Cargando...</div>;
-  }
-
   return (
     <>
       {innerWidth > 981 ? (
         <Table className="border" style={{ borderRadius: "0.5rem" }}>
           <TableHeader>
             <TableRow>
-              <TableHead className="cursor-pointer w-[100px]">Cedula</TableHead>
+              <TableHead className="cursor-pointer w-[50px]">#</TableHead>
+              <TableHead className="cursor-pointer">Cedula</TableHead>
               <TableHead className="cursor-pointer">Nombre</TableHead>
               <TableHead className="cursor-pointer">Apellido</TableHead>
               <TableHead className="cursor-pointer">Email</TableHead>
@@ -35,9 +33,7 @@ const ClientData = ({ isLoading, clients }: ClientDataProps) => {
               <TableHead className="cursor-pointer text-right">Estado</TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody>
-            <ClientBody clients={clients} />
-          </TableBody>
+          <TableBody>{isLoading ? <ClientWaitingBody /> : <ClientBody clients={clients} />}</TableBody>
           <TableCaption>Lista de clientes.</TableCaption>
         </Table>
       ) : (
@@ -69,17 +65,32 @@ const ClientBody = ({ clients }: ClientBodyProps) => {
   return (
     <>
       {clients.length > 0 &&
-        clients.map((client: Client) => (
+        clients.map((client: Client, index: number) => (
           <TableRow key={client.cedula}>
-            <TableCell key={client.cedula} className="font-bold">
+            <TableCell key={client.cedula} className="font-bold text-ellipsis whitespace-nowrap">
+              {index + 1}
+            </TableCell>
+            <TableCell className="font-bold text-ellipsis whitespace-nowrap">
               <Link to={`/clients/${client.cedula}`}>{formatNumber(client.cedula)}</Link>
             </TableCell>
-            <TableCell>{client.firstname}</TableCell>
-            <TableCell>{client.lastname}</TableCell>
-            <TableCell>{client.email}</TableCell>
-            <TableCell>{client.phone}</TableCell>
-            <TableCell>{client.address}</TableCell>
-            <TableCell>{formatDate(client.expiredDate)}</TableCell>
+            <TableCell className="text-ellipsis whitespace-nowrap max-w-[200px] overflow-hidden text-start">
+              {client.firstname}
+            </TableCell>
+            <TableCell className="text-ellipsis whitespace-nowrap max-w-[200px] overflow-hidden text-start">
+              {client.lastname}
+            </TableCell>
+            <TableCell className="text-ellipsis whitespace-nowrap max-w-[200px] overflow-hidden text-start">
+              {client.email}
+            </TableCell>
+            <TableCell className="text-ellipsis whitespace-nowrap max-w-[200px] overflow-hidden text-start">
+              {client.phone}
+            </TableCell>
+            <TableCell className="text-ellipsis whitespace-nowrap max-w-[200px] overflow-hidden text-start">
+              {client.address}
+            </TableCell>
+            <TableCell className="text-ellipsis whitespace-nowrap max-w-[200px] overflow-hidden text-start">
+              {formatDate(client.expiredDate)}
+            </TableCell>
             <TableCell className="text-right">
               <Badge
                 variant="default"
@@ -90,6 +101,44 @@ const ClientBody = ({ clients }: ClientBodyProps) => {
             </TableCell>
           </TableRow>
         ))}
+    </>
+  );
+};
+
+const ClientWaitingBody = () => {
+  return (
+    <>
+      {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(i => (
+        <TableRow key={i}>
+          <TableCell className="font-bold">
+            <Skeleton className="h-[20px] w-[10px]" />
+          </TableCell>
+          <TableCell className="font-bold">
+            <Skeleton className="h-[20px] w-[80px]" />
+          </TableCell>
+          <TableCell className="max-w-[200px] text-start">
+            <Skeleton className="h-[20px] w-[60px]" />
+          </TableCell>
+          <TableCell className="max-w-[200px] text-start">
+            <Skeleton className="h-[20px] w-[80px]" />
+          </TableCell>
+          <TableCell className="max-w-[200px] text-start">
+            <Skeleton className="h-[20px] w-[150px]" />
+          </TableCell>
+          <TableCell className="max-w-[200px] text-start">
+            <Skeleton className="h-[20px] w-[100px]" />
+          </TableCell>
+          <TableCell className="text-right">
+            <Skeleton className="h-[20px] w-[150px]" />
+          </TableCell>
+          <TableCell className="text-right">
+            <Skeleton className="h-[20px] w-[80px]" />
+          </TableCell>
+          <TableCell className="text-right">
+            <Skeleton className="h-[20px] w-[50px]" />
+          </TableCell>
+        </TableRow>
+      ))}
     </>
   );
 };

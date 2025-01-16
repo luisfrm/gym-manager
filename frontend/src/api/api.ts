@@ -39,8 +39,8 @@ export const validateTokenRequest = async (): Promise<ValidateTokenResponse> => 
   return res.data;
 };
 
-export const getClientsRequest = async (): Promise<GetClientsResponse> => {
-  const res = await api.get("/clients");
+export const getClientsRequest = async (page = 1, limit = 10, search = "", sortField = "updatedAt", sortOrder = "asc"): Promise<GetClientsResponse> => {
+  const res = await api.get(`/clients?page=${page}&limit=${limit}&search=${search}&sortField=${sortField}&sortOrder=${sortOrder}`);
   return res.data;
 };
 
