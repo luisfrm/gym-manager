@@ -1,5 +1,14 @@
 import { API_URL } from "@/lib/config";
-import { Client, LoginRequest, LoginResponse, ValidateTokenResponse } from "@/lib/types";
+import {
+  Client,
+  CreateClientRequest,
+  DeleteClientRequest,
+  GetClientsResponse,
+  LoginRequest,
+  LoginResponse,
+  UpdateClientRequest,
+  ValidateTokenResponse,
+} from "@/lib/types";
 import axios from "axios";
 
 const getToken = () => {
@@ -14,7 +23,7 @@ const api = axios.create({
   },
 });
 
-api.interceptors.request.use((config) => {
+api.interceptors.request.use(config => {
   const token = getToken();
   if (token) config.headers["Authorization"] = `Bearer ${token}`;
   return config;
@@ -25,12 +34,32 @@ export const loginRequest = async (req: LoginRequest): Promise<LoginResponse> =>
   return res.data;
 };
 
-export const getClientsRequest = async (): Promise<Client[]> => {
+export const validateTokenRequest = async (): Promise<ValidateTokenResponse> => {
+  const res = await api.get("/auth/validate");
+  return res.data;
+};
+
+export const getClientsRequest = async (): Promise<GetClientsResponse> => {
   const res = await api.get("/clients");
   return res.data;
 };
 
-export const validateTokenRequest = async (): Promise<ValidateTokenResponse> => {
-  const res = await api.get("/auth/validate");
+export const getClientByIdRequest = async (cedula: string): Promise<Client> => {
+  const res = await api.get(`/clients/${cedula}`);
+  return res.data;
+};
+
+export const createClientRequest = async (client: CreateClientRequest): Promise<Client> => {
+  const res = await api.post("/clients", client);
+  return res.data;
+};
+
+export const updateClientRequest = async (client: UpdateClientRequest): Promise<Client> => {
+  const res = await api.put(`/clients/${client._id}`, client);
+  return res.data;
+};
+
+export const deleteClientRequest = async ({ _id }: DeleteClientRequest): Promise<Client> => {
+  const res = await api.delete(`/clients/${_id}`);
   return res.data;
 };
