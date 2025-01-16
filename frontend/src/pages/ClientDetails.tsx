@@ -1,0 +1,184 @@
+"use client";
+
+import { MoreVertical, ArrowLeft, Mail, Phone, MapPin, Calendar } from "lucide-react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { deleteClientRequest, getClientByIdRequest, updateClientRequest } from "@/api/api";
+import { isDateActive } from "@/lib/utils";
+import Template from "./Template";
+import { ClientUpdateDialog } from "@/components/dialogs/ClientUpdateDialog";
+import { useState } from "react";
+import { ClientRemoveDialog } from "@/components/dialogs/ClientRemoveDialog";
+import { Client } from "@/lib/types";
+
+export default function ClientDetails() {
+  const { cedula = "" } = useParams();
+  const navigate = useNavigate();
+  const { data: client, isLoading, refetch } = useQuery({
+    queryKey: ["client", cedula],
+    queryFn: () => getClientByIdRequest(cedula),
+  });
+
+  const [isUpdateClientOpen, setIsUpdateClientOpen] = useState(false);
+  const [isRemoveClientOpen, setIsRemoveClientOpen] = useState(false);
+
+  const deleteClientMutation = useMutation({
+    mutationFn: deleteClientRequest,
+    onSuccess: () => {
+      console.log("Cliente eliminado");
+    },
+    onError: () => {
+      console.log("Error al eliminar cliente");
+    },
+  });
+
+  const updateClientMutation = useMutation({
+    mutationFn: updateClientRequest,
+    onSuccess: (data: Client) => {
+      console.log(data);
+      handleUpdateClientOpen();
+    },
+  });
+
+
+  const handleUpdateClientOpen = () => {
+    setIsUpdateClientOpen(!isUpdateClientOpen);
+  };
+
+  const handleRemoveClientOpen = () => {
+    setIsRemoveClientOpen(!isRemoveClientOpen);
+  };
+
+  const handleClientUpdated = (client: Client) => {
+    console.log("Cliente actualizado");
+    updateClientMutation.mutateAsync(client).then(() => {
+      refetch();
+    });
+  };
+
+  const handleClientRemoved = () => {
+    const _id = client?._id ?? "";
+    deleteClientMutation.mutateAsync({ _id }).then(() => {
+      navigate("/clients");
+    });
+  };
+
+  if (isLoading) return <div>Loading...</div>;
+
+  return (
+    <Template>
+      <div className="container mx-auto p-6 max-w-5xl">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="icon" asChild>
+              <Link to="/clients">
+                <ArrowLeft className="h-5 w-5" />
+              </Link>
+            </Button>
+            <h1 className="text-2xl font-bold">Detalles del Cliente</h1>
+          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <MoreVertical className="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={handleUpdateClientOpen}>Editar cliente</DropdownMenuItem>
+              <DropdownMenuItem onClick={handleRemoveClientOpen} className="text-destructive">Eliminar cliente</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
+        <div className="grid gap-6">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold">{`${client?.firstname} ${client?.lastname}`}</h2>
+                  <p className="text-muted-foreground">Cédula: {client?.cedula}</p>
+                </div>
+                <Badge
+                  variant="default"
+                  className={`text-white ${isDateActive(client?.expiredDate) ? "bg-green-500" : "bg-red-500"}`}
+                >
+                  {isDateActive(client?.expiredDate) ? "Activo" : "Inactivo"}
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="grid gap-6">
+              <div className="grid gap-4">
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-5 w-5 text-muted-foreground" />
+                  <div>
+                    <p className="text-sm font-medium">Fecha de vencimiento</p>
+                    <p className="text-sm text-muted-foreground">{client?.expiredDate}</p>
+                  </div>
+                </div>
+                {client?.email && (
+                  <div className="flex items-center gap-2">
+                    <Mail className="h-5 w-5 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm font-medium">Email</p>
+                      <p className="text-sm text-muted-foreground">{client?.email}</p>
+                    </div>
+                  </div>
+                )}
+                {client?.phone && (
+                  <div className="flex items-center gap-2">
+                    <Phone className="h-5 w-5 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm font-medium">Teléfono</p>
+                      <p className="text-sm text-muted-foreground">{client?.phone}</p>
+                    </div>
+                  </div>
+                )}
+                {client?.address && (
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-5 w-5 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm font-medium">Dirección</p>
+                      <p className="text-sm text-muted-foreground">{client.address}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="grid gap-6 md:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <h3 className="text-lg font-semibold">Historial de pagos</h3>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">Aquí se mostrará el historial de pagos del cliente</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <h3 className="text-lg font-semibold">Asistencias</h3>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">Aquí se mostrará el registro de asistencias del cliente</p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+      <ClientUpdateDialog isOpen={isUpdateClientOpen} onOpenChange={handleUpdateClientOpen} client={client} onClientUpdated={handleClientUpdated} />
+      <ClientRemoveDialog isOpen={isRemoveClientOpen} onOpenChange={handleRemoveClientOpen} client={client} onClientRemoved={handleClientRemoved} />
+    </Template>
+  );
+}
