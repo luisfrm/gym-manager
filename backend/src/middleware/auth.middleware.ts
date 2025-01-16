@@ -15,7 +15,6 @@ const authMiddleware = (allowedRoles = []) => {
     try {
       const decoded = verifyJwt(token);
       req.user = decoded;
-      console.log(decoded);
     } catch (error) {
       return res.status(401).json({ message: "Unauthorized" });
     }
