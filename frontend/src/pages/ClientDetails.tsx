@@ -13,15 +13,55 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { deleteClientRequest, getClientByIdRequest, updateClientRequest } from "@/api/api";
+import { deleteClientRequest, getClientByIdRequest, getClientPaymentsRequest, updateClientRequest } from "@/api/api";
 import { isDateActive } from "@/lib/utils";
 import Template from "./Template";
 import { ClientUpdateDialog } from "@/components/dialogs/ClientUpdateDialog";
 import { useState } from "react";
 import { ClientRemoveDialog } from "@/components/dialogs/ClientRemoveDialog";
-import { Client } from "@/lib/types";
+import { Client, Payment } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import formatNumber from "@/lib/formatNumber";
+import PaymentHistory from "@/components/PaymentHistory";
+
+const examplePayments = [
+  {
+    _id: "1",
+    client: "John Doe",
+    clientCedula: "V-12345678",
+    amount: "50.00",
+    date: "2025-01-15T10:00:00Z",
+    service: "Mensualidad",
+    paymentMethod: "Transferencia",
+    paymentReference: "REF123456",
+    paymentStatus: "paid",
+    currency: "USD",
+  },
+  {
+    _id: "2",
+    client: "Jane Smith",
+    clientCedula: "V-87654321",
+    amount: "2000000.00",
+    date: "2025-01-14T14:30:00Z",
+    service: "Entrenamiento personal",
+    description: "Sesión de entrenamiento personalizado",
+    paymentMethod: "Efectivo",
+    paymentStatus: "pending",
+    currency: "VES",
+  },
+  {
+    _id: "3",
+    client: "Carlos Rodriguez",
+    clientCedula: "V-23456789",
+    amount: "75.00",
+    date: "2025-01-13T09:15:00Z",
+    service: "Clase de yoga",
+    paymentMethod: "Tarjeta de crédito",
+    paymentReference: "TC345678",
+    paymentStatus: "failed",
+    currency: "USD",
+  },
+];
 
 export default function ClientDetails() {
   const { cedula = "" } = useParams();
@@ -56,6 +96,11 @@ export default function ClientDetails() {
     },
   });
 
+  const { data: payments, isLoading: isPaymentsLoading } = useQuery({
+    queryKey: ["payments", cedula],
+    queryFn: () => getClientPaymentsRequest(cedula),
+  });
+
   const handleUpdateClientOpen = () => {
     setIsUpdateClientOpen(!isUpdateClientOpen);
   };
@@ -80,7 +125,7 @@ export default function ClientDetails() {
 
   return (
     <Template>
-      <div className="container mx-auto p-6 max-w-5xl">
+      <div className="">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" asChild>
@@ -166,15 +211,15 @@ export default function ClientDetails() {
           )}
 
           <div className="grid gap-6 md:grid-cols-2">
-            <Card>
+            {/* <Card>
               <CardHeader>
                 <h3 className="text-lg font-semibold">Historial de pagos</h3>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">Aquí se mostrará el historial de pagos del cliente</p>
               </CardContent>
-            </Card>
-
+            </Card> */}
+            <PaymentHistory isLoading={isPaymentsLoading} payments={payments ?? []} />
             <Card>
               <CardHeader>
                 <h3 className="text-lg font-semibold">Asistencias</h3>

@@ -7,6 +7,7 @@ import {
   DeleteClientRequest,
   GetClientsResponse,
   GetLogsResponse,
+  GetPaymentsResponse,
   LoginRequest,
   LoginResponse,
   Payment,
@@ -74,8 +75,18 @@ export const getClientStatisticsRequest = async (): Promise<ClientStatisticsResp
   return res.data;
 };
 
+export const getClientPaymentsRequest = async (cedula: string): Promise<Payment[]> => {
+  const res = await api.get(`/payments/by-client/${cedula}`);
+  return res.data;
+};
+
 export const getLogsRequest = async (page = 1, limit = 5, search = "", sortField = "updatedAt", sortOrder = "desc"): Promise<GetLogsResponse> => {
   const res = await api.get(`/logs?page=${page}&limit=${limit}&search=${search}&sortField=${sortField}&sortOrder=${sortOrder}`);
+  return res.data;
+};
+
+export const getPaymentsRequest = async (page = 1, limit = 10, search = "", sortField = "updatedAt", sortOrder = "asc"): Promise<GetPaymentsResponse> => {
+  const res = await api.get(`/payments?page=${page}&limit=${limit}&search=${search}&sortField=${sortField}&sortOrder=${sortOrder}`);
   return res.data;
 };
 
