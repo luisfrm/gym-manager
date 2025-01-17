@@ -40,13 +40,13 @@ class ClientController {
   };
 
   static getAll = async (req: AppRequest, res: any) => {
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 20;
-    const startIndex = (page - 1) * limit;
-    const search = req.query.search as string || '';
-    const regex = new RegExp(search, 'i');
-    const sortField = (req.query.sortField as string) || 'expiredDate';
-    const sortOrder = req.query.sortOrder === 'desc' ? -1 : 1;
+    const page = parseInt(req.query.page as string) || 1; // Page number
+    const limit = parseInt(req.query.limit as string) || 10; // Quantity of clients to show per page
+    const startIndex = (page - 1) * limit; // Start index for pagination. It's used to skip the first n clients
+    const search = req.query.search as string || ''; // search by cedula, firstname, lastname, email and added i for case insensitive
+    const regex = new RegExp(search, 'i'); // regex for search
+    const sortField = (req.query.sortField as string) || 'updatedAt'; // Sort field. If not provided, it will sort by updatedAt
+    const sortOrder = req.query.sortOrder === 'desc' ? -1 : 1; // Sort order. If not provided, it will sort in ascending order
     try {
       const match = search ? {
         $or: [

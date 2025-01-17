@@ -14,6 +14,6 @@ clientRouter.get("/:cedula", authMiddleware(["admin", "employee"]), ClientContro
 
 clientRouter.put("/:id", authMiddleware(["admin", "employee"]), validateSchema(clientSchema), ClientController.update);
 
-clientRouter.delete("/:id", authMiddleware(["admin", "employee"]), ClientController.delete);
+clientRouter.delete("/:id", authMiddleware(["admin"]), ClientController.delete);
 
 export default clientRouter;
