@@ -7,6 +7,7 @@ import { Badge } from "./ui/badge";
 import { formatDate, isDateActive } from "@/lib/utils";
 import { Link } from "react-router-dom";
 import { Skeleton } from "./ui/skeleton";
+import CopyToClipboard from "./CopyToClipboard";
 
 interface ClientDataProps {
   isLoading: boolean;
@@ -71,11 +72,12 @@ const ClientBody = ({ clients }: ClientBodyProps) => {
             <TableCell key={client.cedula} className="font-bold text-ellipsis whitespace-nowrap py-2">
               {index + 1}
             </TableCell>
-            <TableCell className="font-bold text-ellipsis whitespace-nowrap">
-              <Link to={`/clients/${client.cedula}`}>{formatNumber(client.cedula)}</Link>
+            <TableCell className="text-ellipsis whitespace-nowrap flex items-center gap-2">
+              {formatNumber(client.cedula)}
+              <CopyToClipboard text={client.cedula} />
             </TableCell>
-            <TableCell className="text-ellipsis whitespace-nowrap max-w-[200px] overflow-hidden text-start">
-              {client.firstname}
+            <TableCell className="font-bold text-ellipsis whitespace-nowrap max-w-[200px] overflow-hidden text-start">
+              <Link to={`/clients/${client.cedula}`}>{formatNumber(client.firstname)}</Link>
             </TableCell>
             <TableCell className="text-ellipsis whitespace-nowrap max-w-[200px] overflow-hidden text-start">
               {client.lastname}
@@ -109,37 +111,39 @@ const ClientBody = ({ clients }: ClientBodyProps) => {
 const ClientWaitingBody = ({ limit = 10 }: { limit?: number }) => {
   return (
     <>
-      {Array(limit).fill(0).map((_, i) => (
-        <TableRow key={i}>
-          <TableCell className="font-bold py-4">
-            <Skeleton className="h-[20px] w-[10px]" />
-          </TableCell>
-          <TableCell className="font-bold py-4">
-            <Skeleton className="h-[20px] w-[80px]" />
-          </TableCell>
-          <TableCell className="max-w-[200px] text-start">
-            <Skeleton className="h-[20px] w-[60px]" />
-          </TableCell>
-          <TableCell className="max-w-[200px] text-start">
-            <Skeleton className="h-[20px] w-[80px]" />
-          </TableCell>
-          <TableCell className="max-w-[200px] text-start">
-            <Skeleton className="h-[20px] w-[150px]" />
-          </TableCell>
-          <TableCell className="max-w-[200px] text-start">
-            <Skeleton className="h-[20px] w-[100px]" />
-          </TableCell>
-          <TableCell className="text-right">
-            <Skeleton className="h-[20px] w-[150px]" />
-          </TableCell>
-          <TableCell className="text-right">
-            <Skeleton className="h-[20px] w-[80px]" />
-          </TableCell>
-          <TableCell className="text-right">
-            <Skeleton className="h-[20px] w-[50px]" />
-          </TableCell>
-        </TableRow>
-      ))}
+      {Array(limit)
+        .fill(0)
+        .map((_, i) => (
+          <TableRow key={i}>
+            <TableCell className="font-bold py-4">
+              <Skeleton className="h-[20px] w-[10px]" />
+            </TableCell>
+            <TableCell className="font-bold py-4">
+              <Skeleton className="h-[20px] w-[80px]" />
+            </TableCell>
+            <TableCell className="max-w-[200px] text-start">
+              <Skeleton className="h-[20px] w-[60px]" />
+            </TableCell>
+            <TableCell className="max-w-[200px] text-start">
+              <Skeleton className="h-[20px] w-[80px]" />
+            </TableCell>
+            <TableCell className="max-w-[200px] text-start">
+              <Skeleton className="h-[20px] w-[150px]" />
+            </TableCell>
+            <TableCell className="max-w-[200px] text-start">
+              <Skeleton className="h-[20px] w-[100px]" />
+            </TableCell>
+            <TableCell className="text-right">
+              <Skeleton className="h-[20px] w-[150px]" />
+            </TableCell>
+            <TableCell className="text-right">
+              <Skeleton className="h-[20px] w-[80px]" />
+            </TableCell>
+            <TableCell className="text-right">
+              <Skeleton className="h-[20px] w-[50px]" />
+            </TableCell>
+          </TableRow>
+        ))}
     </>
   );
 };
