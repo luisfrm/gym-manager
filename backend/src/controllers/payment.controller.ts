@@ -66,10 +66,10 @@ class PaymentController {
   };
 
   static getPayments = async (req: AppRequest, res: any) => {
-    const page = parseInt(req.params.page as string) || 1; // Page number
-    const limit = parseInt(req.params.limit as string) || 10; // Quantity of payments to show per page
+    const page = parseInt(req.query.page as string) || 1; // Page number
+    const limit = parseInt(req.query.limit as string) || 10; // Quantity of payments to show per page
     const startIndex = (page - 1) * limit; // Start index for pagination. It's used to skip the first n payments
-    const search = (req.params.search as string) || ""; // Search parameter
+    const search = (req.query.search as string) || ""; // Search parameter
     const regex = new RegExp(search, "i"); // search by client, amount, date, service, paymentMethod, paymentReference, paymentStatus, currency and added i for case insensitive
     const sortField = (req.query.sortField as string) || "updatedAt"; // Sort field. If not provided, it will sort by updatedAt
     const sortOrder = req.query.sortOrder === "asc" ? 1 : -1; // Sort order. If not provided, it will sort in ascending order
