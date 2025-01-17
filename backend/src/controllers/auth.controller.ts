@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { generateJwt, verifyJwt } from "../utils/jwt";
 import getToken from "../utils/getToken";
 import { JWT_EXPIRATION_TIME } from "../config";
+import { TokenPayload } from "../utils/types";
 
 class AuthController {
   static register = async (req: Request, res: any) => {
@@ -62,7 +63,6 @@ class AuthController {
         tokenExpiration,
       });
 
-
       const userResponse = {
         id: user._id,
         email: user.email,
@@ -85,6 +85,29 @@ class AuthController {
     } catch (error) {
       console.log(error.message);
       res.status(401).json({ message: "Token invalid." });
+    }
+  };
+
+  static refreshToken = async (req: Request, res: any) => {
+    try {
+      const token = getToken(req);
+      const decoded = verifyJwt(token) as TokenPayload;
+      const tokenExpiration = new Date(Date.now() + JWT_EXPIRATION_TIME * 1000);
+      const newToken = generateJwt({
+        userId: decoded.userId,
+        role: decoded.role,
+        email: decoded.email,
+        username: decoded.username,
+        tokenExpiration,
+      });
+      res.status(200).json({ token: newToken, tokenExpiration });
+    } catch (error) {
+      console.log(error.message);
+      if (error.message === "Token expired") {
+        res.status(401).json({ message: "Token expirado" });
+      } else {
+        res.status(401).json({ message: "Token inválido" });
+      }
     }
   };
 }
