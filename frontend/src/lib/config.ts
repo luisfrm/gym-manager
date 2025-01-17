@@ -5,38 +5,38 @@ export const TIME_TO_HIDE_ERROR = 3000;
 export const ClientTableHeads = {
   cedula: {
     label: "Cedula",
-    ClassNames: ""
+    ClassNames: "",
   },
   firstname: {
     label: "Nombre",
-    ClassNames: ""
+    ClassNames: "",
   },
   lastname: {
     label: "Apellido",
-    ClassNames: ""
+    ClassNames: "",
   },
   email: {
     label: "Email",
-    ClassNames: ""
+    ClassNames: "",
   },
   phone: {
     label: "Telefono",
-    ClassNames: ""
+    ClassNames: "",
   },
   address: {
     label: "Direccion",
-    ClassNames: ""
+    ClassNames: "",
   },
   expiredDate: {
     label: "Fecha de vencimiento",
-    ClassNames: ""
+    ClassNames: "",
   },
   status: {
     label: "Estado",
-    ClassNames: "text-right"
+    ClassNames: "text-right",
   },
   actions: {
     label: "Acciones",
-    ClassNames: "text-right"
-  }
-}
+    ClassNames: "text-right",
+  },
+};

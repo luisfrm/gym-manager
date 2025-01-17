@@ -8,6 +8,7 @@ import clientRouter from "./routes/client.routes";
 import paymentRouter from "./routes/payment.routes";
 import logRouter from "./routes/log.routes";
 import statisticsRouter from "./routes/statistics.routes";
+import createInitialAdmin from "./utils/createInitialAdmin";
 
 const createApp = () => {
   const app = express();
@@ -28,6 +29,7 @@ const createApp = () => {
   connectDB()
     .then(message => {
       console.log(message);
+      createInitialAdmin();
     })
     .catch(error => {
       console.log("Error connecting to MongoDB: ", error);

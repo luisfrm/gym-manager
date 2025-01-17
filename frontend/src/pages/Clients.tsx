@@ -22,9 +22,9 @@ const InitialClientsResponse: GetClientsResponse = {
     total: 0,
     pages: 0,
     next: null,
-    prev: null
+    prev: null,
   },
-  results: []
+  results: [],
 };
 
 const InitialClientStatisticsResponse: ClientStatisticsResponse = {
@@ -43,7 +43,11 @@ const Clients = () => {
   const [limit, setLimit] = useState(DEFAULT_LIMIT);
   const debouncedSearch = useDebounce(search, 500);
 
-  const { data, isLoading, refetch: refetchClients } = useQuery<GetClientsResponse>({
+  const {
+    data,
+    isLoading,
+    refetch: refetchClients,
+  } = useQuery<GetClientsResponse>({
     queryKey: ["clients", page, limit, debouncedSearch, sortField, sortOrder],
     queryFn: () => getClientsRequest(page, limit, debouncedSearch, sortField, sortOrder),
   });
@@ -53,9 +57,13 @@ const Clients = () => {
     queryFn: () => getClientStatisticsRequest(),
   });
 
-  const { info: { total = 0, pages = 0, next = null, prev = null }, results: clients = [] } = data ?? InitialClientsResponse;
+  const {
+    info: { total = 0, pages = 0, next = null, prev = null },
+    results: clients = [],
+  } = data ?? InitialClientsResponse;
 
-  const { newClientsLastMonth, clientsExpiringNextWeek, totalClients } = clientStatistic ?? InitialClientStatisticsResponse;
+  const { newClientsLastMonth, clientsExpiringNextWeek, totalClients } =
+    clientStatistic ?? InitialClientStatisticsResponse;
 
   const handleOpenNewClientModal = () => {
     setIsNewClientModalOpen(!isNewClientModalOpen);
@@ -129,7 +137,10 @@ const Clients = () => {
           iconBgColor="bg-slate-300"
         />
       </section>
-      <section id="clients-filter-bar" className="flex flex-col-reverse lg:flex-row justify-between items-center gap-4 w-full">
+      <section
+        id="clients-filter-bar"
+        className="flex flex-col-reverse lg:flex-row justify-between items-center gap-4 w-full"
+      >
         <Button variant="default" className="w-full lg:w-auto" onClick={handleOpenNewClientModal}>
           Agregar nuevo
         </Button>
@@ -167,11 +178,7 @@ const Clients = () => {
         </Select>
       </section>
       <section className="data-table w-full">
-        <ClientData
-          isLoading={isLoading}
-          clients={clients ?? []}
-          limit={limit}
-        />
+        <ClientData isLoading={isLoading} clients={clients ?? []} limit={limit} />
         <Pagination
           total={total}
           pages={pages}
@@ -182,7 +189,11 @@ const Clients = () => {
           onPagePrev={handlePagePrev}
         />
       </section>
-      <ClientDialog onClientCreated={refetchClients} isOpen={isNewClientModalOpen} onOpenChange={handleOpenNewClientModal} />
+      <ClientDialog
+        onClientCreated={refetchClients}
+        isOpen={isNewClientModalOpen}
+        onOpenChange={handleOpenNewClientModal}
+      />
     </Template>
   );
 };

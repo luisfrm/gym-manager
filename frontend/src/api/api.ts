@@ -45,8 +45,16 @@ export const validateTokenRequest = async (): Promise<ValidateTokenResponse> => 
   return res.data;
 };
 
-export const getClientsRequest = async (page = 1, limit = 10, search = "", sortField = "updatedAt", sortOrder = "asc"): Promise<GetClientsResponse> => {
-  const res = await api.get(`/clients?page=${page}&limit=${limit}&search=${search}&sortField=${sortField}&sortOrder=${sortOrder}`);
+export const getClientsRequest = async (
+  page = 1,
+  limit = 10,
+  search = "",
+  sortField = "updatedAt",
+  sortOrder = "asc",
+): Promise<GetClientsResponse> => {
+  const res = await api.get(
+    `/clients?page=${page}&limit=${limit}&search=${search}&sortField=${sortField}&sortOrder=${sortOrder}`,
+  );
   return res.data;
 };
 
@@ -80,13 +88,29 @@ export const getClientPaymentsRequest = async (cedula: string): Promise<Payment[
   return res.data;
 };
 
-export const getLogsRequest = async (page = 1, limit = 5, search = "", sortField = "updatedAt", sortOrder = "desc"): Promise<GetLogsResponse> => {
-  const res = await api.get(`/logs?page=${page}&limit=${limit}&search=${search}&sortField=${sortField}&sortOrder=${sortOrder}`);
+export const getLogsRequest = async (
+  page = 1,
+  limit = 5,
+  search = "",
+  sortField = "updatedAt",
+  sortOrder = "desc",
+): Promise<GetLogsResponse> => {
+  const res = await api.get(
+    `/logs?page=${page}&limit=${limit}&search=${search}&sortField=${sortField}&sortOrder=${sortOrder}`,
+  );
   return res.data;
 };
 
-export const getPaymentsRequest = async (page = 1, limit = 10, search = "", sortField = "updatedAt", sortOrder = "asc"): Promise<GetPaymentsResponse> => {
-  const res = await api.get(`/payments?page=${page}&limit=${limit}&search=${search}&sortField=${sortField}&sortOrder=${sortOrder}`);
+export const getPaymentsRequest = async (
+  page = 1,
+  limit = 10,
+  search = "",
+  sortField = "updatedAt",
+  sortOrder = "asc",
+): Promise<GetPaymentsResponse> => {
+  const res = await api.get(
+    `/payments?page=${page}&limit=${limit}&search=${search}&sortField=${sortField}&sortOrder=${sortOrder}`,
+  );
   return res.data;
 };
 
@@ -99,4 +123,3 @@ export const refreshTokenRequest = async (): Promise<RefreshTokenResponse> => {
   const res = await api.post("/auth/refresh");
   return res.data;
 };
-

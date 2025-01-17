@@ -2,10 +2,10 @@ import { Modal, ModalBody, ModalHeader } from "@/components/Modal";
 import { FormGroup, FormLabel, FormLabelError } from "@/components/FormGroup";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import { Client, Payment } from "@/lib/types";
+import { Client } from "@/lib/types";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { createClientRequest, createPaymentRequest, getClientByIdRequest } from "@/api/api";
+import { createPaymentRequest, getClientByIdRequest } from "@/api/api";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -91,7 +91,16 @@ export const PaymentDialog = ({ isOpen, onOpenChange, onPaymentCreated = () => {
   }, [isErrorClient, clientError]);
 
   const handleCreatePayment = (data: PaymentSchema) => {
-    const { client: clientId, clientCedula, amount, date, service, paymentMethod, paymentReference, expiredDate } = data;
+    const {
+      client: clientId,
+      clientCedula,
+      amount,
+      date,
+      service,
+      paymentMethod,
+      paymentReference,
+      expiredDate,
+    } = data;
     createPaymentMutation.mutate({
       client: clientId,
       clientCedula,
@@ -102,7 +111,7 @@ export const PaymentDialog = ({ isOpen, onOpenChange, onPaymentCreated = () => {
       paymentReference,
       paymentStatus,
       currency: paymentCurrency,
-      expiredDate
+      expiredDate,
     });
   };
 

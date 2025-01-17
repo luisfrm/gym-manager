@@ -16,6 +16,7 @@ A full-stack web application for managing gym memberships and clients, built wit
 ## Tech Stack
 
 ### Frontend
+
 - React
 - TypeScript
 - TanStack Query for data fetching
@@ -26,6 +27,7 @@ A full-stack web application for managing gym memberships and clients, built wit
 - Zustand for state management
 
 ### Backend
+
 - Node.js
 - Express
 - MongoDB with Mongoose
@@ -35,6 +37,7 @@ A full-stack web application for managing gym memberships and clients, built wit
 ## Getting Started
 
 ### Prerequisites
+
 - Node.js (v22 or higher)
 - MongoDB
 - npm or bun
@@ -43,6 +46,7 @@ A full-stack web application for managing gym memberships and clients, built wit
 
 1. Clone the repository
 2. Install dependencies for both frontend and backend:
+
    ```bash
    # Install frontend dependencies
    cd frontend
@@ -60,11 +64,13 @@ A full-stack web application for managing gym memberships and clients, built wit
 3. Set up environment variables:
 
    Frontend (.env):
+
    ```
    VITE_API_URL=http://localhost:3000/api
    ```
 
    Backend (.env):
+
    ```
    PORT=3000
    MONGODB_URI=mongodb://localhost:27017/gym_management
@@ -77,6 +83,7 @@ A full-stack web application for managing gym memberships and clients, built wit
 5. Run the development servers:
 
    Frontend:
+
    ```bash
    bun run start-frontend
    # or
@@ -84,6 +91,7 @@ A full-stack web application for managing gym memberships and clients, built wit
    ```
 
    Backend:
+
    ```bash
    cd backend
    bun run start-backend

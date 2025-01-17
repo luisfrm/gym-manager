@@ -14,7 +14,9 @@ export const getClientsExpiringNextWeek = (clients: Client[]) => {
   const nextWeek = new Date();
   nextWeek.setDate(today.getDate() + 7);
 
-  const expiringClients = clients.filter(client => new Date(client.expiredDate) >= today && new Date(client.expiredDate) < nextWeek);
+  const expiringClients = clients.filter(
+    client => new Date(client.expiredDate) >= today && new Date(client.expiredDate) < nextWeek,
+  );
 
   return expiringClients.length;
 };

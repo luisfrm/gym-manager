@@ -9,24 +9,25 @@ interface ClientDialogProps {
   onClientRemoved?: () => void;
 }
 
-export const ClientRemoveDialog = ({
-  isOpen,
-  onOpenChange,
-  onClientRemoved = () => {},
-  client
-}: ClientDialogProps) => {
-
+export const ClientRemoveDialog = ({ isOpen, onOpenChange, onClientRemoved = () => {}, client }: ClientDialogProps) => {
   const handleRemoveClient = () => {
     onClientRemoved();
   };
 
   return (
     <Modal className="sm:max-w-md" isOpen={isOpen} onOpenChange={onOpenChange}>
-      <ModalHeader title={`Remover cliente ${client?.firstname} ${client?.lastname}`} description="¿Estás seguro de que deseas eliminar este cliente? Esta operacion no se puede deshacer." />
+      <ModalHeader
+        title={`Remover cliente ${client?.firstname} ${client?.lastname}`}
+        description="¿Estás seguro de que deseas eliminar este cliente? Esta operacion no se puede deshacer."
+      />
       <ModalBody>
         <div className="flex justify-end gap-2">
-          <Button variant="destructive" onClick={handleRemoveClient}>Eliminar cliente</Button>
-          <Button variant="outline" onClick={onOpenChange}>Cancelar</Button>
+          <Button variant="destructive" onClick={handleRemoveClient}>
+            Eliminar cliente
+          </Button>
+          <Button variant="outline" onClick={onOpenChange}>
+            Cancelar
+          </Button>
         </div>
       </ModalBody>
     </Modal>

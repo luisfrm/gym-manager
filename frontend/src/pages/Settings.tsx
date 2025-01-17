@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Bell, Globe, Lock, Moon, Sun, User } from "lucide-react";
+import { Globe, Lock, Moon, Sun, User } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";

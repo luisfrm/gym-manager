@@ -1,42 +1,38 @@
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Mail, Phone, MapPin, Calendar } from 'lucide-react'
-import formatNumber from "@/lib/formatNumber"
-import { isDateActive } from "@/lib/utils"
-import { Link } from "react-router-dom"
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Mail, Phone, MapPin, Calendar } from "lucide-react";
+import formatNumber from "@/lib/formatNumber";
+import { isDateActive } from "@/lib/utils";
+import { Link } from "react-router-dom";
 
 interface ClientCardProps {
-  cedula: string
-  firstname: string
-  lastname: string
-  email: string
-  phone: string
-  address: string
-  expiredDate?: string
-  isActive?: boolean
-  onEdit?: () => void
-  onDelete?: () => void
+  cedula: string;
+  firstname: string;
+  lastname: string;
+  email: string;
+  phone: string;
+  address: string;
+  expiredDate?: string;
+  isActive?: boolean;
+  onEdit?: () => void;
+  onDelete?: () => void;
 }
 
-export function ClientCard({
-  cedula,
-  firstname,
-  lastname,
-  email,
-  phone,
-  address,
-  expiredDate="",
-}: ClientCardProps) {
+export function ClientCard({ cedula, firstname, lastname, email, phone, address, expiredDate = "" }: ClientCardProps) {
   return (
     <Card className="w-full mx-auto">
       <CardContent className="p-6">
         <div className="flex justify-between items-start mb-4">
           <div>
             <h2 className="text-2xl font-bold">{`${firstname} ${lastname}`}</h2>
-            <Link to={`/clients/${cedula}`}><p className="text-sm text-muted-foreground font-bold">Cédula: {formatNumber(cedula)}</p></Link>
-            
+            <Link to={`/clients/${cedula}`}>
+              <p className="text-sm text-muted-foreground font-bold">Cédula: {formatNumber(cedula)}</p>
+            </Link>
           </div>
-          <Badge variant="default" className={`text-white ${isDateActive(expiredDate) ? "bg-green-500" : "bg-red-500"}`}>
+          <Badge
+            variant="default"
+            className={`text-white ${isDateActive(expiredDate) ? "bg-green-500" : "bg-red-500"}`}
+          >
             {isDateActive(expiredDate) ? "Activo" : "Inactivo"}
           </Badge>
         </div>
@@ -60,6 +56,5 @@ export function ClientCard({
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
-

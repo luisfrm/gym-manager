@@ -47,7 +47,7 @@ export default function LoginForm() {
   const { setAuth, auth } = useStore();
   const eyeClasses = "absolute top-1/2 right-2 cursor-pointer";
   const [isLoading] = useState(false);
-  const [, setToken] = useLocalStorage("token", '');
+  const [, setToken] = useLocalStorage("token", "");
 
   const changePasswordType = () => {
     if (passwordType === "password") setPasswordType("text");
@@ -57,28 +57,29 @@ export default function LoginForm() {
   const loginMutation = useMutation({
     mutationFn: loginRequest,
     onSuccess: (data: LoginResponse) => {
-      setAuth({ 
-        isAuthenticated: true, 
-        user: data.user, 
-        error: null, 
+      setAuth({
+        isAuthenticated: true,
+        user: data.user,
+        error: null,
         token: data.token,
-        tokenExpiration: data.tokenExpiration
+        tokenExpiration: data.tokenExpiration,
       });
-      setToken(data.token)
+      setToken(data.token);
 
       navigate("/dashboard");
     },
     onError: (error: AxiosError) => {
       console.error(error);
-      if(error.response?.status === 400) {
-        const errorMessage = (error.response?.data as { message: string })?.message ?? "Correo o contraseña incorrectos";
+      if (error.response?.status === 400) {
+        const errorMessage =
+          (error.response?.data as { message: string })?.message ?? "Correo o contraseña incorrectos";
         resetField("password");
         setAuth({ isAuthenticated: false, user: null, error: errorMessage, token: null, tokenExpiration: null });
 
         setTimeout(() => {
           setAuth({ isAuthenticated: false, user: null, error: null, token: null, tokenExpiration: null });
         }, TIME_TO_HIDE_ERROR);
-      };
+      }
     },
   });
 
@@ -105,9 +106,7 @@ export default function LoginForm() {
             </FormGroup>
             <FormGroup className="relative flex flex-col gap-2">
               <FormLabel>
-                <Label htmlFor="password">
-                  Contraseña
-                </Label>
+                <Label htmlFor="password">Contraseña</Label>
                 {errors.password && <FormLabelError>{errors.password.message}</FormLabelError>}
               </FormLabel>
               <Input id="password" placeholder="Password" type={passwordType} {...register("password")} />
@@ -120,12 +119,6 @@ export default function LoginForm() {
             <FormGroup>
               <Button type="submit">{isLoading ? "Cargando..." : "Login"}</Button>
             </FormGroup>
-            <p className="text-center text-sm text-gray-500">
-              Don't have an account?{" "}
-              <a href="#" className="text-blue-500 hover:underline">
-                Register
-              </a>
-            </p>
           </div>
         </form>
       </CardContent>

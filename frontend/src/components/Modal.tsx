@@ -38,7 +38,13 @@ export const ModalBody = ({ children }: { children: React.ReactNode }) => {
   return children;
 };
 
-export const ModalFooter = ({ children, className="flex justify-end" }: { children: React.ReactNode; className?: string }) => {
+export const ModalFooter = ({
+  children,
+  className = "flex justify-end",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) => {
   return <DialogFooter className={cn(className)}>{children}</DialogFooter>;
 };
 

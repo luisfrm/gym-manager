@@ -6,7 +6,7 @@ const Login: React.FC = () => {
   const { user } = useStore(state => state.auth);
 
   if (user) {
-    return <Navigate to="/dashboard" />
+    return <Navigate to="/dashboard" />;
   }
 
   return (

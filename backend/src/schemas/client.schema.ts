@@ -1,4 +1,4 @@
-0
+0;
 import { z } from "zod";
 
 export const clientSchema = z.object({

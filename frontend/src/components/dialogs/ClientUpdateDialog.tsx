@@ -41,19 +41,13 @@ const initialValues: ClientSchema = {
 
 type ClientSchema = z.infer<typeof clientSchema>;
 
-export const ClientUpdateDialog = ({
-  isOpen,
-  onOpenChange,
-  onClientUpdated = (client: Client) => {},
-  client,
-}: ClientDialogProps) => {
+export const ClientUpdateDialog = ({ isOpen, onOpenChange, onClientUpdated = () => {}, client }: ClientDialogProps) => {
   const [email, setEmail] = useState("");
 
   const {
     handleSubmit,
     register,
     formState: { errors },
-    reset,
     setValue,
   } = useForm<ClientSchema>({
     resolver: zodResolver(clientSchema),

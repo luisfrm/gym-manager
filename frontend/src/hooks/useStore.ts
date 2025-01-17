@@ -21,14 +21,25 @@ export const useStore = create<AppState>()(
   devtools(
     set => ({
       auth: AUTH_INITIAL_STATE,
-      setAuth: (auth: AuthState) => set((state)=>({...state, auth: {...auth, tokenExpiration: new Date(auth.tokenExpiration?.toString() ?? "")}})),
+      setAuth: (auth: AuthState) =>
+        set(state => ({
+          ...state,
+          auth: { ...auth, tokenExpiration: new Date(auth.tokenExpiration?.toString() ?? "") },
+        })),
       logout: () => {
-        set((state)=>({...state, auth: AUTH_INITIAL_STATE}))
-        localStorage.removeItem("token")
+        set(state => ({ ...state, auth: AUTH_INITIAL_STATE }));
+        localStorage.removeItem("token");
       },
       refreshToken: (tokenRefresh: TokenState) => {
-        set((state)=>({...state, auth: {...state.auth, token: tokenRefresh.token, tokenExpiration: new Date(tokenRefresh.tokenExpiration.toString() ?? "")}}))
-      }
+        set(state => ({
+          ...state,
+          auth: {
+            ...state.auth,
+            token: tokenRefresh.token,
+            tokenExpiration: new Date(tokenRefresh.tokenExpiration.toString() ?? ""),
+          },
+        }));
+      },
     }),
     { name: "AppStore" },
   ),

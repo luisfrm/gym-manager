@@ -14,7 +14,7 @@ interface PaymentsListProps {
   isLoading: boolean;
 }
 
-export default function PaymentsList({ payments, isLoading }: PaymentsListProps) {
+export default function PaymentsList({ payments }: PaymentsListProps) {
   const formatCurrency = (amount: number, currency: "USD" | "VES") => {
     return new Intl.NumberFormat("es-VE", { style: "currency", currency }).format(amount);
   };
@@ -76,7 +76,9 @@ export default function PaymentsList({ payments, isLoading }: PaymentsListProps)
                   : "Cliente no disponible"}
               </TableCell>
               <TableCell className="text-center">
-                {typeof payment.client !== "string" && payment.client.expiredDate && formatDate(payment.client.expiredDate)}
+                {typeof payment.client !== "string" &&
+                  payment.client.expiredDate &&
+                  formatDate(payment.client.expiredDate)}
               </TableCell>
               <TableCell className="text-center">{payment.service}</TableCell>
               <TableCell className="text-center">{formatCurrency(Number(payment.amount), payment.currency)}</TableCell>

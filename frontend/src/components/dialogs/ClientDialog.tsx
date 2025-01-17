@@ -40,11 +40,7 @@ const initialValues: ClientSchema = {
 
 type ClientSchema = z.infer<typeof clientSchema>;
 
-export const ClientDialog = ({
-  isOpen,
-  onOpenChange,
-  onClientCreated = () => {},
-}: ClientDialogProps) => {
+export const ClientDialog = ({ isOpen, onOpenChange, onClientCreated = () => {} }: ClientDialogProps) => {
   const [email, setEmail] = useState("");
 
   const {
@@ -116,12 +112,12 @@ export const ClientDialog = ({
               <Label>Email</Label>
               {!isEmailValid(email) && <FormLabelError>Email no válido</FormLabelError>}
             </FormLabel>
-            <Input 
-              type="email" 
-              placeholder="Email del cliente" 
+            <Input
+              type="email"
+              placeholder="Email del cliente"
               {...register("email", {
-                onChange: handleEmailChange
-              })} 
+                onChange: handleEmailChange,
+              })}
             />
           </FormGroup>
           <FormGroup>

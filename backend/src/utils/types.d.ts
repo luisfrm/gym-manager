@@ -1,6 +1,6 @@
-import { Request } from 'express';
-import { JwtPayload } from 'jsonwebtoken';
-import { Types } from 'mongoose';
+import { Request } from "express";
+import { JwtPayload } from "jsonwebtoken";
+import { Types } from "mongoose";
 
 interface AppRequest extends Request {
   user: {

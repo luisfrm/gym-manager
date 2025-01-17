@@ -16,22 +16,28 @@ const InitialLogsResponse: GetLogsResponse = {
     total: 0,
     pages: 0,
     next: null,
-    prev: null
+    prev: null,
   },
-  results: []
+  results: [],
 };
 
 const Dashboard = () => {
   const username = useStore(state => state.auth.user?.username ?? "");
   const [page, setPage] = useState(DEFAULT_PAGE);
 
-  const { data, isLoading, refetch: refetchLogs } = useQuery<GetLogsResponse>({
+  const {
+    data,
+    isLoading,
+    refetch: refetchLogs,
+  } = useQuery<GetLogsResponse>({
     queryKey: ["logs"],
     queryFn: () => getLogsRequest(page),
   });
 
-  const { info: { total, pages, next, prev }, results: logs = [] } = data ?? InitialLogsResponse;
-
+  const {
+    info: { total, pages, next, prev },
+    results: logs = [],
+  } = data ?? InitialLogsResponse;
 
   useEffect(() => {
     refetchLogs();
@@ -44,7 +50,6 @@ const Dashboard = () => {
   const handlePagePrev = () => {
     setPage(page - 1);
   };
-
 
   return (
     <Template>
@@ -65,7 +70,7 @@ const Dashboard = () => {
         />
         <SquareWidget
           className="bg-lime-500 flex-1"
-          title={'0'}
+          title={"0"}
           subtitle="Nuevos clientes"
           link="/payments"
           icon={<ChartNoAxesCombined className="text-white w-8 h-8" />}
@@ -74,7 +79,7 @@ const Dashboard = () => {
         />
         <SquareWidget
           className="bg-white flex-1"
-          title={'0'}
+          title={"0"}
           subtitle="Clientes vencidos la siguiente semana"
           link="/clients"
           icon={<Trash2 className="text-slate-900 w-8 h-8" />}

@@ -1,16 +1,16 @@
-'use client'
+"use client";
 
-import { AlertCircle, CircleAlert } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { CircleAlert } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { Button } from "@/components/ui/button"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 
 interface TokenExpiryPopupProps {
-  onRenew: () => void
-  onDismiss: () => void
-  timeLeft: number // Time in seconds until token expires
-  isVisible: boolean
+  onRenew: () => void;
+  onDismiss: () => void;
+  timeLeft: number; // Time in seconds until token expires
+  isVisible: boolean;
 }
 
 export default function TokenExpiryPopup({ onRenew, onDismiss, timeLeft, isVisible }: TokenExpiryPopupProps) {
@@ -44,6 +44,5 @@ export default function TokenExpiryPopup({ onRenew, onDismiss, timeLeft, isVisib
         </motion.div>
       )}
     </AnimatePresence>
-  )
+  );
 }
-

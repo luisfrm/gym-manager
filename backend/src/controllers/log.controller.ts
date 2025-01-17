@@ -5,13 +5,12 @@ class LogController {
   static getAll = async (req: AppRequest, res: any) => {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 5;
-    const sortField = req.query.sortField as string || 'updatedAt';
-    const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
-    const search = req.query.search as string || '';
+    const sortField = (req.query.sortField as string) || "updatedAt";
+    const sortOrder = req.query.sortOrder === "asc" ? 1 : -1;
+    const search = (req.query.search as string) || "";
 
     const startIndex = (page - 1) * limit;
-    const logs = await Log
-      .find({ message: { $regex: search, $options: 'i' } })
+    const logs = await Log.find({ message: { $regex: search, $options: "i" } })
       .populate("user", "name email")
       .skip(startIndex)
       .limit(limit)
@@ -23,8 +22,11 @@ class LogController {
       info: {
         total,
         pages: totalPages,
-        next: page < totalPages ? `${req.protocol}://${req.get('host')}${req.baseUrl}?page=${page + 1}&limit=${limit}` : null,
-        prev: page > 1 ? `${req.protocol}://${req.get('host')}${req.baseUrl}?page=${page - 1}&limit=${limit}` : null,
+        next:
+          page < totalPages
+            ? `${req.protocol}://${req.get("host")}${req.baseUrl}?page=${page + 1}&limit=${limit}`
+            : null,
+        prev: page > 1 ? `${req.protocol}://${req.get("host")}${req.baseUrl}?page=${page - 1}&limit=${limit}` : null,
       },
       results: logs,
     };
@@ -35,12 +37,11 @@ class LogController {
     const user = req.user;
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 5;
-    const sortField = req.query.sortField as string || 'updatedAt';
-    const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
+    const sortField = (req.query.sortField as string) || "updatedAt";
+    const sortOrder = req.query.sortOrder === "asc" ? 1 : -1;
 
     const startIndex = (page - 1) * limit;
-    const logs = await Log
-      .find({ user: user.userId })
+    const logs = await Log.find({ user: user.userId })
       .populate("user", "name email")
       .skip(startIndex)
       .limit(limit)
@@ -52,8 +53,11 @@ class LogController {
       info: {
         total,
         pages: totalPages,
-        next: page < totalPages ? `${req.protocol}://${req.get('host')}${req.baseUrl}?page=${page + 1}&limit=${limit}` : null,
-        prev: page > 1 ? `${req.protocol}://${req.get('host')}${req.baseUrl}?page=${page - 1}&limit=${limit}` : null,
+        next:
+          page < totalPages
+            ? `${req.protocol}://${req.get("host")}${req.baseUrl}?page=${page + 1}&limit=${limit}`
+            : null,
+        prev: page > 1 ? `${req.protocol}://${req.get("host")}${req.baseUrl}?page=${page - 1}&limit=${limit}` : null,
       },
       results: logs,
     };
