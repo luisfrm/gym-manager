@@ -17,5 +17,7 @@ export const clientSchema = z.object({
   email: z.string().optional(),
   phone: z.string(),
   address: z.string(),
-  expiredDate: z.string().default(""),
+  expiredDate: z.string({
+    invalid_type_error: "Expired date must be a string.",
+  }),
 });
