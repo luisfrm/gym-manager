@@ -13,6 +13,11 @@ export interface AuthState {
   tokenExpiration: Date | null;
 }
 
+export interface TokenState {
+  token: string;
+  tokenExpiration: Date;
+}
+
 export interface LoginResponse {
   token: string;
   user: User;
@@ -105,14 +110,30 @@ export interface GetLogsResponse {
 export interface Payment {
   _id: string;
   client: Client | string; // Puede ser el objeto poblado o solo el ID
-  amount: number;
+  amount: string;
   date: string;
   service: string;
   description?: string;
   paymentMethod: string;
-  paymentReference: string;
+  paymentReference?: string;
   paymentStatus: "pending" | "paid" | "failed";
   currency: "USD" | "VES";
   createdAt?: Date;
   updatedAt?: Date;
+}
+
+export interface CreatePaymentRequest {
+  client: string;
+  amount: string;
+  date: string;
+  service: string;
+  paymentMethod: string;
+  paymentReference?: string;
+  paymentStatus: "pending" | "paid" | "failed";
+  currency: "USD" | "VES";
+}
+
+export interface RefreshTokenResponse {
+  token: string;
+  tokenExpiration: Date;
 }

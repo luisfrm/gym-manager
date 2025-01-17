@@ -3,11 +3,14 @@ import {
   Client,
   ClientStatisticsResponse,
   CreateClientRequest,
+  CreatePaymentRequest,
   DeleteClientRequest,
   GetClientsResponse,
   GetLogsResponse,
   LoginRequest,
   LoginResponse,
+  Payment,
+  RefreshTokenResponse,
   UpdateClientRequest,
   ValidateTokenResponse,
 } from "@/lib/types";
@@ -73,6 +76,16 @@ export const getClientStatisticsRequest = async (): Promise<ClientStatisticsResp
 
 export const getLogsRequest = async (page = 1, limit = 5, search = "", sortField = "updatedAt", sortOrder = "desc"): Promise<GetLogsResponse> => {
   const res = await api.get(`/logs?page=${page}&limit=${limit}&search=${search}&sortField=${sortField}&sortOrder=${sortOrder}`);
+  return res.data;
+};
+
+export const createPaymentRequest = async (payment: CreatePaymentRequest): Promise<Payment> => {
+  const res = await api.post("/payments", { ...payment, amount: Number(payment.amount) });
+  return res.data;
+};
+
+export const refreshTokenRequest = async (): Promise<RefreshTokenResponse> => {
+  const res = await api.post("/auth/refresh");
   return res.data;
 };
 
