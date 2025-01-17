@@ -6,4 +6,4 @@ export const MONGODB_URI = process.env.MONGODB_URI;
 
 export const TOKEN_SECRET_JWT = process.env.TOKEN_SECRET_JWT;
 
-export const JWT_EXPIRATION_TIME: number = parseInt(process.env.JWT_EXPIRATION_TIME || '3600');
+export const JWT_EXPIRATION_TIME: number = parseInt(process.env.JWT_EXPIRATION_TIME || '600');
