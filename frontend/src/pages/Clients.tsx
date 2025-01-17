@@ -97,11 +97,11 @@ const Clients = () => {
     <Template>
       <header>
         <h2 className="text-2xl font-medium">
-          Hola, <span className="capitalize">{username}</span>!
+          Hola, <span className="capitalize">{username}</span>! Bienvenido al panel de clientes.
         </h2>
-        <p className="text-neutral-900 text-sm">Aquí podrás ver los datos de los clientes.</p>
+        <p className="text-neutral-900 text-sm">Aquí podrás ver información de los clientes.</p>
       </header>
-      <section className="flex flex-col lg:flex-row gap-4 w-full max-w-7xl">
+      <section className="flex flex-col lg:flex-row gap-4 w-full">
         <SquareWidget
           className="bg-slate-900 flex-1"
           title={totalClients.toString() ?? "0"}
@@ -129,7 +129,7 @@ const Clients = () => {
           iconBgColor="bg-slate-300"
         />
       </section>
-      <section id="clients-filter-bar" className="flex flex-col-reverse lg:flex-row justify-between items-center gap-4 w-full max-w-7xl">
+      <section id="clients-filter-bar" className="flex flex-col-reverse lg:flex-row justify-between items-center gap-4 w-full">
         <Button variant="default" className="w-full lg:w-auto" onClick={handleOpenNewClientModal}>
           Agregar nuevo
         </Button>
@@ -166,7 +166,7 @@ const Clients = () => {
           </SelectContent>
         </Select>
       </section>
-      <section className="data-table w-full max-w-7xl">
+      <section className="data-table w-full">
         <ClientData
           isLoading={isLoading}
           clients={clients ?? []}

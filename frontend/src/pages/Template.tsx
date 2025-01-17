@@ -3,7 +3,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
 
-const Template = ({ children, className }: { children: React.ReactNode, className?: string }) => {
+const Template = ({ children, className="max-w-7xl" }: { children: React.ReactNode, className?: string }) => {
   return (
     <SidebarProvider>
       <Navigation />

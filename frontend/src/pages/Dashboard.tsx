@@ -52,7 +52,7 @@ const Dashboard = () => {
         <h2 className="text-2xl font-medium">
           Hola, <span className="capitalize">{username}</span>!
         </h2>
-        <p className="text-neutral-900 text-sm">Aquí podrás ver los datos de los clientes.</p>
+        <p className="text-neutral-900 text-sm">Bienvenido a tu dashboard.</p>
       </header>
       <section className="flex flex-col lg:flex-row gap-4 w-full max-w-7xl">
         <SquareWidget
@@ -82,43 +82,6 @@ const Dashboard = () => {
           iconBgColor="bg-slate-300"
         />
       </section>
-      {/* <section className="flex flex-col-reverse lg:flex-row justify-between items-center gap-4 w-full max-w-7xl">
-        <Button variant="default" className="w-full lg:w-auto" onClick={handleOpenNewClientModal}>
-          Agregar nuevo
-        </Button>
-        <Input placeholder="Buscar cliente" className="" onChange={handleSearchClient} />
-        <Select onValueChange={handleChangeSortField}>
-          <SelectTrigger className="w-full lg:w-[250px]">
-            <SelectValue defaultValue="updatedAt" placeholder="Ordenar por" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="updatedAt">Última actualización</SelectItem>
-            <SelectItem value="firstname">Nombre</SelectItem>
-            <SelectItem value="lastname">Apellido</SelectItem>
-            <SelectItem value="email">Email</SelectItem>
-            <SelectItem value="expiredDate">Fecha de vencimiento</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select onValueChange={handleChangeSortOrder}>
-          <SelectTrigger className="w-[250px]">
-            <SelectValue defaultValue="asc" placeholder="Ordenar de forma" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="asc">Ascendente</SelectItem>
-            <SelectItem value="desc">Descendente</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select onValueChange={handleChangeLimit}>
-          <SelectTrigger className="w-full lg:w-[250px]">
-            <SelectValue defaultValue="10" placeholder="Limite de clientes" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="10">10</SelectItem>
-            <SelectItem value="20">20</SelectItem>
-            <SelectItem value="30">30</SelectItem>
-          </SelectContent>
-        </Select>
-      </section> */}
       <section className="data-table w-full max-w-7xl flex flex-col gap-4">
         <ActivityLogs isLoading={isLoading} logs={logs} />
         <Pagination
