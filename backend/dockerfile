@@ -1,13 +1,20 @@
+# Usa la imagen oficial de Node.js como base
 FROM node:22-alpine
 
+# Crea el directorio de la aplicación en el contenedor
 WORKDIR /app
 
-COPY package*.json ./
+# Copia el archivo package.json y el archivo bun.lockb al contenedor
+COPY package.json bun.lockb ./
 
+# Instala las dependencias
 RUN npm install
 
+# Copia el resto de la aplicación al contenedor
 COPY . .
 
+# Expone el puerto en el que tu aplicación escuchará
 EXPOSE 3000
 
-CMD ["npm", "run", "start"]
+# Comando para ejecutar la aplicación
+CMD ["npm", "run", "dev"]

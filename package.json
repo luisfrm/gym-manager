@@ -2,7 +2,6 @@
   "name": "gym-manager",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "install-all": "cd frontend && bun install && cd ../backend && bun install",
