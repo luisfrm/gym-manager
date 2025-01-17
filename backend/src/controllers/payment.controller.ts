@@ -4,11 +4,19 @@ import Payment from "../models/payment.model";
 class PaymentController {
   static create = async (req: Request, res: any) => {
     try {
-      const { clientId, amount, date, service, description, paymentMethod, paymentReference, paymentStatus, currency, expiredAt } =
+      const { client, amount, date, service, description, paymentMethod, paymentReference, paymentStatus, currency } =
         req.body;
 
+      if (!!paymentReference) {
+        const existPaymentReference = await Payment.findOne({ paymentReference });
+
+        if (existPaymentReference) {
+          return res.status(400).json({ message: "Payment reference already exists" });
+        }
+      }
+
       const payment = new Payment({
-        clientId,
+        client,
         amount,
         date,
         service,
@@ -17,7 +25,6 @@ class PaymentController {
         paymentReference,
         paymentStatus,
         currency,
-        expiredAt,
       });
 
       await payment.save();

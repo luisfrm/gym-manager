@@ -28,8 +28,7 @@ const paymentSchema = new mongoose.Schema({
   },
   paymentReference: {
     type: String,
-    required: [true, "Payment reference is required"],
-    unique: true,
+    default: "",
   },
   paymentStatus: {
     type: String,

@@ -1,4 +1,5 @@
 import { Request } from 'express';
+import { JwtPayload } from 'jsonwebtoken';
 import { Types } from 'mongoose';
 
 interface AppRequest extends Request {
@@ -21,4 +22,12 @@ export interface Client {
   expiredDate: string | Date;
   createdAt?: Date;
   updatedAt?: Date;
+}
+
+export interface TokenPayload extends JwtPayload {
+  userId: string;
+  role: string;
+  email: string;
+  username: string;
+  tokenExpiration: Date;
 }

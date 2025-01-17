@@ -1,9 +1,9 @@
 import { z } from "zod";
 
 export const paymentSchema = z.object({
-  clientId: z.string({
-    required_error: "Client ID is required.",
-    invalid_type_error: "Client ID must be a string.",
+  client: z.string({
+    required_error: "Client is required.",
+    invalid_type_error: "Client must be a string.",
   }),
   amount: z.number({
     required_error: "Amount is required.",
@@ -27,7 +27,6 @@ export const paymentSchema = z.object({
     invalid_type_error: "Payment method must be a string.",
   }),
   paymentReference: z.string({
-    required_error: "Payment reference is required.",
     invalid_type_error: "Payment reference must be a string.",
   }),
   paymentStatus: z.enum(["pending", "paid", "failed"]).default("pending"),
