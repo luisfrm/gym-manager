@@ -8,4 +8,10 @@ const paymentRouter = Router();
 
 paymentRouter.post("/", authMiddleware(["admin", "employee"]), validateSchema(paymentSchema), PaymentController.create);
 
+paymentRouter.get("/", authMiddleware(["admin", "employee"]), PaymentController.getPayments);
+
+paymentRouter.get("/by-client/:clientCedula", authMiddleware(["admin", "employee"]), PaymentController.getPaymentByClient);
+
+paymentRouter.delete("/:paymentId", authMiddleware(["admin"]), PaymentController.deletePayment);
+
 export default paymentRouter;

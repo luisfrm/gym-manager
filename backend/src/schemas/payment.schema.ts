@@ -9,6 +9,10 @@ export const paymentSchema = z.object({
     required_error: "Amount is required.",
     invalid_type_error: "Amount must be a number.",
   }),
+  clientCedula: z.string({
+    required_error: "Client cedula is required.",
+    invalid_type_error: "Client cedula must be a string.",
+  }),
   date: z.string({
     required_error: "Date is required.",
     invalid_type_error: "Date must be a string.",
@@ -29,8 +33,11 @@ export const paymentSchema = z.object({
   paymentReference: z.string({
     invalid_type_error: "Payment reference must be a string.",
   }),
+  expiredDate: z.string({
+    invalid_type_error: "Expired date must be a string.",
+  }),
   paymentStatus: z.enum(["pending", "paid", "failed"]).default("pending"),
-  currency: z.enum(["USD", "Bs"], {
+  currency: z.enum(["USD", "VES"], {
     required_error: "Currency is required.",
     invalid_type_error: "Currency must be a string.",
   }),

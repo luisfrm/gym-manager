@@ -3,7 +3,11 @@ import mongoose from "mongoose";
 const paymentSchema = new mongoose.Schema({
   client: {
     type: mongoose.Schema.Types.ObjectId,
+    required: true,
     ref: "Client",
+  },
+  clientCedula: {
+    type: String,
     required: true,
   },
   amount: {
@@ -37,7 +41,7 @@ const paymentSchema = new mongoose.Schema({
   },
   currency: {
     type: String,
-    enum: ["USD", "Bs"],
+    enum: ["USD", "VES"],
     required: [true, "Currency is required"],
   },
 },
