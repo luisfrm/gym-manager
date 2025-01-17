@@ -23,6 +23,7 @@ interface PaymentDialogProps {
 
 const paymentSchema = z.object({
   client: z.string().min(1, { message: "El cliente es requerido" }),
+  clientCedula: z.string().min(1, { message: "La cédula del cliente es requerida" }),
   amount: z.string().min(1, { message: "El monto es requerido" }),
   date: z.string().min(1, { message: "La fecha es requerida" }),
   service: z.string().min(1, { message: "El servicio es requerido" }),
@@ -31,16 +32,19 @@ const paymentSchema = z.object({
   paymentReference: z.string(),
   paymentStatus: z.enum(["pending", "paid", "failed"]),
   currency: z.enum(["USD", "VES"]),
+  expiredDate: z.string().min(1, { message: "La fecha de expiración es requerida" }),
 });
 
 const initialValues: PaymentSchema = {
   client: "",
+  clientCedula: "",
   amount: "0",
   date: "",
   service: "",
   paymentMethod: "",
   paymentReference: "",
   paymentStatus: "pending",
+  expiredDate: "",
   currency: "USD",
 };
 
@@ -76,6 +80,7 @@ export const PaymentDialog = ({ isOpen, onOpenChange, onPaymentCreated = () => {
   useEffect(() => {
     if (client) {
       setValue("client", client._id);
+      setValue("clientCedula", client.cedula);
     }
   }, [client, setValue]);
 
@@ -86,9 +91,10 @@ export const PaymentDialog = ({ isOpen, onOpenChange, onPaymentCreated = () => {
   }, [isErrorClient, clientError]);
 
   const handleCreatePayment = (data: PaymentSchema) => {
-    const { client: clientId, amount, date, service, paymentMethod, paymentReference } = data;
+    const { client: clientId, clientCedula, amount, date, service, paymentMethod, paymentReference, expiredDate } = data;
     createPaymentMutation.mutate({
       client: clientId,
+      clientCedula,
       amount,
       date,
       service,
@@ -96,6 +102,7 @@ export const PaymentDialog = ({ isOpen, onOpenChange, onPaymentCreated = () => {
       paymentReference,
       paymentStatus,
       currency: paymentCurrency,
+      expiredDate
     });
   };
 
@@ -254,9 +261,22 @@ export const PaymentDialog = ({ isOpen, onOpenChange, onPaymentCreated = () => {
           </FormGroup>
           <FormGroup>
             <FormLabel>
+              <Label>Fecha de vencimiento*</Label>
+              {paymentErrors.expiredDate && <FormLabelError>{paymentErrors.expiredDate.message}</FormLabelError>}
+            </FormLabel>
+            <Input type="date" placeholder="Fecha de vencimiento" {...register("expiredDate")} />
+          </FormGroup>
+          <FormGroup>
+            <FormLabel>
               <Label>Id del cliente</Label>
             </FormLabel>
             <Input type="text" placeholder="Id del cliente" disabled {...register("client")} />
+          </FormGroup>
+          <FormGroup>
+            <FormLabel>
+              <Label>Cedula del cliente</Label>
+            </FormLabel>
+            <Input type="text" placeholder="Cedula del cliente" disabled {...register("clientCedula")} />
           </FormGroup>
           <FormGroup className="col-span-2 flex justify-end">
             <Button type="submit">Registrar pago</Button>

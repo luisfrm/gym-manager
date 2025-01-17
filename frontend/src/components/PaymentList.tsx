@@ -1,45 +1,20 @@
 "use client";
 
-import { useState } from "react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { ChevronDown, ChevronUp, Ellipsis } from "lucide-react";
-
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
 import { Payment } from "@/lib/types";
+import formatNumber from "@/lib/formatNumber";
+import { formatDate } from "@/lib/utils";
+import { Link } from "react-router-dom";
 
 interface PaymentsListProps {
   payments: Payment[];
+  isLoading: boolean;
 }
 
-export default function PaymentsList({ payments: initialPayments }: PaymentsListProps) {
-  const [payments, setPayments] = useState(initialPayments);
-  const [sortConfig, setSortConfig] = useState<{ key: keyof Payment; direction: "asc" | "desc" } | null>(null);
-
-  const sortPayments = (key: keyof Payment) => {
-    let direction: "asc" | "desc" = "asc";
-    if (sortConfig && sortConfig.key === key && sortConfig.direction === "asc") {
-      direction = "desc";
-    }
-    const sortedPayments = [...payments].sort((a, b) => {
-      if (a[key] && b[key]) {
-        if (a[key] < b[key]) return direction === "asc" ? -1 : 1;
-        if (a[key] > b[key]) return direction === "asc" ? 1 : -1;
-      }
-      return 0;
-    });
-    setPayments(sortedPayments);
-    setSortConfig({ key, direction });
-  };
-
+export default function PaymentsList({ payments, isLoading }: PaymentsListProps) {
   const formatCurrency = (amount: number, currency: "USD" | "VES") => {
     return new Intl.NumberFormat("es-VE", { style: "currency", currency }).format(amount);
   };
@@ -74,33 +49,16 @@ export default function PaymentsList({ payments: initialPayments }: PaymentsList
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[180px]">
-              <Button variant="ghost" onClick={() => sortPayments("date")}>
-                Fecha
-                {sortConfig?.key === "date" &&
-                  (sortConfig.direction === "asc" ? (
-                    <ChevronUp className="ml-2 h-4 w-4" />
-                  ) : (
-                    <ChevronDown className="ml-2 h-4 w-4" />
-                  ))}
-              </Button>
-            </TableHead>
-            <TableHead>Cliente</TableHead>
-            <TableHead>Servicio</TableHead>
-            <TableHead className="text-right">
-              <Button variant="ghost" onClick={() => sortPayments("amount")}>
-                Monto
-                {sortConfig?.key === "amount" &&
-                  (sortConfig.direction === "asc" ? (
-                    <ChevronUp className="ml-2 h-4 w-4" />
-                  ) : (
-                    <ChevronDown className="ml-2 h-4 w-4" />
-                  ))}
-              </Button>
-            </TableHead>
-            <TableHead>Método de Pago</TableHead>
-            <TableHead>Estado</TableHead>
-            <TableHead className="text-right">Acciones</TableHead>
+            <TableHead className="w-[180px]">Fecha</TableHead>
+            <TableHead className="text-center">Cedula</TableHead>
+            <TableHead className="text-center">Cliente</TableHead>
+            <TableHead className="text-center">Expira</TableHead>
+            <TableHead className="text-center">Servicio</TableHead>
+            <TableHead className="text-center">Monto</TableHead>
+            <TableHead className="text-center">Método de Pago</TableHead>
+            <TableHead className="text-center">Referencia</TableHead>
+            <TableHead className="text-right">Estado</TableHead>
+            {/* <TableHead className="text-right">Acciones</TableHead> */}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -109,16 +67,23 @@ export default function PaymentsList({ payments: initialPayments }: PaymentsList
               <TableCell className="font-medium">
                 {format(new Date(payment.date), "d 'de' MMMM, yyyy", { locale: es })}
               </TableCell>
-              <TableCell>
+              <TableCell className="text-center font-bold">
+                <Link to={`/clients/${payment.clientCedula}`}>{formatNumber(payment.clientCedula)}</Link>
+              </TableCell>
+              <TableCell className="text-center">
                 {typeof payment.client !== "string"
                   ? `${payment.client.firstname} ${payment.client.lastname}`
                   : "Cliente no disponible"}
               </TableCell>
-              <TableCell>{payment.service}</TableCell>
-              <TableCell className="text-right">{formatCurrency(Number(payment.amount), payment.currency)}</TableCell>
-              <TableCell>{payment.paymentMethod}</TableCell>
-              <TableCell>{getStatusBadge(payment.paymentStatus)}</TableCell>
-              <TableCell className="text-right">
+              <TableCell className="text-center">
+                {typeof payment.client !== "string" && payment.client.expiredDate && formatDate(payment.client.expiredDate)}
+              </TableCell>
+              <TableCell className="text-center">{payment.service}</TableCell>
+              <TableCell className="text-center">{formatCurrency(Number(payment.amount), payment.currency)}</TableCell>
+              <TableCell className="text-center">{payment.paymentMethod}</TableCell>
+              <TableCell className="text-center">{payment.paymentReference}</TableCell>
+              <TableCell className="text-right">{getStatusBadge(payment.paymentStatus)}</TableCell>
+              {/* <TableCell className="text-right">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" className="h-8 w-8 p-0">
@@ -132,7 +97,7 @@ export default function PaymentsList({ payments: initialPayments }: PaymentsList
                     <DropdownMenuItem className="text-red-600">Eliminar pago</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-              </TableCell>
+              </TableCell> */}
             </TableRow>
           ))}
         </TableBody>

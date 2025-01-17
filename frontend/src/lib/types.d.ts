@@ -109,7 +109,8 @@ export interface GetLogsResponse {
 
 export interface Payment {
   _id: string;
-  client: Client | string; // Puede ser el objeto poblado o solo el ID
+  client: Client | string; // Puede ser el objeto poblado o solo la cedula
+  clientCedula: string;
   amount: string;
   date: string;
   service: string;
@@ -124,13 +125,25 @@ export interface Payment {
 
 export interface CreatePaymentRequest {
   client: string;
+  clientCedula: string;
   amount: string;
   date: string;
   service: string;
   paymentMethod: string;
   paymentReference?: string;
+  expiredDate: string;
   paymentStatus: "pending" | "paid" | "failed";
   currency: "USD" | "VES";
+}
+
+export interface GetPaymentsResponse {
+  info: {
+    total: number;
+    pages: number;
+    next: string | null;
+    prev: string | null;
+  };
+  results: Payment[];
 }
 
 export interface RefreshTokenResponse {
