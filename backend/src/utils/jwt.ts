@@ -1,4 +1,4 @@
-import jwt, { JwtPayload } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import { JWT_EXPIRATION_TIME, TOKEN_SECRET_JWT } from "../config";
 
 export const generateJwt = (payload: object) => {
@@ -19,6 +19,9 @@ export const verifyJwt = (token: string) => {
     const decoded = jwt.verify(token, TOKEN_SECRET_JWT);
     return decoded;
   } catch (error) {
+    if (error.name === "TokenExpiredError") {
+      throw new Error("Token expired");
+    }
     throw new Error("Error verifying JWT");
   }
 };
