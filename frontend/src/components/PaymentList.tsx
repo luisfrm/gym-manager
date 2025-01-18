@@ -8,13 +8,14 @@ import { Payment } from "@/lib/types";
 import formatNumber from "@/lib/formatNumber";
 import { formatDate } from "@/lib/utils";
 import { Link } from "react-router-dom";
+import { Skeleton } from "./ui/skeleton";
 
 interface PaymentsListProps {
   payments: Payment[];
   isLoading: boolean;
 }
 
-export default function PaymentsList({ payments }: PaymentsListProps) {
+export default function PaymentsList({ payments, isLoading }: PaymentsListProps) {
   const formatCurrency = (amount: number, currency: "USD" | "VES") => {
     return new Intl.NumberFormat("es-VE", { style: "currency", currency }).format(amount);
   };
@@ -62,30 +63,35 @@ export default function PaymentsList({ payments }: PaymentsListProps) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {payments.map(payment => (
-            <TableRow key={payment._id}>
-              <TableCell className="font-medium">
-                {format(new Date(payment.date), "d 'de' MMMM, yyyy", { locale: es })}
-              </TableCell>
-              <TableCell className="text-center font-bold">
-                <Link to={`/clients/${payment.clientCedula}`}>{formatNumber(payment.clientCedula)}</Link>
-              </TableCell>
-              <TableCell className="text-center">
-                {typeof payment.client !== "string"
-                  ? `${payment.client.firstname} ${payment.client.lastname}`
-                  : "Cliente no disponible"}
-              </TableCell>
-              <TableCell className="text-center">
-                {typeof payment.client !== "string" &&
-                  payment.client.expiredDate &&
-                  formatDate(payment.client.expiredDate)}
-              </TableCell>
-              <TableCell className="text-center">{payment.service}</TableCell>
-              <TableCell className="text-center">{formatCurrency(Number(payment.amount), payment.currency)}</TableCell>
-              <TableCell className="text-center">{payment.paymentMethod}</TableCell>
-              <TableCell className="text-center">{payment.paymentReference}</TableCell>
-              <TableCell className="text-right">{getStatusBadge(payment.paymentStatus)}</TableCell>
-              {/* <TableCell className="text-right">
+          {isLoading ? (
+            <PaymentsWaitingBody />
+          ) : (
+            payments.map(payment => (
+              <TableRow key={payment._id}>
+                <TableCell className="font-medium">
+                  {format(new Date(payment.date), "d 'de' MMMM, yyyy", { locale: es })}
+                </TableCell>
+                <TableCell className="text-center font-bold">
+                  <Link to={`/clients/${payment.clientCedula}`}>{formatNumber(payment.clientCedula)}</Link>
+                </TableCell>
+                <TableCell className="text-center">
+                  {typeof payment.client !== "string"
+                    ? `${payment.client.firstname} ${payment.client.lastname}`
+                    : "Cliente no disponible"}
+                </TableCell>
+                <TableCell className="text-center">
+                  {typeof payment.client !== "string" &&
+                    payment.client.expiredDate &&
+                    formatDate(payment.client.expiredDate)}
+                </TableCell>
+                <TableCell className="text-center">{payment.service}</TableCell>
+                <TableCell className="text-center">
+                  {formatCurrency(Number(payment.amount), payment.currency)}
+                </TableCell>
+                <TableCell className="text-center">{payment.paymentMethod}</TableCell>
+                <TableCell className="text-center">{payment.paymentReference}</TableCell>
+                <TableCell className="text-right">{getStatusBadge(payment.paymentStatus)}</TableCell>
+                {/* <TableCell className="text-right">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" className="h-8 w-8 p-0">
@@ -100,10 +106,51 @@ export default function PaymentsList({ payments }: PaymentsListProps) {
                   </DropdownMenuContent>
                 </DropdownMenu>
               </TableCell> */}
-            </TableRow>
-          ))}
+              </TableRow>
+            ))
+          )}
         </TableBody>
       </Table>
     </div>
   );
 }
+
+const PaymentsWaitingBody = ({ limit = 10 }: { limit?: number }) => {
+  return (
+    <>
+      {Array(limit)
+        .fill(0)
+        .map((_, i) => (
+          <TableRow key={i}>
+            <TableCell className="font-bold py-4">
+              <Skeleton className="h-[20px] w-[10px]" />
+            </TableCell>
+            <TableCell className="font-bold py-4">
+              <Skeleton className="h-[20px] w-[80px]" />
+            </TableCell>
+            <TableCell className="max-w-[200px] text-start">
+              <Skeleton className="h-[20px] w-[60px]" />
+            </TableCell>
+            <TableCell className="max-w-[200px] text-start">
+              <Skeleton className="h-[20px] w-[80px]" />
+            </TableCell>
+            <TableCell className="max-w-[200px] text-start">
+              <Skeleton className="h-[20px] w-[150px]" />
+            </TableCell>
+            <TableCell className="max-w-[200px] text-start">
+              <Skeleton className="h-[20px] w-[100px]" />
+            </TableCell>
+            <TableCell className="text-right">
+              <Skeleton className="h-[20px] w-[150px]" />
+            </TableCell>
+            <TableCell className="text-right">
+              <Skeleton className="h-[20px] w-[80px]" />
+            </TableCell>
+            <TableCell className="text-right">
+              <Skeleton className="h-[20px] w-[50px]" />
+            </TableCell>
+          </TableRow>
+        ))}
+    </>
+  );
+};
