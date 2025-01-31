@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gym-manager-frontend
+  namespace: gym-manager
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gym-manager-frontend
+  template:
+    metadata:
+      labels:
+        app: gym-manager-frontend
+    spec:
+      containers:
+        - name: gym-manager-frontend
+          image: luisfrm/gym-manager-frontend:latest
+          ports:
+            - containerPort: 80
+
