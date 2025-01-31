@@ -47,7 +47,7 @@ class AuthController {
         return res.status(400).json({ message: "Email o contraseña inválidos." });
       }
 
-      const isPasswordCorrect = bcrypt.compare(password, user.password);
+      const isPasswordCorrect = await bcrypt.compare(password, user.password);
 
       if (!isPasswordCorrect) {
         return res.status(400).json({ message: "Email o contraseña inválidos." });
