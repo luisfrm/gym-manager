@@ -5,6 +5,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "install-all": "cd frontend && bun install && cd ../backend && bun install",
+    "install-backend": "cd backend && bun install",
+    "install-frontend": "cd frontend && bun install",
     "start-all": "concurrently 'cd frontend && bun run dev' 'cd backend && bun run dev'",
     "start-frontend": "cd frontend && bun run dev",
     "start-backend": "cd backend && bun run dev",

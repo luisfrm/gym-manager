@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import morgan from "morgan";
-import { PORT } from "./config";
+// import { PORT } from "./config";
 import authRouter from "./routes/auth.routes";
 import { connectDB } from "./models/db";
 import clientRouter from "./routes/client.routes";
@@ -9,6 +9,8 @@ import paymentRouter from "./routes/payment.routes";
 import logRouter from "./routes/log.routes";
 import statisticsRouter from "./routes/statistics.routes";
 import createInitialAdmin from "./utils/createInitialAdmin";
+
+const PORT = 3000;
 
 const createApp = () => {
   const app = express();
