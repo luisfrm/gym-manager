@@ -2,7 +2,6 @@ import { Modal, ModalBody, ModalHeader } from "@/components/Modal";
 import { FormGroup, FormLabel, FormLabelError } from "@/components/FormGroup";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import { Client } from "@/lib/types";
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { createClientRequest } from "@/api/api";
@@ -11,6 +10,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Label } from "../ui/label";
 import { isEmailValid } from "@/lib/utils";
+import { toast } from "sonner";
+import { CircleCheckBig, CircleX, Loader2 } from "lucide-react";
+import { AxiosError } from "axios";
 
 interface ClientDialogProps {
   isOpen: boolean;
@@ -60,18 +62,31 @@ export const ClientDialog = ({ isOpen, onOpenChange, onClientCreated = () => {} 
 
   const createClientMutation = useMutation({
     mutationFn: createClientRequest,
-    onSuccess: (data: Client) => {
-      console.log(data);
+    onSuccess: () => {
       onClientCreated();
       reset();
       onOpenChange();
+
+      toast("Cliente creado.", {
+        description: "El cliente ha sido creado exitosamente.",
+        duration: 5000,
+        icon: <CircleCheckBig className="text-lime-500" />,
+      });
+    },
+    onError: (error: AxiosError) => {
+      console.error(error);
+
+      toast("Error al crear cliente", {
+        description: "Por favor, intenta de nuevo o contacta con el administrador.",
+        duration: 5000,
+        icon: <CircleX className="text-red-600" />,
+      });
     },
   });
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const email = e.target.value;
     setEmail(email);
-    console.log("email", isEmailValid(email));
   };
 
   return (
@@ -135,7 +150,9 @@ export const ClientDialog = ({ isOpen, onOpenChange, onClientCreated = () => {} 
             <Input placeholder="Direccion del cliente" {...register("address")} />
           </FormGroup>
           <FormGroup className="col-span-2 flex justify-end">
-            <Button>Guardar</Button>
+            <Button disabled={createClientMutation.isPending} type="submit">
+              {createClientMutation.isPending ? <Loader2 className="animate-spin" /> : "Guardar"}
+            </Button>
           </FormGroup>
         </form>
       </ModalBody>

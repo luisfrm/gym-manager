@@ -10,7 +10,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Label } from "../ui/label";
-import { CheckCircle, Loader2, OctagonX } from "lucide-react";
+import { CheckCircle, CircleX, Loader2, OctagonX } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
@@ -86,9 +86,13 @@ export const PaymentDialog = ({ isOpen, onOpenChange, onPaymentCreated = () => {
 
   useEffect(() => {
     if (isErrorClient) {
-      toast.error("Error al buscar el cliente");
+      toast("Error al buscar el cliente", {
+        description: "Por favor, intenta de nuevo o contacta con el administrador.",
+        duration: 5000,
+        icon: <CircleX className="text-red-600" />,
+      });
     }
-  }, [isErrorClient, clientError]);
+  }, [isErrorClient]);
 
   const handleCreatePayment = (data: PaymentSchema) => {
     const {
@@ -121,12 +125,21 @@ export const PaymentDialog = ({ isOpen, onOpenChange, onPaymentCreated = () => {
       onPaymentCreated();
       resetPaymentForm();
       onOpenChange();
-      toast.success("Pago registrado correctamente");
+      toast("Pago registrado.", {
+        description: "El pago se ha registrado correctamente.",
+        duration: 5000,
+        icon: <CheckCircle className="text-lime-500" />,
+      });
       setCedula("");
     },
-    onError: (error: AxiosError<{ message: string }>) => {
-      console.error(error?.response?.data);
-      toast.error("Error al registrar el pago");
+    onError: (error: AxiosError) => {
+      console.error(error);
+
+      toast("Error al crear pago", {
+        description: "Por favor, intenta de nuevo o contacta con el administrador.",
+        duration: 5000,
+        icon: <CircleX className="text-red-600" />,
+      });
     },
   });
 
@@ -191,7 +204,9 @@ export const PaymentDialog = ({ isOpen, onOpenChange, onPaymentCreated = () => {
               {...register("amount", {
                 onBlur: e => {
                   const value = e.target.value;
-                  const formattedValue = Number(value).toFixed(2);
+                  const formattedValue =
+                    Number(value) >= 0 ? Number(value).toFixed(2) : (Number(value) * -1).toFixed(2);
+
                   e.target.value = formattedValue;
                 },
               })}
@@ -288,7 +303,9 @@ export const PaymentDialog = ({ isOpen, onOpenChange, onPaymentCreated = () => {
             <Input type="text" placeholder="Cedula del cliente" disabled {...register("clientCedula")} />
           </FormGroup>
           <FormGroup className="col-span-2 flex justify-end">
-            <Button type="submit">Registrar pago</Button>
+            <Button type="submit" disabled={createPaymentMutation.isPending}>
+              {createPaymentMutation.isPending ? <Loader2 className="animate-spin" /> : "Registrar pago"}
+            </Button>
           </FormGroup>
         </form>
       </ModalBody>
