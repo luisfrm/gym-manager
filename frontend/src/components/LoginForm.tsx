@@ -3,12 +3,12 @@ import { FormGroup, FormLabel, FormLabelError } from "./FormGroup";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { Label } from "./ui/label";
-import { Eye, EyeOff } from "lucide-react";
+import { CircleX, Eye, EyeOff, LoaderCircle } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useStore } from "@/hooks/useStore";
-
+import { toast } from "sonner";
 import { Input } from "./ui/input";
 import { useMutation } from "@tanstack/react-query";
 import { loginRequest } from "@/api/api";
@@ -46,7 +46,6 @@ export default function LoginForm() {
   const navigate = useNavigate();
   const { setAuth, auth } = useStore();
   const eyeClasses = "absolute top-1/2 right-2 cursor-pointer";
-  const [isLoading] = useState(false);
   const [, setToken] = useLocalStorage("token", "");
 
   const changePasswordType = () => {
@@ -75,10 +74,24 @@ export default function LoginForm() {
           (error.response?.data as { message: string })?.message ?? "Correo o contraseña incorrectos";
         resetField("password");
         setAuth({ isAuthenticated: false, user: null, error: errorMessage, token: null, tokenExpiration: null });
+        toast("Error al iniciar sesión", {
+          classNames: {
+            icon: "text-red-600",
+          },
+          description: errorMessage,
+          duration: 15000,
+          icon: <CircleX />,
+        });
 
         setTimeout(() => {
           setAuth({ isAuthenticated: false, user: null, error: null, token: null, tokenExpiration: null });
         }, TIME_TO_HIDE_ERROR);
+      } else {
+        toast("Error al iniciar sesión", {
+          description: "Por favor, contacta con el administrador.",
+          duration: 5000,
+          icon: <CircleX className="text-red-600" />,
+        });
       }
     },
   });
@@ -117,7 +130,9 @@ export default function LoginForm() {
               )}
             </FormGroup>
             <FormGroup>
-              <Button type="submit">{isLoading ? "Cargando..." : "Login"}</Button>
+              <Button type="submit" disabled={loginMutation.isPending}>
+                {loginMutation.isPending ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : "Login"}
+              </Button>
             </FormGroup>
           </div>
         </form>
