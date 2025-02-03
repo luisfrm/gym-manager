@@ -1,6 +1,6 @@
 import Client from "../models/client.model";
 import Log from "../models/log.model";
-import { AppRequest } from "../utils/types";
+import { AppRequest, ClientPartial } from "../utils/types";
 import formatNumber from "../utils/formatNumber";
 
 class ClientController {
@@ -130,6 +130,47 @@ class ClientController {
       });
 
       return res.status(200).json({ message: "Client updated successfully", client });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: "Error updating client" });
+    }
+  };
+
+  static updatePartial = async (req: AppRequest, res: any) => {
+    try {
+      const { id } = req.params;
+
+      const updateData: ClientPartial = {};
+
+      const allowedFields = ["cedula", "firstname", "lastname", "email", "phone", "address", "expiredDate"];
+
+      allowedFields.forEach(field => {
+        if (req.body[field] !== undefined) {
+          updateData[field] = req.body[field];
+        }
+      });
+
+      updateData.updatedAt = new Date();
+
+      // const client = await Client.findByIdAndUpdate(
+      //   id,
+      //   {
+      //     $set: updateData,
+      //   },
+      //   { new: true },
+      // );
+
+      // if (!client) {
+      //   return res.status(404).json({ message: "Client not found" });
+      // }
+
+      // await Log.create({
+      //   user: req.user,
+      //   message: "Client updated partially",
+      //   type: "updated",
+      // });
+
+      return res.status(200).json({ message: "Client updated partially", body: req.body });
     } catch (error) {
       console.error(error);
       return res.status(500).json({ message: "Error updating client" });

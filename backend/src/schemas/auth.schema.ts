@@ -39,3 +39,14 @@ export const loginSchema = z.object({
     invalid_type_error: "Password must be a string",
   }),
 });
+
+export const changePasswordSchema = z.object({
+  currentPassword: z.string({
+    required_error: "Password is required",
+    invalid_type_error: "Password must be a string",
+  }),
+  newPassword: z.string({
+    required_error: "Password is required",
+    invalid_type_error: "Password must be a string",
+  }),
+});

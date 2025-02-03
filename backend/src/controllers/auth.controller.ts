@@ -4,17 +4,23 @@ import bcrypt from "bcryptjs";
 import { generateJwt, verifyJwt } from "../utils/jwt";
 import getToken from "../utils/getToken";
 import { JWT_EXPIRATION_TIME } from "../config";
-import { TokenPayload } from "../utils/types";
+import { AppRequest, TokenPayload } from "../utils/types";
 
 class AuthController {
   static register = async (req: Request, res: any) => {
     try {
       const { email, password, role, username, name } = req.body;
 
-      const userExists = await Auth.findOne({ email });
+      const userEmailExists = await Auth.findOne({ email });
 
-      if (userExists) {
-        return res.status(400).json({ message: "User already exists" });
+      if (userEmailExists) {
+        return res.status(400).json({ message: "User email already exists" });
+      }
+
+      const userUsernameExists = await Auth.findOne({ username });
+
+      if (userUsernameExists) {
+        return res.status(400).json({ message: "Username already exists" });
       }
 
       const salt = await bcrypt.genSalt(10);
@@ -25,7 +31,7 @@ class AuthController {
         password: hashedPassword,
         username,
         name,
-        role: role,
+        role,
       });
 
       await user.save();
@@ -108,6 +114,40 @@ class AuthController {
       } else {
         res.status(401).json({ message: "Token inválido" });
       }
+    }
+  };
+
+  static changePassword = async (req: AppRequest, res: any) => {
+    try {
+      const { currentPassword, newPassword } = req.body;
+
+      const user = await Auth.findById({ _id: req.user.userId });
+
+      if (!user) {
+        return res.status(400).json({ message: "Usuario inválido" });
+      }
+
+      const isPasswordCorrect = await bcrypt.compare(currentPassword, user.password);
+
+      if (!isPasswordCorrect) {
+        return res.status(400).json({ message: "Contraseña inválida." });
+      }
+
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+      const updatedUser = await Auth.findByIdAndUpdate(user.id, {
+        password: hashedPassword,
+      });
+
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      return res.status(200).json({ message: "Password changed successfully" });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: "Error changing password" });
     }
   };
 }

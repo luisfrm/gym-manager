@@ -9,7 +9,7 @@ const authMiddleware = (allowedRoles = []) => {
 
     if (!token) {
       console.log("No token");
-      return res.status(401).json({ message: "Unauthorized" });
+      return res.status(401).json({ message: "Unauthorized. No token" });
     }
 
     try {
