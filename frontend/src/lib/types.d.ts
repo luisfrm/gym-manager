@@ -1,8 +1,10 @@
+export type Role = "admin" | "employee";
+
 export interface User {
   _id: string;
   email: string;
   username: string;
-  role: string;
+  role: Role;
 }
 
 export interface AuthState {
@@ -33,7 +35,7 @@ export interface ValidateTokenResponse {
   _id: string;
   email: string;
   username: string;
-  role: string;
+  role: Role;
   tokenExpiration: Date;
 }
 
@@ -70,6 +72,20 @@ export interface GetClientsResponse {
 
 export interface UpdateClientRequest extends CreateClientRequest {
   _id: string;
+}
+
+export interface UpdatePartialPaymentRequest {
+  _id?: string;
+  client?: Client; // Puede ser el objeto poblado o solo la cedula
+  clientCedula?: string;
+  amount?: string;
+  date?: string;
+  service?: string;
+  description?: string;
+  paymentMethod?: string;
+  paymentReference?: string;
+  paymentStatus?: "pending" | "paid" | "failed";
+  currency?: "USD" | "VES";
 }
 
 export interface DeleteClientRequest {
@@ -109,7 +125,7 @@ export interface GetLogsResponse {
 
 export interface Payment {
   _id: string;
-  client: Client | string; // Puede ser el objeto poblado o solo la cedula
+  client: Client; // Puede ser el objeto poblado o solo la cedula
   clientCedula: string;
   amount: string;
   date: string;
@@ -134,6 +150,17 @@ export interface CreatePaymentRequest {
   expiredDate: string;
   paymentStatus: "pending" | "paid" | "failed";
   currency: "USD" | "VES";
+}
+
+export interface UpdatePartialPaymentRequest {
+  amount?: string;
+  date: string;
+  service?: string;
+  paymentMethod?: string;
+  paymentReference?: string;
+  expiredDate?: string;
+  paymentStatus?: "pending" | "paid" | "failed";
+  currency?: "USD" | "VES";
 }
 
 export interface GetPaymentsResponse {
