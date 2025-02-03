@@ -9,16 +9,24 @@ import formatNumber from "@/lib/formatNumber";
 import { formatDate } from "@/lib/utils";
 import { Link } from "react-router-dom";
 import { Skeleton } from "./ui/skeleton";
+import CopyToClipboard from "./CopyToClipboard";
+import { Button } from "./ui/button";
+import { Pencil } from "lucide-react";
+import { PaymentUpdateDialog } from "./dialogs/PaymentUpdateDialog";
+import { useState } from "react";
 
 interface PaymentsListProps {
   payments: Payment[];
   isLoading: boolean;
+  onUpdatedPayment?: () => void;
 }
 
-export default function PaymentsList({ payments, isLoading }: PaymentsListProps) {
+export default function PaymentsList({ payments, isLoading, onUpdatedPayment }: PaymentsListProps) {
   const formatCurrency = (amount: number, currency: "USD" | "VES") => {
     return new Intl.NumberFormat("es-VE", { style: "currency", currency }).format(amount);
   };
+  const [isOpenPaymentDialog, setIsOpenPaymentDialog] = useState(false);
+  const [payment, setPayment] = useState<Payment | null>(null);
 
   const getStatusBadge = (status: Payment["paymentStatus"]) => {
     switch (status) {
@@ -45,6 +53,16 @@ export default function PaymentsList({ payments, isLoading }: PaymentsListProps)
     }
   };
 
+  const handleUpdatePayment = (payment: Payment) => () => {
+    setPayment(payment);
+    setIsOpenPaymentDialog(true);
+    onUpdatedPayment?.();
+  };
+
+  const onOpenChangePaymentDialog = () => {
+    setIsOpenPaymentDialog(!isOpenPaymentDialog);
+  };
+
   return (
     <div className="space-y-4">
       <Table>
@@ -59,7 +77,7 @@ export default function PaymentsList({ payments, isLoading }: PaymentsListProps)
             <TableHead className="text-center">Método de Pago</TableHead>
             <TableHead className="text-center">Referencia</TableHead>
             <TableHead className="text-right">Estado</TableHead>
-            {/* <TableHead className="text-right">Acciones</TableHead> */}
+            <TableHead className="text-right">Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -71,8 +89,9 @@ export default function PaymentsList({ payments, isLoading }: PaymentsListProps)
                 <TableCell className="font-medium">
                   {format(new Date(payment.date), "d 'de' MMMM, yyyy", { locale: es })}
                 </TableCell>
-                <TableCell className="text-center font-bold">
+                <TableCell className="text-ellipsis whitespace-nowrap flex items-center gap-2 font-bold">
                   <Link to={`/clients/${payment.clientCedula}`}>{formatNumber(payment.clientCedula)}</Link>
+                  <CopyToClipboard text={payment.clientCedula} />
                 </TableCell>
                 <TableCell className="text-center">
                   {typeof payment.client !== "string"
@@ -91,26 +110,20 @@ export default function PaymentsList({ payments, isLoading }: PaymentsListProps)
                 <TableCell className="text-center">{payment.paymentMethod}</TableCell>
                 <TableCell className="text-center">{payment.paymentReference}</TableCell>
                 <TableCell className="text-right">{getStatusBadge(payment.paymentStatus)}</TableCell>
-                {/* <TableCell className="text-right">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="h-8 w-8 p-0">
-                      <span className="sr-only">Abrir menú</span>
-                      <Ellipsis className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem>Ver detalles</DropdownMenuItem>
-                    <DropdownMenuItem>Editar pago</DropdownMenuItem>
-                    <DropdownMenuItem className="text-red-600">Eliminar pago</DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </TableCell> */}
+                <TableCell className="text-right">
+                  <Button variant="outline" className="h-8 w-8 p-0" onClick={handleUpdatePayment(payment)}>
+                    <span className="sr-only">Abrir menú</span>
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                </TableCell>
               </TableRow>
             ))
           )}
         </TableBody>
       </Table>
+      {payment && (
+        <PaymentUpdateDialog onPaymentUpdated={onUpdatedPayment} isOpen={isOpenPaymentDialog} onOpenChange={onOpenChangePaymentDialog} payment={payment} />
+      )}
     </div>
   );
 }

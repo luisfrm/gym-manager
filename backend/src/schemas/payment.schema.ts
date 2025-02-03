@@ -42,3 +42,18 @@ export const paymentSchema = z.object({
     invalid_type_error: "Currency must be a string.",
   }),
 });
+
+export const paymentPartialSchema = z.object({
+  client: z.string().nonempty().optional(),
+  amount: z.number().refine(value => value > 0, {
+    message: "Amount must be greater than zero",
+  }).optional(),
+  date: z.string().nonempty().optional(),
+  service: z.string().nonempty().optional(),
+  description: z.string().nonempty().optional(),
+  paymentMethod: z.string().nonempty().optional(),
+  paymentReference: z.string().nonempty().optional(),
+  expiredDate: z.string().nonempty().optional(),
+  paymentStatus: z.enum(["pending", "paid", "failed"]).default("pending").optional(),
+  currency: z.enum(["USD", "VES"]).optional(),
+});

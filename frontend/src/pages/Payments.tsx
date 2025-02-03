@@ -97,6 +97,10 @@ const Payments = () => {
     setPage(DEFAULT_PAGE);
   };
 
+  const handleOnUpdatedPayment = () => {
+    refetchPayments();
+  };
+
   return (
     <Template>
       <header>
@@ -178,7 +182,7 @@ const Payments = () => {
             </SelectContent>
           </Select>
         </div>
-        <PaymentList payments={payments} isLoading={isLoadingPayments} />
+        <PaymentList onUpdatedPayment={handleOnUpdatedPayment} payments={payments} isLoading={isLoadingPayments} />
         {pages > 1 && (
           <Pagination
             isLoading={isLoadingPayments}
