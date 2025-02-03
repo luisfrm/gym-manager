@@ -1,4 +1,3 @@
-0;
 import { z } from "zod";
 
 export const clientSchema = z.object({
@@ -20,4 +19,14 @@ export const clientSchema = z.object({
   expiredDate: z.string({
     invalid_type_error: "Expired date must be a string.",
   }),
+});
+
+export const clientPartialSchema = z.object({
+  firstname: z.string().nonempty().optional(),
+  lastname: z.string().nonempty().optional(),
+  cedula: z.string().nonempty().optional(),
+  email: z.string().nonempty().optional(),
+  phone: z.string().nonempty().optional(),
+  address: z.string().optional().optional(),
+  expiredDate: z.string().optional(),
 });

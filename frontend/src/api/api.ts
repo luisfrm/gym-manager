@@ -13,6 +13,7 @@ import {
   Payment,
   RefreshTokenResponse,
   UpdateClientRequest,
+  UpdatePartialPaymentRequest,
   ValidateTokenResponse,
 } from "@/lib/types";
 import axios from "axios";
@@ -116,6 +117,18 @@ export const getPaymentsRequest = async (
 
 export const createPaymentRequest = async (payment: CreatePaymentRequest): Promise<Payment> => {
   const res = await api.post("/payments", { ...payment, amount: Number(payment.amount) });
+  return res.data;
+};
+
+export const updatePartialPaymentRequest = async (payment: UpdatePartialPaymentRequest) => {
+  const paymentData = { ...payment };
+  delete paymentData._id;
+  const res = await api.patch(`/payments/${payment._id}`, paymentData);
+  return res.data;
+};
+
+export const updatePaymentStatusRequest = async ({ _id, paymentStatus }: UpdatePartialPaymentRequest) => {
+  const res = await api.patch(`/payments//paymentStatus/${_id}`, { paymentStatus });
   return res.data;
 };
 

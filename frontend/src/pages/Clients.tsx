@@ -179,15 +179,18 @@ const Clients = () => {
       </section>
       <section className="data-table w-full">
         <ClientData isLoading={isLoading} clients={clients ?? []} limit={limit} />
-        <Pagination
-          total={total}
-          pages={pages}
-          next={next}
-          prev={prev}
-          currentPage={page}
-          onPageNext={handlePageNext}
-          onPagePrev={handlePagePrev}
-        />
+        {pages > 1 && (
+          <Pagination
+          isLoading={isLoading}
+            total={total}
+            pages={pages}
+            next={next}
+            prev={prev}
+            currentPage={page}
+            onPageNext={handlePageNext}
+            onPagePrev={handlePagePrev}
+          />
+        )}
       </section>
       <ClientDialog
         onClientCreated={refetchClients}

@@ -29,3 +29,18 @@ Thumbs.db
 
 backend/volumes/*
 volumes/*
+
+# Add terraform files
+# Terraform files to ignore
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+.terraform/
+.terraform.lock.hcl
+crash.log
+crash.*
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json

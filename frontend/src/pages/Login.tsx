@@ -1,4 +1,5 @@
 import LoginForm from "@/components/LoginForm";
+import { Toaster } from "@/components/ui/sonner";
 import { useStore } from "@/hooks/useStore";
 import { Navigate } from "react-router-dom";
 
@@ -12,6 +13,7 @@ const Login: React.FC = () => {
   return (
     <div className="flex items-center justify-center min-h-dvh bg-slate-300">
       <LoginForm />
+      <Toaster />
     </div>
   );
 };

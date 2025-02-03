@@ -144,6 +144,66 @@ class PaymentController {
     });
     return res.status(200).json({ message: "Payment deleted successfully" });
   };
+
+  static updatePartial = async (req: AppRequest, res: any) => {
+    try {
+      const { paymentId } = req.params;
+
+      const payment = await Payment.findByIdAndUpdate(
+        paymentId,
+        {
+          $set: req.body,
+        },
+        { new: true },
+      );
+
+      if (!payment) {
+        return res.status(404).json({ message: "Client not found" });
+      }
+
+      await Log.create({
+        user: req.user.userId,
+        message: `Pago de ${payment.clientCedula} actualizado.`,
+        type: "updated",
+      });
+
+      return res.status(200).json({ message: "Payment updated partially", payment });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: "Error updating client" });
+    }
+  };
+
+  static updatePaymentStatus = async (req: AppRequest, res: any) => {
+    try {
+      const { paymentId } = req.params;
+
+      const { paymentStatus } = req.body;
+
+      const payment = await Payment.findByIdAndUpdate(
+        paymentId,
+        {
+          $set: { paymentStatus },
+        },
+        { new: true },
+      );
+
+      if (!payment) {
+        return res.status(404).json({ message: "Client not found" });
+      }
+
+      await Log.create({
+        user: req.user.userId,
+        message: `Pago de ${payment.clientCedula} actualizado.`,
+        type: "updated",
+      });
+
+      return res.status(200).json({ message: "Payment updated partially", body: req.body });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: "Error updating client" });
+    }
+  };
 }
 
 export default PaymentController;

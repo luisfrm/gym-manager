@@ -2,28 +2,28 @@ import { Modal, ModalBody, ModalHeader } from "@/components/Modal";
 import { FormGroup, FormLabel, FormLabelError } from "@/components/FormGroup";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import { Client } from "@/lib/types";
 import { useEffect, useState } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { createPaymentRequest, getClientByIdRequest } from "@/api/api";
+import { Payment } from "@/lib/types";
+import { useMutation } from "@tanstack/react-query";
+import { updatePartialPaymentRequest, updatePaymentStatusRequest } from "@/api/api";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Label } from "../ui/label";
-import { CheckCircle, CircleX, Loader2, OctagonX } from "lucide-react";
+import { CheckCircle, CircleCheck, CircleX, Loader2, OctagonAlert, OctagonX } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
+import { useStore } from "@/hooks/useStore";
 
 interface PaymentDialogProps {
   isOpen: boolean;
   onOpenChange: () => void;
-  onPaymentCreated?: () => void;
+  onPaymentUpdated?: () => void;
+  payment: Payment;
 }
 
 const paymentSchema = z.object({
-  client: z.string().min(1, { message: "El cliente es requerido" }),
-  clientCedula: z.string().min(1, { message: "La cédula del cliente es requerida" }),
   amount: z.string().min(1, { message: "El monto es requerido" }),
   date: z.string().min(1, { message: "La fecha es requerida" }),
   service: z.string().min(1, { message: "El servicio es requerido" }),
@@ -36,8 +36,6 @@ const paymentSchema = z.object({
 });
 
 const initialValues: PaymentSchema = {
-  client: "",
-  clientCedula: "",
   amount: "0",
   date: "",
   service: "",
@@ -50,10 +48,15 @@ const initialValues: PaymentSchema = {
 
 type PaymentSchema = z.infer<typeof paymentSchema>;
 
-export const PaymentDialog = ({ isOpen, onOpenChange, onPaymentCreated = () => {} }: PaymentDialogProps) => {
-  const [cedula, setCedula] = useState("");
+export const PaymentUpdateDialog = ({
+  isOpen,
+  onOpenChange,
+  onPaymentUpdated = () => {},
+  payment,
+}: PaymentDialogProps) => {
   const [paymentStatus, setPaymentStatus] = useState<"pending" | "paid" | "failed">("pending");
   const [paymentCurrency, setPaymentCurrency] = useState<"USD" | "VES">("USD");
+  const isAdmin = useStore(state => state?.auth?.user?.role === "admin");
 
   const {
     handleSubmit,
@@ -66,89 +69,55 @@ export const PaymentDialog = ({ isOpen, onOpenChange, onPaymentCreated = () => {
     defaultValues: initialValues,
   });
 
-  const {
-    data: client,
-    isLoading: isLoadingClient,
-    isError: isErrorClient,
-    error: clientError,
-  } = useQuery<Client, AxiosError>({
-    queryKey: ["client", cedula],
-    queryFn: () => getClientByIdRequest(cedula),
-    enabled: !!cedula,
-  });
+  const handleUpdatePayment = (data: PaymentSchema) => {
+    const { amount, date, service, paymentMethod, paymentReference, expiredDate } = data;
 
-  useEffect(() => {
-    if (client) {
-      setValue("client", client._id);
-      setValue("clientCedula", client.cedula);
+    let paymentData = {};
+
+    if (isAdmin) {
+      paymentData = {
+        _id: payment._id,
+        amount: Number(amount),
+        date,
+        service,
+        paymentMethod,
+        paymentReference,
+        paymentStatus,
+        currency: paymentCurrency,
+        expiredDate,
+      };
+    } else {
+      paymentData = {
+        _id: payment._id,
+        paymentStatus,
+      };
     }
-  }, [client, setValue]);
 
-  useEffect(() => {
-    if (isErrorClient) {
-      toast("Error al buscar el cliente", {
-        description: "Por favor, intenta de nuevo o contacta con el administrador.",
-        duration: 5000,
-        icon: <CircleX className="text-red-600" />,
-      });
-    }
-  }, [isErrorClient]);
-
-  const handleCreatePayment = (data: PaymentSchema) => {
-    const {
-      client: clientId,
-      clientCedula,
-      amount,
-      date,
-      service,
-      paymentMethod,
-      paymentReference,
-      expiredDate,
-    } = data;
-    createPaymentMutation.mutate({
-      client: clientId,
-      clientCedula,
-      amount,
-      date,
-      service,
-      paymentMethod,
-      paymentReference,
-      paymentStatus,
-      currency: paymentCurrency,
-      expiredDate,
-    });
+    updatePartialPaymentMutation.mutate(paymentData);
   };
 
-  const createPaymentMutation = useMutation({
-    mutationFn: createPaymentRequest,
+  const updatePartialPaymentMutation = useMutation({
+    mutationFn: isAdmin ? updatePartialPaymentRequest : updatePaymentStatusRequest,
     onSuccess: () => {
-      onPaymentCreated();
+      onPaymentUpdated();
       resetPaymentForm();
       onOpenChange();
-      toast("Pago registrado.", {
-        description: "El pago se ha registrado correctamente.",
+      toast("Pago actualizado.", {
+        description: "Por favor, intenta de nuevo o contacta con el administrador.",
         duration: 5000,
-        icon: <CheckCircle className="text-lime-500" />,
+        icon: <CircleCheck className="text-lime-500" />,
       });
-      setCedula("");
     },
     onError: (error: AxiosError) => {
       console.error(error);
 
-      toast("Error al crear pago", {
-        description: "Por favor, intenta de nuevo o contacta con el administrador.",
+      toast("Error al actualizar el pago.", {
+        description: `${error?.response?.status === 401 ? "No tienes acceso a este recurso. Contacta con el administrador." : "Por favor, intenta de nuevo o contacta con el administrador."}`,
         duration: 5000,
         icon: <CircleX className="text-red-600" />,
       });
     },
   });
-
-  const handleSearchClient = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = e.target as HTMLFormElement;
-    const cedula = (formData.querySelector("#payment-cedula") as HTMLInputElement).value;
-    setCedula(cedula);
-  };
 
   const handlePaymentStatusChange = (value: "pending" | "paid" | "failed") => {
     setPaymentStatus(value);
@@ -160,47 +129,53 @@ export const PaymentDialog = ({ isOpen, onOpenChange, onPaymentCreated = () => {
 
   useEffect(() => {
     if (!isOpen) {
-      setCedula("");
       resetPaymentForm();
     }
-  }, [isOpen, resetPaymentForm]);
+
+    if (payment && payment.client) {
+      setValue("amount", Number(payment.amount || 0).toFixed(2));
+      setValue("date", payment.date || "");
+      setValue("service", payment.service || "");
+      setValue("paymentMethod", payment.paymentMethod || "");
+      setValue("paymentReference", payment.paymentReference ?? "");
+      setValue("expiredDate", payment.client.expiredDate || "");
+
+      setPaymentCurrency(payment.currency || "");
+      setPaymentStatus(payment.paymentStatus || "");
+    }
+  }, [isOpen, resetPaymentForm, payment, setValue]);
 
   return (
     <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
-      <ModalHeader title="Registrar nuevo pago" description="Agrega un nuevo pago en la base de datos." />
+      <ModalHeader title="Actualizar pago" description="Actualiza un pago existente en la base de datos." />
       <ModalBody>
-        <form className="flex gap-4 items-end" onSubmit={handleSearchClient}>
-          <FormGroup className="flex flex-col gap-2 flex-1">
+        <form onSubmit={handleSubmit(handleUpdatePayment)} className="grid grid-cols-2 gap-4">
+          <FormGroup>
             <FormLabel>
-              <Label>Cedula*</Label>
+              <Label>Nombre</Label>
             </FormLabel>
-            <Input type="number" placeholder="Ingresa la cédula del cliente" id="payment-cedula" />
+            <Input
+              value={`${payment.client.firstname} ${payment.client.lastname}`}
+              type="text"
+              placeholder="Nombre del cliente"
+              disabled
+            />
           </FormGroup>
-          <FormGroup className="flex items-end">
-            <Button type="submit">
-              {isLoadingClient ? <Loader2 className="animate-spin text-white" /> : "Buscar"}
-            </Button>
+          <FormGroup>
+            <FormLabel>
+              <Label>Cedula del cliente</Label>
+            </FormLabel>
+            <Input value={payment.clientCedula} type="text" placeholder="Cedula del cliente" disabled />
           </FormGroup>
-        </form>
-        <div className="flex gap-2">
-          <p className="text-sm">
-            <strong>Nombre:</strong> {client?.firstname} {client?.lastname}
-          </p>
-          {isErrorClient && clientError.response?.status === 404 ? (
-            <p className="text-red-500 text-sm">Cliente no fue encontrado</p>
-          ) : null}
-          {client ? <CheckCircle className="text-green-500" /> : <OctagonX className="animate-bounce text-red-500" />}
-        </div>
-        <form onSubmit={handleSubmit(handleCreatePayment)} className="grid grid-cols-2 gap-4">
           <FormGroup>
             <FormLabel>
               <Label>Monto*</Label>
               {paymentErrors.amount && <FormLabelError>{paymentErrors.amount.message}</FormLabelError>}
             </FormLabel>
             <Input
-              disabled={!client}
               type="number"
               placeholder="Ingresa el monto del pago"
+              disabled={!isAdmin}
               {...register("amount", {
                 onBlur: e => {
                   const value = e.target.value;
@@ -217,14 +192,19 @@ export const PaymentDialog = ({ isOpen, onOpenChange, onPaymentCreated = () => {
               <Label>Fecha*</Label>
               {paymentErrors.date && <FormLabelError>{paymentErrors.date.message}</FormLabelError>}
             </FormLabel>
-            <Input type="date" placeholder="Ingresa la fecha del pago" disabled={!client} {...register("date")} />
+            <Input disabled={!isAdmin} type="date" placeholder="Ingresa la fecha del pago" {...register("date")} />
           </FormGroup>
           <FormGroup>
             <FormLabel>
               <Label>Servicio*</Label>
               {paymentErrors.service && <FormLabelError>{paymentErrors.service.message}</FormLabelError>}
             </FormLabel>
-            <Input type="text" placeholder="Ingresa el servicio del pago" disabled={!client} {...register("service")} />
+            <Input
+              disabled={!isAdmin}
+              type="text"
+              placeholder="Ingresa el servicio del pago"
+              {...register("service")}
+            />
           </FormGroup>
           <FormGroup>
             <FormLabel>
@@ -232,9 +212,9 @@ export const PaymentDialog = ({ isOpen, onOpenChange, onPaymentCreated = () => {
               {paymentErrors.paymentMethod && <FormLabelError>{paymentErrors.paymentMethod.message}</FormLabelError>}
             </FormLabel>
             <Input
+              disabled={!isAdmin}
               type="text"
               placeholder="Ingresa el método de pago"
-              disabled={!client}
               {...register("paymentMethod")}
             />
           </FormGroup>
@@ -246,9 +226,9 @@ export const PaymentDialog = ({ isOpen, onOpenChange, onPaymentCreated = () => {
               )}
             </FormLabel>
             <Input
+              disabled={!isAdmin}
               type="text"
               placeholder="Ingresa la referencia del pago"
-              disabled={!client}
               {...register("paymentReference")}
             />
           </FormGroup>
@@ -257,14 +237,26 @@ export const PaymentDialog = ({ isOpen, onOpenChange, onPaymentCreated = () => {
               <Label>Estado del pago*</Label>
               {paymentErrors.paymentStatus && <FormLabelError>{paymentErrors.paymentStatus.message}</FormLabelError>}
             </FormLabel>
-            <Select disabled={!client} onValueChange={handlePaymentStatusChange}>
+            <Select value={paymentStatus} onValueChange={handlePaymentStatusChange}>
               <SelectTrigger>
                 <SelectValue defaultValue={paymentStatus} placeholder="Selecciona el estado del pago" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="paid">Pagado</SelectItem>
-                <SelectItem value="pending">Pendiente</SelectItem>
-                <SelectItem value="failed">Fallido</SelectItem>
+                <SelectItem value="paid">
+                  <div className="flex gap-1 items-center">
+                    <CheckCircle className="text-lime-500 h-4 w-4" /> Pagado
+                  </div>
+                </SelectItem>
+                <SelectItem value="pending">
+                  <div className="flex gap-1 items-center">
+                    <OctagonAlert className="text-yellow-500 h-4 w-4" /> Pendiente
+                  </div>
+                </SelectItem>
+                <SelectItem value="failed">
+                  <div className="flex gap-1 items-center">
+                    <OctagonX className="text-red-500 h-4 w-4" /> Fallido
+                  </div>
+                </SelectItem>
               </SelectContent>
             </Select>
           </FormGroup>
@@ -273,9 +265,9 @@ export const PaymentDialog = ({ isOpen, onOpenChange, onPaymentCreated = () => {
               <Label>Moneda*</Label>
               {paymentErrors.currency && <FormLabelError>{paymentErrors.currency.message}</FormLabelError>}
             </FormLabel>
-            <Select disabled={!client} onValueChange={handlePaymentCurrencyChange}>
+            <Select disabled={!isAdmin} value={paymentCurrency} onValueChange={handlePaymentCurrencyChange}>
               <SelectTrigger>
-                <SelectValue defaultValue={paymentCurrency} placeholder="Selecciona la moneda" />
+                <SelectValue placeholder="Selecciona la moneda" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="USD">USD</SelectItem>
@@ -288,23 +280,11 @@ export const PaymentDialog = ({ isOpen, onOpenChange, onPaymentCreated = () => {
               <Label>Fecha de vencimiento*</Label>
               {paymentErrors.expiredDate && <FormLabelError>{paymentErrors.expiredDate.message}</FormLabelError>}
             </FormLabel>
-            <Input type="date" placeholder="Fecha de vencimiento" {...register("expiredDate")} />
-          </FormGroup>
-          <FormGroup>
-            <FormLabel>
-              <Label>Id del cliente</Label>
-            </FormLabel>
-            <Input type="text" placeholder="Id del cliente" disabled {...register("client")} />
-          </FormGroup>
-          <FormGroup>
-            <FormLabel>
-              <Label>Cedula del cliente</Label>
-            </FormLabel>
-            <Input type="text" placeholder="Cedula del cliente" disabled {...register("clientCedula")} />
+            <Input disabled={!isAdmin} type="date" placeholder="Fecha de vencimiento" {...register("expiredDate")} />
           </FormGroup>
           <FormGroup className="col-span-2 flex justify-end">
-            <Button type="submit" disabled={createPaymentMutation.isPending}>
-              {createPaymentMutation.isPending ? <Loader2 className="animate-spin" /> : "Registrar pago"}
+            <Button type="submit" disabled={updatePartialPaymentMutation.isPending}>
+              {updatePartialPaymentMutation.isPending ? <Loader2 className="animate-spin" /> : "Actualizar pago"}
             </Button>
           </FormGroup>
         </form>

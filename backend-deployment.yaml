@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kin: Deployment
+metadata:
+  name: gym-manager-backend
+  namespace: gym-manager
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gym-manager-backend
+  template:
+    metadata:
+      labels:
+        app: gym-manager-backend
+    spec:
+      containers:
+        - name: gym-manager-backend
+          image: luisfrm/gym-manager-backend:latest
+          ports:
+            - containerPort: 3000
