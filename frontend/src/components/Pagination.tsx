@@ -15,25 +15,34 @@ type Props = {
   currentPage: number;
   onPageNext: () => void;
   onPagePrev: () => void;
+  isLoading: boolean;
 };
 
-const PaginationComponent = ({ next, prev, currentPage, onPageNext, onPagePrev }: Props) => {
+const PaginationComponent = ({ next, prev, currentPage, onPageNext, onPagePrev, isLoading }: Props) => {
   return (
     <Pagination className="w-[200px]">
       <PaginationContent>
-        {!!prev && (
-          <PaginationItem>
-            <PaginationPrevious href="#" onClick={onPagePrev} />
-          </PaginationItem>
-        )}
+        <PaginationItem>
+          <button
+            disabled={!prev || isLoading}
+            onClick={onPagePrev}
+            className="disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <PaginationPrevious />
+          </button>
+        </PaginationItem>
         <PaginationItem>
           <PaginationLink href="#">{currentPage}</PaginationLink>
         </PaginationItem>
-        {!!next && (
-          <PaginationItem>
-            <PaginationNext href="#" onClick={onPageNext} />
-          </PaginationItem>
-        )}
+        <PaginationItem>
+          <button
+            disabled={!next || isLoading}
+            onClick={onPageNext}
+            className="disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <PaginationNext />
+          </button>
+        </PaginationItem>
       </PaginationContent>
     </Pagination>
   );

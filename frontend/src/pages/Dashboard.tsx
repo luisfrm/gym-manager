@@ -89,15 +89,18 @@ const Dashboard = () => {
       </section>
       <section className="data-table w-full max-w-7xl flex flex-col gap-4">
         <ActivityLogs isLoading={isLoading} logs={logs} />
-        <Pagination
-          total={total}
-          pages={pages}
-          next={next}
-          prev={prev}
-          currentPage={page}
-          onPageNext={handlePageNext}
-          onPagePrev={handlePagePrev}
-        />
+        {pages > 1 && (
+          <Pagination
+            isLoading={isLoading}
+            total={total}
+            pages={pages}
+            next={next}
+            prev={prev}
+            currentPage={page}
+            onPageNext={handlePageNext}
+            onPagePrev={handlePagePrev}
+          />
+        )}
       </section>
     </Template>
   );

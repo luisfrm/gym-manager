@@ -138,9 +138,6 @@ const Payments = () => {
           <Button className="bg-slate-900 text-white" onClick={onOpenChangePaymentDialog}>
             Agregar pago
           </Button>
-          {/* <Button className="bg-lime-500 hover:bg-lime-400 text-white" onClick={handleOpenNewClientModal}>
-              Agregar cliente
-            </Button> */}
           <div className="relative w-full">
             <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
             <Input
@@ -182,15 +179,18 @@ const Payments = () => {
           </Select>
         </div>
         <PaymentList payments={payments} isLoading={isLoadingPayments} />
-        <Pagination
-          total={total}
-          pages={pages}
-          next={next}
-          prev={prev}
-          currentPage={page}
-          onPageNext={handlePageNext}
-          onPagePrev={handlePagePrev}
-        />
+        {pages > 1 && (
+          <Pagination
+            isLoading={isLoadingPayments}
+            total={total}
+            pages={pages}
+            next={next}
+            prev={prev}
+            currentPage={page}
+            onPageNext={handlePageNext}
+            onPagePrev={handlePagePrev}
+          />
+        )}
       </section>
       <PaymentDialog
         isOpen={isOpenPaymentDialog}
