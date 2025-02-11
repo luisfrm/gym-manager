@@ -70,7 +70,9 @@ export const createClientRequest = async (client: CreateClientRequest): Promise<
 };
 
 export const updateClientRequest = async (client: UpdateClientRequest): Promise<Client> => {
-  const res = await api.put(`/clients/${client._id}`, client);
+  const clientData = { ...client };
+  if (clientData && clientData._id) delete clientData._id;
+  const res = await api.put(`/clients/${client._id}`, clientData);
   return res.data;
 };
 
