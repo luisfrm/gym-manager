@@ -29,7 +29,9 @@ export const ModalHeader = ({ title, description }: { title: string; description
   return (
     <DialogHeader>
       <DialogTitle>{title}</DialogTitle>
-      <DialogDescription>{description}</DialogDescription>
+      <DialogDescription>
+        <span dangerouslySetInnerHTML={{ __html: description }} />
+      </DialogDescription>
     </DialogHeader>
   );
 };

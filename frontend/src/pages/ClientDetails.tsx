@@ -1,5 +1,3 @@
-"use client";
-
 import { MoreVertical, ArrowLeft, Mail, Phone, MapPin, Calendar } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
@@ -23,6 +21,7 @@ import { Client } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import formatNumber from "@/lib/formatNumber";
 import PaymentHistory from "@/components/PaymentHistory";
+import { useStore } from "@/hooks/useStore";
 
 export default function ClientDetails() {
   const { cedula = "" } = useParams();
@@ -35,6 +34,7 @@ export default function ClientDetails() {
     queryKey: ["client", cedula],
     queryFn: () => getClientByIdRequest(cedula),
   });
+  const role = useStore(state => state.auth.user?.role);
 
   const [isUpdateClientOpen, setIsUpdateClientOpen] = useState(false);
   const [isRemoveClientOpen, setIsRemoveClientOpen] = useState(false);
@@ -104,9 +104,11 @@ export default function ClientDetails() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={handleUpdateClientOpen}>Editar cliente</DropdownMenuItem>
-              <DropdownMenuItem onClick={handleRemoveClientOpen} className="text-destructive">
-                Eliminar cliente
-              </DropdownMenuItem>
+              {role === "admin" && (
+                <DropdownMenuItem onClick={handleRemoveClientOpen} className="text-destructive">
+                  Eliminar cliente
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

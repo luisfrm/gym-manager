@@ -18,7 +18,7 @@ export const ClientRemoveDialog = ({ isOpen, onOpenChange, onClientRemoved = () 
     <Modal className="sm:max-w-md" isOpen={isOpen} onOpenChange={onOpenChange}>
       <ModalHeader
         title={`Remover cliente ${client?.firstname} ${client?.lastname}`}
-        description="¿Estás seguro de que deseas eliminar este cliente? Esta operacion no se puede deshacer."
+        description="¿Estás seguro de que deseas eliminar este cliente? Esto <strong>eliminará</strong> todos los pagos registrados por este cliente. <strong>Esta operacion no se puede deshacer.</strong>"
       />
       <ModalBody>
         <div className="flex justify-end gap-2">
