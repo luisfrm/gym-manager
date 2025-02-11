@@ -71,7 +71,7 @@ export interface GetClientsResponse {
 }
 
 export interface UpdateClientRequest extends CreateClientRequest {
-  _id: string;
+  _id?: string;
 }
 
 export interface UpdatePartialPaymentRequest {

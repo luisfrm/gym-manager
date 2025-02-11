@@ -1,5 +1,6 @@
 import Client from "../models/client.model";
 import Log from "../models/log.model";
+import Payment from "../models/payment.model";
 import { AppRequest, ClientPartial } from "../utils/types";
 import formatNumber from "../utils/formatNumber";
 
@@ -185,6 +186,8 @@ class ClientController {
       if (!client) {
         return res.status(404).json({ message: "Client not found" });
       }
+
+      await Payment.deleteMany({ client: client._id });
 
       await Log.create({
         message: `Cliente ${client.firstname} ${client.lastname}, cedula: ${formatNumber(client.cedula)} eliminado.`,

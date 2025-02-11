@@ -14,7 +14,7 @@ interface User {
 interface ActivityLog {
   _id: string;
   message: string;
-  user: User;
+  user: User | null;
   type: "created" | "updated" | "deleted";
   createdAt: string;
   updatedAt: string;
@@ -39,7 +39,7 @@ export default function ActivityLogs({ isLoading, logs }: ActivityLogsProps) {
     }
   };
 
-  const getUserInitials = (name: string) => {
+  const getUserInitials = (name = "M") => {
     return name
       .split(" ")
       .map(n => n[0])
@@ -61,11 +61,13 @@ export default function ActivityLogs({ isLoading, logs }: ActivityLogsProps) {
                 <div className="flex-1 space-y-1">
                   <p className="text-sm font-medium leading-none">{log.message}</p>
                   <div className="flex items-center gap-2">
-                    <Avatar className="h-6 w-6">
-                      <AvatarFallback className="text-xs">{getUserInitials(log.user.name)}</AvatarFallback>
-                    </Avatar>
+                    {log.user && (
+                      <Avatar className="h-6 w-6">
+                        <AvatarFallback className="text-xs">{getUserInitials(log.user.name)}</AvatarFallback>
+                      </Avatar>
+                    )}
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <span>{log.user.name}</span>
+                      <span>{log?.user?.name}</span>
                       <span>•</span>
                       <time dateTime={log.createdAt}>
                         {format(new Date(log.createdAt), "d 'de' MMMM 'a las' HH:mm", {
