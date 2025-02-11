@@ -64,7 +64,7 @@ export default function PaymentHistory({ payments, isLoading = false }: PaymentH
                     <div className="grid gap-2 text-sm">
                       <div className="flex items-center gap-2 text-muted-foreground">
                         <Calendar className="h-4 w-4" />
-                        <span>{format(new Date(payment.date), "d 'de' MMMM, yyyy", { locale: es })}</span>
+                        <span>{format(new Date(payment.date + "T04:00:00Z"), "d 'de' MMMM, yyyy", { locale: es })}</span>
                       </div>
                       <div className="flex items-center gap-2 text-muted-foreground">
                         <CreditCard className="h-4 w-4" />

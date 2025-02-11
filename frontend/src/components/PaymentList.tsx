@@ -87,7 +87,7 @@ export default function PaymentsList({ payments, isLoading, onUpdatedPayment }: 
             payments.map(payment => (
               <TableRow key={payment._id}>
                 <TableCell className="font-medium">
-                  {format(new Date(payment.date), "d 'de' MMMM, yyyy", { locale: es })}
+                  {format(new Date(payment.date + "T04:00:00Z"), "dd 'de' MMMM, yyyy", { locale: es })}
                 </TableCell>
                 <TableCell className="text-ellipsis whitespace-nowrap flex items-center gap-2 font-bold">
                   <Link to={`/clients/${payment.clientCedula}`}>{formatNumber(payment.clientCedula)}</Link>
