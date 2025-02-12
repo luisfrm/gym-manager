@@ -24,7 +24,7 @@ const clientSchema = z.object({
   cedula: z.string().min(3, { message: "La cédula es requerida" }),
   firstname: z.string().min(3, { message: "El nombre es requerido" }),
   lastname: z.string().min(3, { message: "El apellido es requerido" }),
-  expiredDate: z.string().min(1, { message: "La fecha de vencimiento es requerida" }),
+  expiredDate: z.string().min(1, { message: "La fecha es requerida" }),
   email: z.string().optional(),
   phone: z.string().optional(),
   address: z.string().optional(),
