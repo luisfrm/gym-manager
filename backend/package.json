@@ -26,6 +26,7 @@
     "@types/morgan": "^1.9.9",
     "@types/express": "^5.0.0",
     "@types/node": "^22.10.2",
+    "@types/bcryptjs": "^2.4.6",
     "ts-node-dev": "^2.0.0",
     "dotenv": "^16.4.7",
     "typescript": "^5.7.2"
