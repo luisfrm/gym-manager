@@ -21,7 +21,6 @@ const ProtectedRoute: React.FC = () => {
     onSuccess: (data: RefreshTokenResponse) => {
       refreshToken(data);
       setWasTokenExpiredShowed(false);
-      localStorage.setItem("token", JSON.stringify(data.token));
     },
     onError: (error: AxiosError) => {
       console.error(error);
@@ -65,8 +64,9 @@ const ProtectedRoute: React.FC = () => {
 
   useEffect(() => {
     if (tokenExpiration) {
+      const expirationDate = new Date(tokenExpiration);
       const currentTime = Date.now();
-      const timeUntilExpiration = (tokenExpiration.getTime() - currentTime) / 1000;
+      const timeUntilExpiration = (expirationDate.getTime() - currentTime) / 1000;
       setTimeLeft(timeUntilExpiration);
     }
   }, [tokenExpiration]);

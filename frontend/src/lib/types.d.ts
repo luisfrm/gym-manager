@@ -11,19 +11,19 @@ export interface AuthState {
   isAuthenticated: boolean;
   user: User | null;
   error: string | null;
-  token: string | null;
-  tokenExpiration: Date | null;
+  token: string;
+  tokenExpiration: string | null;
 }
 
 export interface TokenState {
   token: string;
-  tokenExpiration: Date;
+  tokenExpiration: string;
 }
 
 export interface LoginResponse {
   token: string;
   user: User;
-  tokenExpiration: Date;
+  tokenExpiration: string;
 }
 
 export interface LoginRequest {
@@ -175,5 +175,5 @@ export interface GetPaymentsResponse {
 
 export interface RefreshTokenResponse {
   token: string;
-  tokenExpiration: Date;
+  tokenExpiration: string;
 }

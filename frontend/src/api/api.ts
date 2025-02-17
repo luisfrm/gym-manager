@@ -17,11 +17,15 @@ import {
   ValidateTokenResponse,
 } from "@/lib/types";
 import axios from "axios";
+import { useStore } from "@/hooks/useStore";
 
-const getToken = () => {
-  const token = localStorage.getItem("token");
-  return token ? JSON.parse(token) : null;
-};
+// Function to get token from local storage. Uncomment if needed.
+// const getToken = () => {
+//   const AppStore = localStorage.getItem("AppStore") || "";
+//   const AppStoreParsed = JSON.parse(AppStore);
+//   const token = AppStoreParsed.state.auth.token;
+//   return token;
+// };
 
 const api = axios.create({
   baseURL: API_URL,
@@ -31,7 +35,8 @@ const api = axios.create({
 });
 
 api.interceptors.request.use(config => {
-  const token = getToken();
+  const token = useStore.getState().auth.token;
+  // const token = getToken();
   if (token) config.headers["Authorization"] = `Bearer ${token}`;
   return config;
 });
