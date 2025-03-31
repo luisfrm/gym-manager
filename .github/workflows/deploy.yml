@@ -29,16 +29,16 @@ jobs:
           node-version: lts/*
 
       - name: Install step
-        run: "cd backend && npm install"
+        run: "npm run install-backend"
 
       - name: Build step
-        run: "npm run dev"
+        run: "npm run start-backend"
 
       - name: Upload to Deno Deploy
         uses: denoland/deployctl@v1
         with:
           project: "luisfrm-gym-manager"
           entrypoint: "./backend/src/index.ts"
-          root: "./backend"
+          root: ""
           
           
