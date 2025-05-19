@@ -304,15 +304,6 @@ class PaymentController {
         }
       };
 
-      console.log('Current Month Payments:', currentMonthPayments.length);
-      console.log('Last Month Payments:', lastMonthPayments.length);
-      console.log('Today Payments:', todayPayments.length);
-      console.log('Current Month Total:', currentMonthTotal);
-      console.log('Last Month Total:', { USD: lastMonthUSD, VES: lastMonthVES });
-      console.log('USD Change:', usdChange.toFixed(2) + '%');
-      console.log('VES Change:', vesChange.toFixed(2) + '%');
-      console.log('Weighted Change:', weightedChange.toFixed(2) + '%');
-
       res.json({
         currentMonthTotal,
         todayTotal,
