@@ -3,7 +3,7 @@ import Template from "./Template";
 import { GetPaymentsResponse } from "@/lib/types";
 import { useStore } from "@/hooks/useStore";
 import SquareWidget from "@/components/SquareWidget";
-import { ChartNoAxesCombined, DollarSign, Search, Trash2 } from "lucide-react";
+import { ChartNoAxesCombined, DollarSign, Search, Receipt, Calendar } from "lucide-react";
 import { PaymentDialog } from "@/components/dialogs/PaymentDialog";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -11,15 +11,20 @@ import { Input } from "@/components/ui/input";
 import { ClientDialog } from "@/components/dialogs/ClientDialog";
 import { useQuery } from "@tanstack/react-query";
 import { useDebounce } from "@/hooks/useDebounce";
-import { getPaymentsRequest } from "@/api/api";
+import { getPaymentsRequest, getPaymentTotalsRequest } from "@/api/api";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Pagination from "@/components/Pagination";
+import { formatReportTitle } from "@/lib/reports";
+import WidgetsContainer from "@/components/WidgetsContainer";
+import { useQueryClient } from "@tanstack/react-query";
+import { ROLES } from "@/lib/config";
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 10;
 
 const Payments = () => {
   const username = useStore(state => state.auth.user?.username ?? "");
+  const role = useStore(state => state.auth.user?.role ?? "");
   const [isOpenPaymentDialog, setIsOpenPaymentDialog] = useState(false);
   const [isNewClientModalOpen, setIsNewClientModalOpen] = useState(false);
   const [page, setPage] = useState(DEFAULT_PAGE);
@@ -28,6 +33,7 @@ const Payments = () => {
   const [sortField, setSortField] = useState("updatedAt");
   const [sortOrder, setSortOrder] = useState("desc");
   const debouncedSearch = useDebounce(search, 500);
+  const queryClient = useQueryClient();
 
   const InitialPaymentsResponse: GetPaymentsResponse = {
     info: {
@@ -49,9 +55,14 @@ const Payments = () => {
   });
 
   const {
-    info: { total = 0, pages = 0, next = null, prev = null },
+    info: { pages = 0, next = null, prev = null },
     results: payments = [],
   } = data ?? InitialPaymentsResponse;
+
+  const { data: paymentTotals, refetch: refetchPaymentTotals } = useQuery({
+    queryKey: ["paymentTotals"],
+    queryFn: getPaymentTotalsRequest,
+  });
 
   useEffect(() => {
     refetchPayments();
@@ -67,6 +78,8 @@ const Payments = () => {
 
   const onPaymentCreated = () => {
     refetchPayments();
+    queryClient.invalidateQueries({ queryKey: ["paymentTotals"] });
+    refetchPaymentTotals();
   };
 
   const handleSearchPayments = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -87,6 +100,10 @@ const Payments = () => {
     setPage(page - 1);
   };
 
+  const handlePageChange = (value: number) => {
+    setPage(value);
+  };
+
   const handleChangeSortField = (value: string) => {
     setSortField(value);
     setPage(DEFAULT_PAGE);
@@ -99,6 +116,7 @@ const Payments = () => {
 
   const handleOnUpdatedPayment = () => {
     refetchPayments();
+    refetchPaymentTotals();
   };
 
   return (
@@ -109,34 +127,46 @@ const Payments = () => {
         </h2>
         <p className="text-neutral-900 text-sm">Aquí podrás ver información de los pagos.</p>
       </header>
-      <section className="flex flex-col lg:flex-row gap-4 w-full">
+
+      <WidgetsContainer>
         <SquareWidget
           className="bg-slate-900 flex-1"
-          title={"0"}
-          subtitle="Total de ingresos del mes actual"
-          link="/clients"
-          icon={<DollarSign className="text-slate-900 w-8 h-8" />}
+          title={paymentTotals?.todayPaymentsCount?.toString() ?? "0"}
+          subtitle="Total de pagos del día actual"
+          link="/payments"
+          icon={<Calendar className="text-white w-8 h-8" />}
           fontColor="text-white"
+          iconBgColor="bg-blue-700"
         />
         <SquareWidget
           className="bg-lime-500 flex-1"
-          title={"0"}
-          subtitle="Total de ingresos de la semana pasada"
+          title={formatReportTitle(paymentTotals?.todayTotal?.current || { USD: 0, VES: 0 })}
+          subtitle="Total de ingresos del día"
+          link="/payments"
+          icon={<Receipt className="text-white w-8 h-8" />}
+          fontColor="text-white"
+          iconBgColor="bg-lime-700"
+        />
+        <SquareWidget
+          className="bg-emerald-500 flex-1"
+          title={paymentTotals?.currentMonthPaymentsCount?.toString() ?? "0"}
+          subtitle="Total de pagos del mes actual"
           link="/payments"
           icon={<ChartNoAxesCombined className="text-white w-8 h-8" />}
           fontColor="text-white"
-          iconBgColor="bg-slate-900"
+          iconBgColor="bg-emerald-700"
         />
-        <SquareWidget
-          className="bg-white flex-1"
-          title={"0"}
-          subtitle="Total de ingresos del mes anterior"
-          link="/clients"
-          icon={<Trash2 className="text-slate-900 w-8 h-8" />}
-          fontColor="text-dark"
-          iconBgColor="bg-slate-300"
-        />
-      </section>
+        {role === ROLES.ADMIN && (
+          <SquareWidget
+            className="bg-blue-500 flex-1"
+            title={formatReportTitle(paymentTotals?.currentMonthTotal?.current || { USD: 0, VES: 0 })}
+            subtitle="Total de ingresos del mes actual"
+            link="/payments"
+            icon={<DollarSign className="text-slate-900 w-8 h-8" />}
+            fontColor="text-white"
+          />
+        )}
+      </WidgetsContainer>
       <section className="data-table w-full flex flex-col gap-4">
         <div className="flex justify-between items-center gap-2">
           <Button className="bg-slate-900 text-white" onClick={onOpenChangePaymentDialog}>
@@ -186,13 +216,13 @@ const Payments = () => {
         {pages > 1 && (
           <Pagination
             isLoading={isLoadingPayments}
-            total={total}
-            pages={pages}
+            totalPages={pages}
             next={next}
             prev={prev}
             currentPage={page}
             onPageNext={handlePageNext}
             onPagePrev={handlePagePrev}
+            onPageChange={handlePageChange}
           />
         )}
       </section>

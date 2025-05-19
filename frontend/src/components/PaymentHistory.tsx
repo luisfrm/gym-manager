@@ -16,20 +16,28 @@ interface PaymentHistoryProps {
 
 export default function PaymentHistory({ payments, isLoading = false }: PaymentHistoryProps) {
   const getStatusBadge = (status: Payment["paymentStatus"]) => {
-    const variants = {
-      paid: "success",
-      pending: "warning",
-      failed: "destructive",
-    };
-    const labels = {
-      paid: "Pagado",
-      pending: "Pendiente",
-      failed: "Fallido",
-    };
-
-    return (
-      <Badge variant={variants[status] as "default" | "secondary" | "outline" | "destructive"}>{labels[status]}</Badge>
-    );
+    switch (status) {
+      case "paid":
+        return (
+          <Badge variant="default" className="bg-green-500 text-white">
+            Pagado
+          </Badge>
+        );
+      case "pending":
+        return (
+          <Badge variant="secondary" className="bg-yellow-500 text-white">
+            Pendiente
+          </Badge>
+        );
+      case "failed":
+        return (
+          <Badge variant="destructive" className="bg-red-500 text-white">
+            Fallido
+          </Badge>
+        );
+      default:
+        return null;
+    }
   };
 
   const formatAmount = (amount: string, currency: "USD" | "VES") => {
@@ -64,7 +72,9 @@ export default function PaymentHistory({ payments, isLoading = false }: PaymentH
                     <div className="grid gap-2 text-sm">
                       <div className="flex items-center gap-2 text-muted-foreground">
                         <Calendar className="h-4 w-4" />
-                        <span>{format(new Date(payment.date + "T04:00:00Z"), "d 'de' MMMM, yyyy", { locale: es })}</span>
+                        <span>
+                          {format(new Date(payment.date + "T04:00:00Z"), "d 'de' MMMM, yyyy", { locale: es })}
+                        </span>
                       </div>
                       <div className="flex items-center gap-2 text-muted-foreground">
                         <CreditCard className="h-4 w-4" />

@@ -39,18 +39,13 @@ const ClientData = ({ isLoading, clients, limit = 10 }: ClientDataProps) => {
           <TableCaption>Lista de clientes.</TableCaption>
         </Table>
       ) : (
+        // Mobile view
         <section className="flex flex-col gap-4">
           {clients.length > 0 &&
             clients.map(client => (
               <ClientCard
+                client={client}
                 key={client.cedula}
-                address={client.address}
-                cedula={client.cedula}
-                expiredDate={formatDate(client.expiredDate)}
-                firstname={client.firstname}
-                lastname={client.lastname}
-                email={client.email}
-                phone={client.phone}
               />
             ))}
         </section>
@@ -63,47 +58,81 @@ interface ClientBodyProps {
   clients: Client[];
 }
 
+interface TableCellProps {
+  children: React.ReactNode;
+  className?: string;
+  isLink?: boolean;
+  to?: string;
+}
+
+const TableCellContent = ({ children, className = "", isLink = false, to }: TableCellProps) => {
+  const cellContent = isLink && to ? (
+    <Link to={to} className="block w-full">
+      {children}
+    </Link>
+  ) : (
+    children
+  );
+
+  return (
+    <TableCell className={`text-ellipsis whitespace-nowrap max-w-[200px] overflow-hidden text-start h-10 ${className}`}>
+      {cellContent}
+    </TableCell>
+  );
+};
+
 const ClientBody = ({ clients }: ClientBodyProps) => {
+  if (clients.length === 0) return null;
+
   return (
     <>
-      {clients.length > 0 &&
-        clients.map((client: Client, index: number) => (
-          <TableRow key={client.cedula}>
-            <TableCell key={client.cedula} className="font-bold text-ellipsis whitespace-nowrap py-2">
-              {index + 1}
-            </TableCell>
-            <TableCell className="text-ellipsis whitespace-nowrap flex items-center gap-2">
+      {clients.map((client: Client, index: number) => (
+        <TableRow key={client.cedula}>
+          <TableCellContent className="font-bold">
+            {index + 1}
+          </TableCellContent>
+          
+          <TableCellContent>
+            <div className="flex items-center gap-2">
               {formatNumber(client.cedula)}
               <CopyToClipboard text={client.cedula} />
-            </TableCell>
-            <TableCell className="font-bold text-ellipsis whitespace-nowrap max-w-[200px] overflow-hidden text-start">
-              <Link to={`/clients/${client.cedula}`}>{formatNumber(client.firstname)}</Link>
-            </TableCell>
-            <TableCell className="text-ellipsis whitespace-nowrap max-w-[200px] overflow-hidden text-start">
-              {client.lastname}
-            </TableCell>
-            <TableCell className="text-ellipsis whitespace-nowrap max-w-[200px] overflow-hidden text-start">
-              {client.email}
-            </TableCell>
-            <TableCell className="text-ellipsis whitespace-nowrap max-w-[200px] overflow-hidden text-start">
-              {client.phone}
-            </TableCell>
-            <TableCell className="text-ellipsis whitespace-nowrap max-w-[200px] overflow-hidden text-start">
-              {client.address}
-            </TableCell>
-            <TableCell className="text-ellipsis whitespace-nowrap max-w-[200px] overflow-hidden text-start">
-              {formatDate(client.expiredDate)}
-            </TableCell>
-            <TableCell className="text-right">
-              <Badge
-                variant="default"
-                className={`text-white ${isDateActive(client.expiredDate) ? "bg-green-500" : "bg-red-500"}`}
-              >
-                {isDateActive(client.expiredDate) ? "Activo" : "Inactivo"}
-              </Badge>
-            </TableCell>
-          </TableRow>
-        ))}
+            </div>
+          </TableCellContent>
+
+          <TableCellContent isLink to={`/clients/${client.cedula}`} className="font-bold">
+            {formatNumber(client.firstname)}
+          </TableCellContent>
+
+          <TableCellContent>
+            {client.lastname}
+          </TableCellContent>
+
+          <TableCellContent>
+            {client.email}
+          </TableCellContent>
+
+          <TableCellContent>
+            {client.phone}
+          </TableCellContent>
+
+          <TableCellContent>
+            {client.address}
+          </TableCellContent>
+
+          <TableCellContent>
+            {formatDate(client.expiredDate)}
+          </TableCellContent>
+
+          <TableCellContent className="text-right">
+            <Badge
+              variant="default"
+              className={`text-white ${isDateActive(client.expiredDate) ? "bg-green-500" : "bg-red-500"}`}
+            >
+              {isDateActive(client.expiredDate) ? "Activo" : "Inactivo"}
+            </Badge>
+          </TableCellContent>
+        </TableRow>
+      ))}
     </>
   );
 };

@@ -11,19 +11,19 @@ export interface AuthState {
   isAuthenticated: boolean;
   user: User | null;
   error: string | null;
-  token: string | null;
-  tokenExpiration: Date | null;
+  token: string;
+  tokenExpiration: string | null;
 }
 
 export interface TokenState {
   token: string;
-  tokenExpiration: Date;
+  tokenExpiration: string;
 }
 
 export interface LoginResponse {
   token: string;
   user: User;
-  tokenExpiration: Date;
+  tokenExpiration: string;
 }
 
 export interface LoginRequest {
@@ -77,13 +77,13 @@ export interface UpdateClientRequest extends CreateClientRequest {
 export interface UpdatePartialPaymentRequest {
   _id?: string;
   client?: Client; // Puede ser el objeto poblado o solo la cedula
-  clientCedula?: string;
-  amount?: string;
+  amount?: number;
   date?: string;
   service?: string;
-  description?: string;
   paymentMethod?: string;
   paymentReference?: string;
+  description?: string;
+  expiredDate?: string;
   paymentStatus?: "pending" | "paid" | "failed";
   currency?: "USD" | "VES";
 }
@@ -95,6 +95,8 @@ export interface DeleteClientRequest {
 export interface ClientStatisticsResponse {
   newClientsLastMonth: number;
   clientsExpiringNextWeek: number;
+  clientsExpiringNext30Days: number;
+  activeClients: number;
   totalClients: number;
 }
 
@@ -175,5 +177,5 @@ export interface GetPaymentsResponse {
 
 export interface RefreshTokenResponse {
   token: string;
-  tokenExpiration: Date;
+  tokenExpiration: string;
 }

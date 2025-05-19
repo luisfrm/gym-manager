@@ -16,7 +16,6 @@ import { LoginResponse } from "@/lib/types";
 import { AxiosError } from "axios";
 import { TIME_TO_HIDE_ERROR } from "@/lib/config";
 import { useNavigate } from "react-router-dom";
-import useLocalStorage from "@/hooks/useLocalStorage";
 
 const loginSchema = z.object({
   email: z.string().email({
@@ -46,7 +45,6 @@ export default function LoginForm() {
   const navigate = useNavigate();
   const { setAuth, auth } = useStore();
   const eyeClasses = "absolute top-1/2 right-2 cursor-pointer";
-  const [, setToken] = useLocalStorage("token", "");
 
   const changePasswordType = () => {
     if (passwordType === "password") setPasswordType("text");
@@ -63,7 +61,6 @@ export default function LoginForm() {
         token: data.token,
         tokenExpiration: data.tokenExpiration,
       });
-      setToken(data.token);
 
       navigate("/dashboard");
     },
@@ -73,7 +70,7 @@ export default function LoginForm() {
         const errorMessage =
           (error.response?.data as { message: string })?.message ?? "Correo o contraseña incorrectos";
         resetField("password");
-        setAuth({ isAuthenticated: false, user: null, error: errorMessage, token: null, tokenExpiration: null });
+        setAuth({ isAuthenticated: false, user: null, error: errorMessage, token: "", tokenExpiration: null });
         toast("Error al iniciar sesión", {
           classNames: {
             icon: "text-red-600",
@@ -84,7 +81,7 @@ export default function LoginForm() {
         });
 
         setTimeout(() => {
-          setAuth({ isAuthenticated: false, user: null, error: null, token: null, tokenExpiration: null });
+          setAuth({ isAuthenticated: false, user: null, error: null, token: "", tokenExpiration: null });
         }, TIME_TO_HIDE_ERROR);
       } else {
         toast("Error al iniciar sesión", {

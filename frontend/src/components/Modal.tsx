@@ -7,6 +7,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
+
 export const Modal = ({
   isOpen,
   onOpenChange,
@@ -18,14 +20,45 @@ export const Modal = ({
   children: React.ReactNode;
   className?: string;
 }) => {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
+
+  if (!mounted) return null;
+
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      onOpenChange(false);
+    }
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className={cn("py-8", className)}>{children}</DialogContent>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+      <DialogContent 
+        className={cn("py-8", className)}
+        onEscapeKeyDown={(e) => {
+          e.preventDefault();
+          handleOpenChange(false);
+        }}
+        onInteractOutside={(e) => {
+          e.preventDefault();
+        }}
+      >
+        {children}
+      </DialogContent>
     </Dialog>
   );
 };
 
-export const ModalHeader = ({ title, description }: { title: string; description: string }) => {
+interface ModalHeaderProps {
+  title: string;
+  description: string;
+}
+
+export const ModalHeader = ({ title, description }: ModalHeaderProps) => {
   return (
     <DialogHeader>
       <DialogTitle>{title}</DialogTitle>
@@ -36,17 +69,20 @@ export const ModalHeader = ({ title, description }: { title: string; description
   );
 };
 
-export const ModalBody = ({ children }: { children: React.ReactNode }) => {
+interface ModalBodyProps {
+  children: React.ReactNode;
+}
+
+export const ModalBody = ({ children }: ModalBodyProps) => {
   return children;
 };
 
-export const ModalFooter = ({
-  children,
-  className = "flex justify-end",
-}: {
+interface ModalFooterProps {
   children: React.ReactNode;
   className?: string;
-}) => {
+}
+
+export const ModalFooter = ({ children, className = "flex justify-end" }: ModalFooterProps) => {
   return <DialogFooter className={cn(className)}>{children}</DialogFooter>;
 };
 

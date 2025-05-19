@@ -14,6 +14,7 @@ import { Button } from "./ui/button";
 import { Pencil } from "lucide-react";
 import { PaymentUpdateDialog } from "./dialogs/PaymentUpdateDialog";
 import { useState } from "react";
+import { formatCurrency } from "@/lib/currency";
 
 interface PaymentsListProps {
   payments: Payment[];
@@ -21,46 +22,85 @@ interface PaymentsListProps {
   onUpdatedPayment?: () => void;
 }
 
+const getStatusBadge = (status: Payment["paymentStatus"]) => {
+  const statusConfig = {
+    paid: { label: "Pagado", className: "bg-green-500 text-white" },
+    pending: { label: "Pendiente", className: "bg-yellow-500 text-white" },
+    failed: { label: "Fallido", className: "bg-red-500 text-white" },
+  };
+
+  const config = statusConfig[status];
+  return config ? (
+    <Badge variant="default" className={config.className}>
+      {config.label}
+    </Badge>
+  ) : null;
+};
+
+const PaymentRow = ({ payment, onUpdate }: { payment: Payment; onUpdate: (payment: Payment) => void }) => (
+  <TableRow>
+    <TableCell className="font-medium">
+      {format(new Date(payment.date + "T04:00:00Z"), "dd 'de' MMMM, yyyy", { locale: es })}
+    </TableCell>
+    <TableCell>
+      <div className="flex items-center justify-center gap-2">
+        <Link to={`/clients/${payment.clientCedula}`} className="font-bold">
+          {formatNumber(payment.clientCedula)}
+        </Link>
+        <CopyToClipboard text={payment.clientCedula} />
+      </div>
+    </TableCell>
+    <TableCell className="text-center">
+      {typeof payment.client !== "string"
+        ? `${payment.client.firstname} ${payment.client.lastname}`
+        : "Cliente no disponible"}
+    </TableCell>
+    <TableCell className="text-center">
+      {typeof payment.client !== "string" &&
+        payment.client.expiredDate &&
+        formatDate(payment.client.expiredDate)}
+    </TableCell>
+    <TableCell className="text-center">{payment.service}</TableCell>
+    <TableCell className="text-center">
+      {formatCurrency(Number(payment.amount), payment.currency)}
+    </TableCell>
+    <TableCell className="text-center">{payment.paymentMethod}</TableCell>
+    <TableCell className="text-center">{payment.paymentReference}</TableCell>
+    <TableCell className="text-center">{getStatusBadge(payment.paymentStatus)}</TableCell>
+    <TableCell className="text-center">
+      <Button variant="outline" className="h-8 w-8 p-0" onClick={() => onUpdate(payment)}>
+        <span className="sr-only">Editar pago</span>
+        <Pencil className="h-4 w-4" />
+      </Button>
+    </TableCell>
+  </TableRow>
+);
+
+const PaymentsWaitingBody = ({ limit = 10 }: { limit?: number }) => (
+  <>
+    {Array(limit)
+      .fill(0)
+      .map((_, i) => (
+        <TableRow key={i}>
+          {Array(10)
+            .fill(0)
+            .map((_, j) => (
+              <TableCell key={j} className="text-center">
+                <Skeleton className="h-[20px] w-[100px] mx-auto" />
+              </TableCell>
+            ))}
+        </TableRow>
+      ))}
+  </>
+);
+
 export default function PaymentsList({ payments, isLoading, onUpdatedPayment }: PaymentsListProps) {
-  const formatCurrency = (amount: number, currency: "USD" | "VES") => {
-    return new Intl.NumberFormat("es-VE", { style: "currency", currency }).format(amount);
-  };
   const [isOpenPaymentDialog, setIsOpenPaymentDialog] = useState(false);
-  const [payment, setPayment] = useState<Payment | null>(null);
+  const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
 
-  const getStatusBadge = (status: Payment["paymentStatus"]) => {
-    switch (status) {
-      case "paid":
-        return (
-          <Badge variant="default" className="bg-green-500 text-white">
-            Pagado
-          </Badge>
-        );
-      case "pending":
-        return (
-          <Badge variant="secondary" className="bg-yellow-500 text-white">
-            Pendiente
-          </Badge>
-        );
-      case "failed":
-        return (
-          <Badge variant="destructive" className="bg-red-500 text-white">
-            Fallido
-          </Badge>
-        );
-      default:
-        return null;
-    }
-  };
-
-  const handleUpdatePayment = (payment: Payment) => () => {
-    setPayment(payment);
+  const handleUpdatePayment = (payment: Payment) => {
+    setSelectedPayment(payment);
     setIsOpenPaymentDialog(true);
-    onUpdatedPayment?.();
-  };
-
-  const onOpenChangePaymentDialog = () => {
-    setIsOpenPaymentDialog(!isOpenPaymentDialog);
   };
 
   return (
@@ -68,7 +108,7 @@ export default function PaymentsList({ payments, isLoading, onUpdatedPayment }: 
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[180px]">Fecha</TableHead>
+            <TableHead className="text-center">Fecha</TableHead>
             <TableHead className="text-center">Cedula</TableHead>
             <TableHead className="text-center">Cliente</TableHead>
             <TableHead className="text-center">Expira</TableHead>
@@ -76,8 +116,8 @@ export default function PaymentsList({ payments, isLoading, onUpdatedPayment }: 
             <TableHead className="text-center">Monto</TableHead>
             <TableHead className="text-center">Método de Pago</TableHead>
             <TableHead className="text-center">Referencia</TableHead>
-            <TableHead className="text-right">Estado</TableHead>
-            <TableHead className="text-right">Acciones</TableHead>
+            <TableHead className="text-center">Estado</TableHead>
+            <TableHead className="text-center">Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -85,85 +125,19 @@ export default function PaymentsList({ payments, isLoading, onUpdatedPayment }: 
             <PaymentsWaitingBody />
           ) : (
             payments.map(payment => (
-              <TableRow key={payment._id}>
-                <TableCell className="font-medium">
-                  {format(new Date(payment.date + "T04:00:00Z"), "dd 'de' MMMM, yyyy", { locale: es })}
-                </TableCell>
-                <TableCell className="text-ellipsis whitespace-nowrap flex items-center gap-2 font-bold">
-                  <Link to={`/clients/${payment.clientCedula}`}>{formatNumber(payment.clientCedula)}</Link>
-                  <CopyToClipboard text={payment.clientCedula} />
-                </TableCell>
-                <TableCell className="text-center">
-                  {typeof payment.client !== "string"
-                    ? `${payment.client.firstname} ${payment.client.lastname}`
-                    : "Cliente no disponible"}
-                </TableCell>
-                <TableCell className="text-center">
-                  {typeof payment.client !== "string" &&
-                    payment.client.expiredDate &&
-                    formatDate(payment.client.expiredDate)}
-                </TableCell>
-                <TableCell className="text-center">{payment.service}</TableCell>
-                <TableCell className="text-center">
-                  {formatCurrency(Number(payment.amount), payment.currency)}
-                </TableCell>
-                <TableCell className="text-center">{payment.paymentMethod}</TableCell>
-                <TableCell className="text-center">{payment.paymentReference}</TableCell>
-                <TableCell className="text-right">{getStatusBadge(payment.paymentStatus)}</TableCell>
-                <TableCell className="text-right">
-                  <Button variant="outline" className="h-8 w-8 p-0" onClick={handleUpdatePayment(payment)}>
-                    <span className="sr-only">Abrir menú</span>
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                </TableCell>
-              </TableRow>
+              <PaymentRow key={payment._id} payment={payment} onUpdate={handleUpdatePayment} />
             ))
           )}
         </TableBody>
       </Table>
-      {payment && (
-        <PaymentUpdateDialog onPaymentUpdated={onUpdatedPayment} isOpen={isOpenPaymentDialog} onOpenChange={onOpenChangePaymentDialog} payment={payment} />
+      {selectedPayment && (
+        <PaymentUpdateDialog
+          onPaymentUpdated={onUpdatedPayment}
+          isOpen={isOpenPaymentDialog}
+          onOpenChange={() => setIsOpenPaymentDialog(false)}
+          payment={selectedPayment}
+        />
       )}
     </div>
   );
 }
-
-const PaymentsWaitingBody = ({ limit = 10 }: { limit?: number }) => {
-  return (
-    <>
-      {Array(limit)
-        .fill(0)
-        .map((_, i) => (
-          <TableRow key={i}>
-            <TableCell className="font-bold py-4">
-              <Skeleton className="h-[20px] w-[10px]" />
-            </TableCell>
-            <TableCell className="font-bold py-4">
-              <Skeleton className="h-[20px] w-[80px]" />
-            </TableCell>
-            <TableCell className="max-w-[200px] text-start">
-              <Skeleton className="h-[20px] w-[60px]" />
-            </TableCell>
-            <TableCell className="max-w-[200px] text-start">
-              <Skeleton className="h-[20px] w-[80px]" />
-            </TableCell>
-            <TableCell className="max-w-[200px] text-start">
-              <Skeleton className="h-[20px] w-[150px]" />
-            </TableCell>
-            <TableCell className="max-w-[200px] text-start">
-              <Skeleton className="h-[20px] w-[100px]" />
-            </TableCell>
-            <TableCell className="text-right">
-              <Skeleton className="h-[20px] w-[150px]" />
-            </TableCell>
-            <TableCell className="text-right">
-              <Skeleton className="h-[20px] w-[80px]" />
-            </TableCell>
-            <TableCell className="text-right">
-              <Skeleton className="h-[20px] w-[50px]" />
-            </TableCell>
-          </TableRow>
-        ))}
-    </>
-  );
-};
