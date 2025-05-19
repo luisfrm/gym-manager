@@ -10,6 +10,7 @@
     "start-all": "concurrently 'cd frontend && bun run dev' 'cd backend && bun run dev'",
     "start-frontend": "cd frontend && bun run dev",
     "start-backend": "cd backend && bun run dev",
+    "start-backend:services": "cd backend && docker-compose up",
     "build-backend": "cd backend && bun run build",
     "format": "prettier --write ."
   },
