@@ -1,6 +1,6 @@
 import { useStore } from "@/hooks/useStore";
 import Template from "./Template";
-import { ChartNoAxesCombined, Trash2, UsersRound } from "lucide-react";
+import { ChartNoAxesCombined, Trash2, UsersRound, CalendarClock } from "lucide-react";
 import SquareWidget from "@/components/SquareWidget";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -11,8 +11,10 @@ import { useQuery } from "@tanstack/react-query";
 import { getClientsRequest, getClientStatisticsRequest } from "@/api/api";
 import { ClientStatisticsResponse, GetClientsResponse } from "@/lib/types";
 import Pagination from "@/components/Pagination";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useDebounce } from "@/hooks/useDebounce";
+import SelectComponent from "@/components/Select";
+import WidgetsContainer from "@/components/WidgetsContainer";
+import { useQueryClient } from "@tanstack/react-query";
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 10;
@@ -30,8 +32,34 @@ const InitialClientsResponse: GetClientsResponse = {
 const InitialClientStatisticsResponse: ClientStatisticsResponse = {
   newClientsLastMonth: 0,
   clientsExpiringNextWeek: 0,
+  clientsExpiringNext30Days: 0,
   totalClients: 0,
 };
+
+interface Option {
+  value: string;
+  label: string;
+}
+
+const sortOptions: Option[] = [
+  { value: "updatedAt", label: "Última actualización" },
+  { value: "firstname", label: "Nombre" },
+  { value: "lastname", label: "Apellido" },
+  { value: "email", label: "Email" },
+  { value: "expiredDate", label: "Fecha de vencimiento" },
+];
+
+const orderOptions: Option[] = [
+  { value: "asc", label: "Ascendente" },
+  { value: "desc", label: "Descendente" },
+];
+
+const limitsOptions: Option[] = [
+  { value: "10", label: "10" },
+  { value: "20", label: "20" },
+  { value: "50", label: "50" },
+  { value: "100", label: "100" },
+];
 
 const Clients = () => {
   const username = useStore(state => state.auth.user?.username ?? "");
@@ -49,7 +77,7 @@ const Clients = () => {
     refetch: refetchClients,
   } = useQuery<GetClientsResponse>({
     queryKey: ["clients", page, limit, debouncedSearch, sortField, sortOrder],
-    queryFn: () => getClientsRequest(page, limit, debouncedSearch, sortField, sortOrder),
+    queryFn: () => getClientsRequest(debouncedSearch, page, limit, sortField, sortOrder),
   });
 
   const { data: clientStatistic } = useQuery<ClientStatisticsResponse>({
@@ -58,12 +86,14 @@ const Clients = () => {
   });
 
   const {
-    info: { total = 0, pages = 0, next = null, prev = null },
+    info: { pages = 0, next = null, prev = null },
     results: clients = [],
   } = data ?? InitialClientsResponse;
 
   const { newClientsLastMonth, clientsExpiringNextWeek, totalClients } =
     clientStatistic ?? InitialClientStatisticsResponse;
+
+  const queryClient = useQueryClient();
 
   const handleOpenNewClientModal = () => {
     setIsNewClientModalOpen(!isNewClientModalOpen);
@@ -91,6 +121,10 @@ const Clients = () => {
     setPage(page - 1);
   };
 
+  const handlePageChange = (value: number) => {
+    setPage(value);
+  };
+
   const handleChangeSortField = (value: string) => {
     setSortField(value);
     setPage(DEFAULT_PAGE);
@@ -109,7 +143,8 @@ const Clients = () => {
         </h2>
         <p className="text-neutral-900 text-sm">Aquí podrás ver información de los clientes.</p>
       </header>
-      <section className="flex flex-col lg:flex-row gap-4 w-full">
+
+      <WidgetsContainer>
         <SquareWidget
           className="bg-slate-900 flex-1"
           title={totalClients.toString() ?? "0"}
@@ -122,21 +157,31 @@ const Clients = () => {
           className="bg-lime-500 flex-1"
           title={newClientsLastMonth.toString() ?? "0"}
           subtitle="Nuevos clientes"
-          link="/payments"
+          link="/clients"
           icon={<ChartNoAxesCombined className="text-white w-8 h-8" />}
           fontColor="text-white"
           iconBgColor="bg-slate-900"
         />
         <SquareWidget
-          className="bg-white flex-1"
+          className="bg-blue-500 flex-1"
           title={clientsExpiringNextWeek.toString() ?? "0"}
           subtitle="Clientes vencidos la siguiente semana"
           link="/clients"
-          icon={<Trash2 className="text-slate-900 w-8 h-8" />}
-          fontColor="text-dark"
-          iconBgColor="bg-slate-300"
+          icon={<Trash2 className="text-white w-8 h-8" />}
+          fontColor="text-white"
+          iconBgColor="bg-blue-700"
         />
-      </section>
+        <SquareWidget
+          className="bg-emerald-500 flex-1"
+          title={clientStatistic?.clientsExpiringNext30Days?.toString() ?? "0"}
+          subtitle="Clientes por vencer en 30 días"
+          link="/clients"
+          icon={<CalendarClock className="text-white w-8 h-8" />}
+          fontColor="text-white"
+          iconBgColor="bg-emerald-700"
+        />
+      </WidgetsContainer>
+
       <section
         id="clients-filter-bar"
         className="flex flex-col-reverse lg:flex-row justify-between items-center gap-4 w-full"
@@ -145,55 +190,48 @@ const Clients = () => {
           Agregar nuevo
         </Button>
         <Input placeholder="Buscar cliente" className="" onChange={handleSearchClient} />
-        <Select onValueChange={handleChangeSortField}>
-          <SelectTrigger className="w-full lg:w-[250px]">
-            <SelectValue defaultValue="updatedAt" placeholder="Ordenar por" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="updatedAt">Última actualización</SelectItem>
-            <SelectItem value="firstname">Nombre</SelectItem>
-            <SelectItem value="lastname">Apellido</SelectItem>
-            <SelectItem value="email">Email</SelectItem>
-            <SelectItem value="expiredDate">Fecha de vencimiento</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select onValueChange={handleChangeSortOrder}>
-          <SelectTrigger className="w-[250px]">
-            <SelectValue defaultValue="asc" placeholder="Ordenar de forma" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="asc">Ascendente</SelectItem>
-            <SelectItem value="desc">Descendente</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select onValueChange={handleChangeLimit}>
-          <SelectTrigger className="w-full lg:w-[250px]">
-            <SelectValue defaultValue="10" placeholder="Limite de clientes" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="10">10</SelectItem>
-            <SelectItem value="20">20</SelectItem>
-            <SelectItem value="30">30</SelectItem>
-          </SelectContent>
-        </Select>
+        <SelectComponent
+          onValueChange={handleChangeSortField}
+          className="w-full lg:w-[250px]"
+          items={sortOptions}
+          defaultValue="updatedAt"
+          placeholder="Ordenar por"
+        />
+        <SelectComponent
+          onValueChange={handleChangeSortOrder}
+          className="w-full lg:w-[250px]"
+          items={orderOptions}
+          defaultValue="asc"
+          placeholder="Ordenar de forma"
+        />
+        <SelectComponent
+          onValueChange={handleChangeLimit}
+          className="w-full lg:w-[250px]"
+          items={limitsOptions}
+          defaultValue={limitsOptions[0].value}
+          placeholder="Limite de clientes"
+        />
       </section>
       <section className="data-table w-full">
         <ClientData isLoading={isLoading} clients={clients ?? []} limit={limit} />
         {pages > 1 && (
           <Pagination
-          isLoading={isLoading}
-            total={total}
-            pages={pages}
+            isLoading={isLoading}
+            totalPages={pages}
             next={next}
             prev={prev}
             currentPage={page}
             onPageNext={handlePageNext}
             onPagePrev={handlePagePrev}
+            onPageChange={handlePageChange}
           />
         )}
       </section>
       <ClientDialog
-        onClientCreated={refetchClients}
+        onClientCreated={() => {
+          refetchClients();
+          queryClient.invalidateQueries({ queryKey: ["clientStatistics"] });
+        }}
         isOpen={isNewClientModalOpen}
         onOpenChange={handleOpenNewClientModal}
       />

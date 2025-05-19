@@ -52,7 +52,7 @@ export const paymentPartialSchema = z.object({
   service: z.string().nonempty().optional(),
   description: z.string().nonempty().optional(),
   paymentMethod: z.string().nonempty().optional(),
-  paymentReference: z.string().nonempty().optional(),
+  paymentReference: z.string().optional(),
   expiredDate: z.string().nonempty().optional(),
   paymentStatus: z.enum(["pending", "paid", "failed"]).default("pending").optional(),
   currency: z.enum(["USD", "VES"]).optional(),

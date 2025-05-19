@@ -1,25 +1,27 @@
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardFooter, CardHeader } from "./ui/card";
 import { Link } from "react-router-dom";
-type Props = {
-  className: string;
-  title: string;
+import { ReactNode } from "react";
+
+interface SquareWidgetProps {
+  title: ReactNode;
   subtitle: string;
   link: string;
-  icon: React.ReactNode;
-  fontColor: string;
+  icon: ReactNode;
+  className?: string;
+  fontColor?: string;
   iconBgColor?: string;
-};
+}
 
 const SquareWidget = ({
-  className,
   title,
   subtitle,
   link,
   icon,
-  fontColor = "text-white",
-  iconBgColor = "bg-white",
-}: Props) => {
+  className = "",
+  fontColor = "text-dark",
+  iconBgColor = "bg-slate-300",
+}: SquareWidgetProps) => {
   return (
     <Card className={cn("bg-lime-500 w-full lg:w-1/3 xl:w-1/5", className)}>
       <CardHeader className="bg-whiteflex items-start">

@@ -53,7 +53,7 @@ export default function ClientDetails() {
     mutationFn: updateClientRequest,
     onSuccess: (data: Client) => {
       console.log(data);
-      handleUpdateClientOpen();
+      refetch();
     },
   });
 
@@ -67,14 +67,12 @@ export default function ClientDetails() {
   };
 
   const handleRemoveClientOpen = () => {
-    setIsRemoveClientOpen(!isRemoveClientOpen);
+    setIsRemoveClientOpen(!isRemoveClientOpen)
   };
 
   const handleClientUpdated = (client: Client) => {
-    console.log("Cliente actualizado");
-    updateClientMutation.mutateAsync(client).then(() => {
-      refetch();
-    });
+    refetch();
+    handleUpdateClientOpen();
   };
 
   const handleClientRemoved = () => {
@@ -86,7 +84,7 @@ export default function ClientDetails() {
 
   return (
     <Template>
-      <div className="">
+      <section>
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" asChild>
@@ -193,7 +191,7 @@ export default function ClientDetails() {
             </Card>
           </div>
         </div>
-      </div>
+      </section>
       <ClientUpdateDialog
         isOpen={isUpdateClientOpen}
         onOpenChange={handleUpdateClientOpen}

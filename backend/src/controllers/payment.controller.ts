@@ -2,6 +2,15 @@ import Payment from "../models/payment.model";
 import Client from "../models/client.model";
 import Log from "../models/log.model";
 import { AppRequest } from "../utils/types";
+import { Request, Response } from "express";
+
+interface PaymentTotal {
+  current: {
+    USD: number;
+    VES: number;
+  };
+  change: number;
+}
 
 class PaymentController {
   static create = async (req: AppRequest, res: any) => {
@@ -202,6 +211,118 @@ class PaymentController {
     } catch (error) {
       console.error(error);
       return res.status(500).json({ message: "Error updating client" });
+    }
+  };
+
+  static getPaymentTotals = async (req: Request, res: Response) => {
+    try {
+      const currentDate = new Date();
+      const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+      const lastDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+      const firstDayOfLastMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
+      const lastDayOfLastMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0);
+      const today = currentDate.toISOString().split('T')[0];
+
+      // Get current month totals
+      const currentMonthPayments = await Payment.find({
+        date: {
+          $gte: firstDayOfMonth.toISOString().split('T')[0],
+          $lte: lastDayOfMonth.toISOString().split('T')[0]
+        },
+        paymentStatus: "paid"
+      });
+
+      // Get last month totals
+      const lastMonthPayments = await Payment.find({
+        date: {
+          $gte: firstDayOfLastMonth.toISOString().split('T')[0],
+          $lte: lastDayOfLastMonth.toISOString().split('T')[0]
+        },
+        paymentStatus: "paid"
+      });
+
+      // Get today's payments
+      const todayPayments = await Payment.find({
+        date: today,
+        paymentStatus: "paid"
+      });
+
+      // Get total payments count
+      const totalPayments = await Payment.countDocuments();
+
+      // Calculate current month totals
+      const currentMonthUSD = currentMonthPayments
+        .filter(p => p.currency === 'USD')
+        .reduce((sum, p) => sum + Number(p.amount), 0);
+      
+      const currentMonthVES = currentMonthPayments
+        .filter(p => p.currency === 'VES')
+        .reduce((sum, p) => sum + Number(p.amount), 0);
+
+      // Calculate last month totals
+      const lastMonthUSD = lastMonthPayments
+        .filter(p => p.currency === 'USD')
+        .reduce((sum, p) => sum + Number(p.amount), 0);
+      
+      const lastMonthVES = lastMonthPayments
+        .filter(p => p.currency === 'VES')
+        .reduce((sum, p) => sum + Number(p.amount), 0);
+
+      // Calculate percentage change for each currency
+      const usdChange = lastMonthUSD === 0 
+        ? (currentMonthUSD > 0 ? 100 : 0)
+        : ((currentMonthUSD - lastMonthUSD) / lastMonthUSD) * 100;
+
+      const vesChange = lastMonthVES === 0 
+        ? (currentMonthVES > 0 ? 100 : 0)
+        : ((currentMonthVES - lastMonthVES) / lastMonthVES) * 100;
+
+      // Calculate weighted average change based on total amounts
+      const totalCurrent = currentMonthUSD + currentMonthVES;
+      const totalLast = lastMonthUSD + lastMonthVES;
+      
+      const weightedChange = totalLast === 0
+        ? (totalCurrent > 0 ? 100 : 0)
+        : ((totalCurrent - totalLast) / totalLast) * 100;
+
+      const currentMonthTotal: PaymentTotal = {
+        current: {
+          USD: currentMonthUSD,
+          VES: currentMonthVES
+        },
+        change: Number(weightedChange.toFixed(2))
+      };
+
+      const todayTotal = {
+        current: {
+          USD: todayPayments
+            .filter(p => p.currency === 'USD')
+            .reduce((sum, p) => sum + Number(p.amount), 0),
+          VES: todayPayments
+            .filter(p => p.currency === 'VES')
+            .reduce((sum, p) => sum + Number(p.amount), 0)
+        }
+      };
+
+      console.log('Current Month Payments:', currentMonthPayments.length);
+      console.log('Last Month Payments:', lastMonthPayments.length);
+      console.log('Today Payments:', todayPayments.length);
+      console.log('Current Month Total:', currentMonthTotal);
+      console.log('Last Month Total:', { USD: lastMonthUSD, VES: lastMonthVES });
+      console.log('USD Change:', usdChange.toFixed(2) + '%');
+      console.log('VES Change:', vesChange.toFixed(2) + '%');
+      console.log('Weighted Change:', weightedChange.toFixed(2) + '%');
+
+      res.json({
+        currentMonthTotal,
+        todayTotal,
+        totalPayments,
+        currentMonthPaymentsCount: currentMonthPayments.length,
+        todayPaymentsCount: todayPayments.length
+      });
+    } catch (error) {
+      console.error('Error getting payment totals:', error);
+      res.status(500).json({ message: 'Error getting payment totals' });
     }
   };
 }

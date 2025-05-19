@@ -1,15 +1,25 @@
 import { useStore } from "@/hooks/useStore";
 import Template from "./Template";
-import { ChartNoAxesCombined, Trash2, UsersRound } from "lucide-react";
+import { ChartNoAxesCombined, DollarSign, TrendingUp, UsersRound, UserCheck } from "lucide-react";
 import SquareWidget from "@/components/SquareWidget";
 import { useQuery } from "@tanstack/react-query";
-import { getLogsRequest } from "@/api/api";
+import { getLogsRequest, getClientStatisticsRequest, getPaymentTotalsRequest } from "@/api/api";
 import { GetLogsResponse } from "@/lib/types";
 import ActivityLogs from "@/components/ActivityLogs";
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import Pagination from "@/components/Pagination";
+import { formatCurrency } from "@/lib/currency";
+import { formatReportTitle } from "@/lib/reports";
+import WidgetsContainer from "@/components/WidgetsContainer";
 
 const DEFAULT_PAGE = 1;
+
+interface DashboardStats {
+  totalClients: number;
+  newClientsLastMonth: number;
+  currentUSD: number;
+  growthPercentage: number;
+}
 
 const InitialLogsResponse: GetLogsResponse = {
   info: {
@@ -25,31 +35,53 @@ const Dashboard = () => {
   const username = useStore(state => state.auth.user?.username ?? "");
   const [page, setPage] = useState(DEFAULT_PAGE);
 
+  // Queries
   const {
-    data,
-    isLoading,
-    refetch: refetchLogs,
+    data: logsData,
+    isLoading: isLoadingLogs,
   } = useQuery<GetLogsResponse>({
-    queryKey: ["logs"],
+    queryKey: ["logs", page],
     queryFn: () => getLogsRequest(page),
   });
 
+  const { data: clientStatistics } = useQuery({
+    queryKey: ["clientStatistics"],
+    queryFn: getClientStatisticsRequest,
+  });
+
+  const { data: paymentTotals } = useQuery({
+    queryKey: ["paymentTotals"],
+    queryFn: getPaymentTotalsRequest,
+  });
+
+  // Data processing
   const {
-    info: { total, pages, next, prev },
+    info: { pages, next, prev },
     results: logs = [],
-  } = data ?? InitialLogsResponse;
+  } = logsData ?? InitialLogsResponse;
 
-  useEffect(() => {
-    refetchLogs();
-  }, [page, refetchLogs]);
+  const { newClientsLastMonth = 0, totalClients = 0 } = clientStatistics ?? {};
+  const { current = { USD: 0 }, change = 0 } = paymentTotals ?? {};
 
-  const handlePageNext = () => {
-    setPage(page + 1);
+  const stats: DashboardStats = {
+    totalClients,
+    newClientsLastMonth,
+    currentUSD: current.USD,
+    growthPercentage: change,
   };
 
-  const handlePagePrev = () => {
-    setPage(page - 1);
-  };
+  // Handlers
+  const handlePageNext = useCallback(() => {
+    setPage(prev => prev + 1);
+  }, []);
+
+  const handlePagePrev = useCallback(() => {
+    setPage(prev => prev - 1);
+  }, []);
+
+  const handlePageChange = useCallback((value: number) => {
+    setPage(value);
+  }, []);
 
   return (
     <Template>
@@ -59,10 +91,11 @@ const Dashboard = () => {
         </h2>
         <p className="text-neutral-900 text-sm">Bienvenido a tu dashboard.</p>
       </header>
-      <section className="flex flex-col lg:flex-row gap-4 w-full max-w-7xl">
+
+      <WidgetsContainer>
         <SquareWidget
           className="bg-slate-900 flex-1"
-          title={"0"}
+          title={stats.totalClients.toString()}
           subtitle="Total de clientes"
           link="/clients"
           icon={<UsersRound className="text-slate-900 w-8 h-8" />}
@@ -70,35 +103,47 @@ const Dashboard = () => {
         />
         <SquareWidget
           className="bg-lime-500 flex-1"
-          title={"0"}
-          subtitle="Nuevos clientes"
-          link="/payments"
+          title={stats.newClientsLastMonth.toString()}
+          subtitle="Nuevos clientes este mes"
+          link="/clients"
           icon={<ChartNoAxesCombined className="text-white w-8 h-8" />}
           fontColor="text-white"
           iconBgColor="bg-slate-900"
         />
         <SquareWidget
-          className="bg-white flex-1"
-          title={"0"}
-          subtitle="Clientes vencidos la siguiente semana"
-          link="/clients"
-          icon={<Trash2 className="text-slate-900 w-8 h-8" />}
-          fontColor="text-dark"
-          iconBgColor="bg-slate-300"
+          className="bg-blue-500 flex-1"
+          title={formatReportTitle(
+            paymentTotals?.currentMonthTotal?.current || { USD: 0, VES: 0 }
+          )}
+          subtitle="Ingresos del mes actual"
+          link="/payments"
+          icon={<DollarSign className="text-white w-8 h-8" />}
+          fontColor="text-white"
+          iconBgColor="bg-blue-700"
         />
-      </section>
-      <section className="data-table w-full max-w-7xl flex flex-col gap-4">
-        <ActivityLogs isLoading={isLoading} logs={logs} />
+        <SquareWidget
+          className="bg-emerald-500 flex-1"
+          title={clientStatistics?.activeClients?.toString() ?? "0"}
+          subtitle="Clientes activos"
+          link="/clients"
+          icon={<UserCheck className="text-white w-8 h-8" />}
+          fontColor="text-white"
+          iconBgColor="bg-emerald-700"
+        />
+      </WidgetsContainer>
+
+      <section className="data-table w-full max-w-7xl flex flex-col gap-4 mt-6">
+        <ActivityLogs isLoading={isLoadingLogs} logs={logs} />
         {pages > 1 && (
           <Pagination
-            isLoading={isLoading}
-            total={total}
-            pages={pages}
+            isLoading={isLoadingLogs}
+            totalPages={pages}
             next={next}
             prev={prev}
             currentPage={page}
             onPageNext={handlePageNext}
             onPagePrev={handlePagePrev}
+            onPageChange={handlePageChange}
           />
         )}
       </section>

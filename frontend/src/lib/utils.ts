@@ -24,4 +24,3 @@ export const formatDate = (date?: string) => {
   const utcDate = new Date(dateObj.getTime() + dateObj.getTimezoneOffset() * 60000);
   return utcDate.toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric" });
 };
-

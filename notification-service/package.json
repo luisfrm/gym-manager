@@ -1,0 +1,41 @@
+{
+  "name": "notification-service",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node-dev src/index.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@react-email/components": "^0.0.34",
+    "@types/nodemailer": "^6.4.17",
+    "cors": "2.8.5",
+    "dotenv": "16.4.7",
+    "express": "4.21.2",
+    "mongoose": "8.12.1",
+    "morgan": "1.10.0",
+    "node-cron": "^3.0.3",
+    "nodemailer": "^6.10.0",
+    "react": "^19.0.0",
+    "resend": "^4.1.2",
+    "zod": "3.24.2"
+  },
+  "devDependencies": {
+    "@sendgrid/mail": "^8.1.4",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/mongoose": "^5.11.97",
+    "@types/morgan": "^1.9.9",
+    "@types/node": "^22.13.10",
+    "@types/node-cron": "^3.0.11",
+    "@types/react": "^19.0.11",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.8.2"
+  }
+}

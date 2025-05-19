@@ -38,4 +38,6 @@ paymentRouter.patch(
 
 paymentRouter.delete("/:paymentId", authMiddleware(["admin"]), PaymentController.deletePayment);
 
+paymentRouter.get("/totals", PaymentController.getPaymentTotals);
+
 export default paymentRouter;

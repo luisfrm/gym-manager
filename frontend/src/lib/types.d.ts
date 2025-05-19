@@ -95,6 +95,8 @@ export interface DeleteClientRequest {
 export interface ClientStatisticsResponse {
   newClientsLastMonth: number;
   clientsExpiringNextWeek: number;
+  clientsExpiringNext30Days: number;
+  activeClients: number;
   totalClients: number;
 }
 

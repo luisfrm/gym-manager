@@ -52,9 +52,9 @@ export const validateTokenRequest = async (): Promise<ValidateTokenResponse> => 
 };
 
 export const getClientsRequest = async (
+  search = "",
   page = 1,
   limit = 10,
-  search = "",
   sortField = "updatedAt",
   sortOrder = "asc",
 ): Promise<GetClientsResponse> => {
@@ -142,4 +142,9 @@ export const updatePaymentStatusRequest = async ({ _id, paymentStatus }: UpdateP
 export const refreshTokenRequest = async (): Promise<RefreshTokenResponse> => {
   const res = await api.post("/auth/refresh");
   return res.data;
+};
+
+export const getPaymentTotalsRequest = async () => {
+  const response = await api.get("/payments/totals");
+  return response.data;
 };

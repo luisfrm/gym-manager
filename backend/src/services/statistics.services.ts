@@ -21,6 +21,24 @@ export const getClientsExpiringNextWeek = (clients: Client[]) => {
   return expiringClients.length;
 };
 
+export const getClientsExpiringNext30Days = (clients: Client[]) => {
+  const today = new Date();
+  const next30Days = new Date();
+  next30Days.setDate(today.getDate() + 30);
+
+  const expiringClients = clients.filter(
+    client => new Date(client.expiredDate) >= today && new Date(client.expiredDate) < next30Days,
+  );
+
+  return expiringClients.length;
+};
+
+export const getActiveClients = (clients: Client[]) => {
+  const today = new Date();
+  const activeClients = clients.filter(client => new Date(client.expiredDate) >= today);
+  return activeClients.length;
+};
+
 export const getTotalClients = (clients: Client[]) => {
   return clients.length;
 };
