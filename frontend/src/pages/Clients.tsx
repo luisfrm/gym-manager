@@ -33,6 +33,7 @@ const InitialClientStatisticsResponse: ClientStatisticsResponse = {
   newClientsLastMonth: 0,
   clientsExpiringNextWeek: 0,
   clientsExpiringNext30Days: 0,
+  activeClients: 0,
   totalClients: 0,
 };
 

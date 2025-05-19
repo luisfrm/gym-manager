@@ -14,16 +14,17 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { getPaymentsRequest, getPaymentTotalsRequest } from "@/api/api";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Pagination from "@/components/Pagination";
-import { formatCurrency } from "@/lib/currency";
 import { formatReportTitle } from "@/lib/reports";
 import WidgetsContainer from "@/components/WidgetsContainer";
 import { useQueryClient } from "@tanstack/react-query";
+import { ROLES } from "@/lib/config";
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 10;
 
 const Payments = () => {
   const username = useStore(state => state.auth.user?.username ?? "");
+  const role = useStore(state => state.auth.user?.role ?? "");
   const [isOpenPaymentDialog, setIsOpenPaymentDialog] = useState(false);
   const [isNewClientModalOpen, setIsNewClientModalOpen] = useState(false);
   const [page, setPage] = useState(DEFAULT_PAGE);
@@ -128,11 +129,12 @@ const Payments = () => {
       <WidgetsContainer>
         <SquareWidget
           className="bg-slate-900 flex-1"
-          title={formatReportTitle(paymentTotals?.currentMonthTotal?.current || { USD: 0, VES: 0 })}
-          subtitle="Total de ingresos del mes actual"
+          title={paymentTotals?.todayPaymentsCount?.toString() ?? "0"}
+          subtitle="Total de pagos del día actual"
           link="/payments"
-          icon={<DollarSign className="text-slate-900 w-8 h-8" />}
+          icon={<Calendar className="text-white w-8 h-8" />}
           fontColor="text-white"
+          iconBgColor="bg-blue-700"
         />
         <SquareWidget
           className="bg-lime-500 flex-1"
@@ -152,15 +154,16 @@ const Payments = () => {
           fontColor="text-white"
           iconBgColor="bg-emerald-700"
         />
-        <SquareWidget
-          className="bg-blue-500 flex-1"
-          title={paymentTotals?.todayPaymentsCount?.toString() ?? "0"}
-          subtitle="Total de pagos del día actual"
-          link="/payments"
-          icon={<Calendar className="text-white w-8 h-8" />}
-          fontColor="text-white"
-          iconBgColor="bg-blue-700"
-        />
+        {role === ROLES.ADMIN && (
+          <SquareWidget
+            className="bg-blue-500 flex-1"
+            title={formatReportTitle(paymentTotals?.currentMonthTotal?.current || { USD: 0, VES: 0 })}
+            subtitle="Total de ingresos del mes actual"
+            link="/payments"
+          icon={<DollarSign className="text-slate-900 w-8 h-8" />}
+            fontColor="text-white"
+          />
+        )}
       </WidgetsContainer>
       <section className="data-table w-full flex flex-col gap-4">
         <div className="flex justify-between items-center gap-2">

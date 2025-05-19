@@ -1,6 +1,6 @@
 import { useStore } from "@/hooks/useStore";
 import Template from "./Template";
-import { ChartNoAxesCombined, DollarSign, TrendingUp, UsersRound, UserCheck } from "lucide-react";
+import { ChartNoAxesCombined, DollarSign, UsersRound, UserCheck } from "lucide-react";
 import SquareWidget from "@/components/SquareWidget";
 import { useQuery } from "@tanstack/react-query";
 import { getLogsRequest, getClientStatisticsRequest, getPaymentTotalsRequest } from "@/api/api";
@@ -8,9 +8,9 @@ import { GetLogsResponse } from "@/lib/types";
 import ActivityLogs from "@/components/ActivityLogs";
 import { useCallback, useState } from "react";
 import Pagination from "@/components/Pagination";
-import { formatCurrency } from "@/lib/currency";
 import { formatReportTitle } from "@/lib/reports";
 import WidgetsContainer from "@/components/WidgetsContainer";
+import { ROLES } from "@/lib/config";
 
 const DEFAULT_PAGE = 1;
 
@@ -33,13 +33,12 @@ const InitialLogsResponse: GetLogsResponse = {
 
 const Dashboard = () => {
   const username = useStore(state => state.auth.user?.username ?? "");
+  const role = useStore(state => state.auth.user?.role ?? "");
+
   const [page, setPage] = useState(DEFAULT_PAGE);
 
   // Queries
-  const {
-    data: logsData,
-    isLoading: isLoadingLogs,
-  } = useQuery<GetLogsResponse>({
+  const { data: logsData, isLoading: isLoadingLogs } = useQuery<GetLogsResponse>({
     queryKey: ["logs", page],
     queryFn: () => getLogsRequest(page),
   });
@@ -111,17 +110,6 @@ const Dashboard = () => {
           iconBgColor="bg-slate-900"
         />
         <SquareWidget
-          className="bg-blue-500 flex-1"
-          title={formatReportTitle(
-            paymentTotals?.currentMonthTotal?.current || { USD: 0, VES: 0 }
-          )}
-          subtitle="Ingresos del mes actual"
-          link="/payments"
-          icon={<DollarSign className="text-white w-8 h-8" />}
-          fontColor="text-white"
-          iconBgColor="bg-blue-700"
-        />
-        <SquareWidget
           className="bg-emerald-500 flex-1"
           title={clientStatistics?.activeClients?.toString() ?? "0"}
           subtitle="Clientes activos"
@@ -130,6 +118,17 @@ const Dashboard = () => {
           fontColor="text-white"
           iconBgColor="bg-emerald-700"
         />
+        {role === ROLES.ADMIN && (
+          <SquareWidget
+            className="bg-blue-500 flex-1"
+            title={formatReportTitle(paymentTotals?.currentMonthTotal?.current || { USD: 0, VES: 0 })}
+            subtitle="Ingresos del mes actual"
+            link="/payments"
+            icon={<DollarSign className="text-white w-8 h-8" />}
+            fontColor="text-white"
+            iconBgColor="bg-blue-700"
+          />
+        )}
       </WidgetsContainer>
 
       <section className="data-table w-full max-w-7xl flex flex-col gap-4 mt-6">

@@ -40,3 +40,8 @@ export const ClientTableHeads = {
     ClassNames: "text-right",
   },
 };
+
+export const ROLES = {
+  ADMIN: "admin",
+  EMPLOYEE: "employee",
+};
