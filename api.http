@@ -1,6 +1,9 @@
-### Petición POST a /v1/auth/login
+### Variables
+@baseUrl = http://localhost:3000/v1
+@authToken = {{login.response.body.token}}
 
-POST http://localhost:3000/v1/auth/register
+### Registro de nuevo usuario
+POST {{baseUrl}}/auth/register
 Content-Type: application/json
 
 {
@@ -11,12 +14,152 @@ Content-Type: application/json
     "name": "Luis Rivas"
 }
 
-### Petición POST a /v1/auth/login
-
-POST http://localhost:3000/v1/auth/login
+### Login de usuario
+# @name login
+POST {{baseUrl}}/auth/login
 Content-Type: application/json
 
 {
     "email": "luisito@gmail.com",
     "password": "123456"
 }
+
+### Validar token
+GET {{baseUrl}}/auth/validate
+Authorization: Bearer {{authToken}}
+
+### Refresh token
+POST {{baseUrl}}/auth/refresh
+Authorization: Bearer {{authToken}}
+
+### Cambiar contraseña (requiere autenticación)
+POST {{baseUrl}}/auth/change-password
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "currentPassword": "123456",
+    "newPassword": "nueva123"
+}
+
+### Ejemplos de errores comunes
+
+### Login con credenciales inválidas
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+    "email": "usuario_inexistente@gmail.com",
+    "password": "password_incorrecto"
+}
+
+### Registro con email duplicado
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+    "username": "OtroUsuario",
+    "email": "luisito@gmail.com",
+    "password": "123456",
+    "role": "employee",
+    "name": "Otro Usuario"
+}
+
+### Validar token inválido
+GET {{baseUrl}}/auth/validate
+Authorization: Bearer token_invalido
+
+### Refresh token expirado
+POST {{baseUrl}}/auth/refresh
+Authorization: Bearer token_expirado
+
+### Clientes
+
+### Obtener todos los clientes
+GET {{baseUrl}}/clients
+Authorization: Bearer {{authToken}}
+
+### Obtener cliente por cédula
+GET {{baseUrl}}/clients/V-12345678
+Authorization: Bearer {{authToken}}
+
+### Crear nuevo cliente
+POST {{baseUrl}}/clients
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "name": "Juan Pérez",
+    "cedula": "V-12345678",
+    "phone": "04141234567",
+    "email": "juan@example.com",
+    "address": "Caracas, Venezuela",
+    "expiredDate": "2024-12-31"
+}
+
+### Actualizar cliente
+PATCH {{baseUrl}}/clients/V-12345678
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "phone": "04149876543",
+    "email": "juan.nuevo@example.com"
+}
+
+### Eliminar cliente
+DELETE {{baseUrl}}/clients/V-12345678
+Authorization: Bearer {{authToken}}
+
+### Pagos
+
+### Obtener todos los pagos
+GET {{baseUrl}}/payments
+Authorization: Bearer {{authToken}}
+
+### Obtener pagos por cliente
+GET {{baseUrl}}/payments/by-client/V-12345678
+Authorization: Bearer {{authToken}}
+
+### Crear nuevo pago
+POST {{baseUrl}}/payments
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "client": "client_id",
+    "clientCedula": "V-12345678",
+    "amount": 100,
+    "date": "2024-03-20",
+    "service": "Mensualidad",
+    "description": "Pago de mensualidad marzo",
+    "paymentMethod": "Transferencia",
+    "paymentReference": "REF123456",
+    "paymentStatus": "pending",
+    "currency": "USD",
+    "expiredDate": "2024-04-20"
+}
+
+### Actualizar estado de pago
+PATCH {{baseUrl}}/payments/paymentStatus/payment_id
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "paymentStatus": "paid"
+}
+
+### Actualizar pago parcialmente
+PATCH {{baseUrl}}/payments/payment_id
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "amount": 150,
+    "description": "Pago actualizado"
+}
+
+### Eliminar pago
+DELETE {{baseUrl}}/payments/payment_id
+Authorization: Bearer {{authToken}}
+
