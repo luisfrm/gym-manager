@@ -59,7 +59,7 @@ const Payments = () => {
     results: payments = [],
   } = data ?? InitialPaymentsResponse;
 
-  const { data: paymentTotals } = useQuery({
+  const { data: paymentTotals, refetch: refetchPaymentTotals } = useQuery({
     queryKey: ["paymentTotals"],
     queryFn: getPaymentTotalsRequest,
   });
@@ -79,6 +79,7 @@ const Payments = () => {
   const onPaymentCreated = () => {
     refetchPayments();
     queryClient.invalidateQueries({ queryKey: ["paymentTotals"] });
+    refetchPaymentTotals();
   };
 
   const handleSearchPayments = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -115,6 +116,7 @@ const Payments = () => {
 
   const handleOnUpdatedPayment = () => {
     refetchPayments();
+    refetchPaymentTotals();
   };
 
   return (
@@ -160,7 +162,7 @@ const Payments = () => {
             title={formatReportTitle(paymentTotals?.currentMonthTotal?.current || { USD: 0, VES: 0 })}
             subtitle="Total de ingresos del mes actual"
             link="/payments"
-          icon={<DollarSign className="text-slate-900 w-8 h-8" />}
+            icon={<DollarSign className="text-slate-900 w-8 h-8" />}
             fontColor="text-white"
           />
         )}

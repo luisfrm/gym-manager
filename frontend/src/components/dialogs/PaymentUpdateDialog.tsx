@@ -87,7 +87,17 @@ export const PaymentUpdateDialog = ({ isOpen, onOpenChange, payment, onPaymentUp
         duration: 5000,
       });
     },
-    onError: () => {
+    onError: (error: any) => {
+      if (error?.response?.data?.errors) {
+        const refError = error.response.data.errors.find((e: any) => e.field === "paymentReference");
+        if (refError) {
+          toast.error("Error al actualizar el pago", {
+            description: refError.message,
+            duration: 5000,
+          });
+          return;
+        }
+      }
       toast.error("Error al actualizar el pago", {
         description: "Por favor, intenta de nuevo o contacta con el administrador.",
         duration: 5000,
@@ -100,8 +110,7 @@ export const PaymentUpdateDialog = ({ isOpen, onOpenChange, payment, onPaymentUp
       await updatePartialPaymentMutation.mutateAsync({
         _id: data._id,
         client: data.client as unknown as Client,
-        clientCedula: data.clientCedula,
-        amount: data.amount,
+        amount: Number(data.amount),
         date: data.date,
         service: data.service,
         description: data.description,

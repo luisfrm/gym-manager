@@ -3,6 +3,8 @@ import Client from "../models/client.model";
 import Log from "../models/log.model";
 import { AppRequest } from "../utils/types";
 import { Request, Response } from "express";
+import { paymentPartialSchema } from "../schemas/payment.schema";
+import { ZodError } from "zod";
 
 interface PaymentTotal {
   current: {
@@ -33,7 +35,15 @@ class PaymentController {
         const existPaymentReference = await Payment.findOne({ paymentReference });
 
         if (existPaymentReference) {
-          return res.status(400).json({ message: "Payment reference already exists" });
+          return res.status(400).json({
+            message: "Validation error",
+            errors: [
+              {
+                field: "paymentReference",
+                message: "Referencia de pago ya existe"
+              }
+            ]
+          });
         }
       }
 
@@ -156,13 +166,25 @@ class PaymentController {
 
   static updatePartial = async (req: AppRequest, res: any) => {
     try {
-      const { paymentId } = req.params;
+      try {
+        paymentPartialSchema.parse(req.body);
+      } catch (err) {
+        if (err instanceof ZodError) {
+          return res.status(400).json({
+            message: "Validation error",
+            errors: err.errors.map(e => ({
+              field: e.path.join("."),
+              message: e.message,
+            })),
+          });
+        }
+        throw err;
+      }
 
+      const { paymentId } = req.params;
       const payment = await Payment.findByIdAndUpdate(
         paymentId,
-        {
-          $set: req.body,
-        },
+        { $set: req.body },
         { new: true },
       );
 

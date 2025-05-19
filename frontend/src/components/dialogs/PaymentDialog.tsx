@@ -141,9 +141,18 @@ export const PaymentDialog = ({ isOpen, onOpenChange, onPaymentCreated = () => {
       });
       setFilterValue("");
     },
-    onError: (error: AxiosError) => {
-      console.error(error);
-
+    onError: (error: any) => {
+      if (error?.response?.data?.errors) {
+        const refError = error.response.data.errors.find((e: any) => e.field === "paymentReference");
+        if (refError) {
+          toast("Error al crear pago", {
+            description: refError.message,
+            duration: 5000,
+            icon: <CircleX className="text-red-600" />,
+          });
+          return;
+        }
+      }
       toast("Error al crear pago", {
         description: "Por favor, intenta de nuevo o contacta con el administrador.",
         duration: 5000,

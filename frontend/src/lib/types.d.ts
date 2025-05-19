@@ -77,13 +77,13 @@ export interface UpdateClientRequest extends CreateClientRequest {
 export interface UpdatePartialPaymentRequest {
   _id?: string;
   client?: Client; // Puede ser el objeto poblado o solo la cedula
-  clientCedula?: string;
-  amount?: string;
+  amount?: number;
   date?: string;
   service?: string;
-  description?: string;
   paymentMethod?: string;
   paymentReference?: string;
+  description?: string;
+  expiredDate?: string;
   paymentStatus?: "pending" | "paid" | "failed";
   currency?: "USD" | "VES";
 }

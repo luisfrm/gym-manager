@@ -81,7 +81,7 @@ const Clients = () => {
     queryFn: () => getClientsRequest(debouncedSearch, page, limit, sortField, sortOrder),
   });
 
-  const { data: clientStatistic } = useQuery<ClientStatisticsResponse>({
+  const { data: clientStatistic, refetch: refetchClientStatistics } = useQuery<ClientStatisticsResponse>({
     queryKey: ["clientStatistics"],
     queryFn: () => getClientStatisticsRequest(),
   });
@@ -232,6 +232,7 @@ const Clients = () => {
         onClientCreated={() => {
           refetchClients();
           queryClient.invalidateQueries({ queryKey: ["clientStatistics"] });
+          refetchClientStatistics();
         }}
         isOpen={isNewClientModalOpen}
         onOpenChange={handleOpenNewClientModal}
