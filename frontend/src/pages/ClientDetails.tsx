@@ -11,13 +11,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { deleteClientRequest, getClientByIdRequest, getClientPaymentsRequest, updateClientRequest } from "@/api/api";
+import { deleteClientRequest, getClientByIdRequest, getClientPaymentsRequest } from "@/api/api";
 import { isDateActive } from "@/lib/utils";
 import Template from "./Template";
 import { ClientUpdateDialog } from "@/components/dialogs/ClientUpdateDialog";
 import { useState } from "react";
 import { ClientRemoveDialog } from "@/components/dialogs/ClientRemoveDialog";
-import { Client } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import formatNumber from "@/lib/formatNumber";
 import PaymentHistory from "@/components/PaymentHistory";
@@ -49,14 +48,6 @@ export default function ClientDetails() {
     },
   });
 
-  const updateClientMutation = useMutation({
-    mutationFn: updateClientRequest,
-    onSuccess: (data: Client) => {
-      console.log(data);
-      refetch();
-    },
-  });
-
   const { data: payments, isLoading: isPaymentsLoading } = useQuery({
     queryKey: ["payments", cedula],
     queryFn: () => getClientPaymentsRequest(cedula),
@@ -70,7 +61,7 @@ export default function ClientDetails() {
     setIsRemoveClientOpen(!isRemoveClientOpen)
   };
 
-  const handleClientUpdated = (client: Client) => {
+  const handleClientUpdated = () => {
     refetch();
     handleUpdateClientOpen();
   };

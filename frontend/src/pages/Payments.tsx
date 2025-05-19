@@ -3,7 +3,7 @@ import Template from "./Template";
 import { GetPaymentsResponse } from "@/lib/types";
 import { useStore } from "@/hooks/useStore";
 import SquareWidget from "@/components/SquareWidget";
-import { ChartNoAxesCombined, DollarSign, Search, Trash2, Receipt, Calendar } from "lucide-react";
+import { ChartNoAxesCombined, DollarSign, Search, Receipt, Calendar } from "lucide-react";
 import { PaymentDialog } from "@/components/dialogs/PaymentDialog";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -55,7 +55,7 @@ const Payments = () => {
   });
 
   const {
-    info: { total = 0, pages = 0, next = null, prev = null },
+    info: { pages = 0, next = null, prev = null },
     results: payments = [],
   } = data ?? InitialPaymentsResponse;
 

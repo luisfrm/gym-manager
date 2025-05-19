@@ -1,7 +1,6 @@
 import { Modal, ModalBody, ModalHeader } from "@/components/Modal";
 import { FormGroup } from "@/components/FormGroup";
 import { Button } from "../ui/button";
-import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { updatePartialPaymentRequest } from "@/api/api";
 import { z } from "zod";
@@ -9,13 +8,10 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
-import { AxiosError } from "axios";
 import { FormInput } from "../ui/form-input";
 import { DateInput } from "../ui/date-input";
 import { FormSelect } from "../ui/form-select";
-import formatNumber from "@/lib/formatNumber";
 import { Client, Payment } from "@/lib/types";
-import InputSearch from "../ClientInputSearch";
 
 interface PaymentUpdateDialogProps {
   isOpen: boolean;
@@ -43,11 +39,7 @@ const paymentSchema = z.object({
 type PaymentSchema = z.infer<typeof paymentSchema>;
 
 export const PaymentUpdateDialog = ({ isOpen, onOpenChange, payment, onPaymentUpdated = () => {} }: PaymentUpdateDialogProps) => {
-  const [client, setClient] = useState<Client | null>(payment?.client as Client || null);
-  const [amount, setAmount] = useState(payment?.amount || "");
-  const [paymentStatus, setPaymentStatus] = useState<"pending" | "paid" | "failed">(payment?.paymentStatus || "pending");
-  const [paymentCurrency, setPaymentCurrency] = useState<"USD" | "VES">(payment?.currency || "USD");
-
+  
   const {
     handleSubmit,
     register,
@@ -95,7 +87,7 @@ export const PaymentUpdateDialog = ({ isOpen, onOpenChange, payment, onPaymentUp
         duration: 5000,
       });
     },
-    onError: (error: AxiosError) => {
+    onError: () => {
       toast.error("Error al actualizar el pago", {
         description: "Por favor, intenta de nuevo o contacta con el administrador.",
         duration: 5000,
@@ -125,11 +117,11 @@ export const PaymentUpdateDialog = ({ isOpen, onOpenChange, payment, onPaymentUp
   };
 
   const handlePaymentStatusChange = (value: "pending" | "paid" | "failed") => {
-    setPaymentStatus(value);
+    setValue('paymentStatus', value);
   };
 
   const handlePaymentCurrencyChange = (value: "USD" | "VES") => {
-    setPaymentCurrency(value);
+    setValue('currency', value);
   };
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {

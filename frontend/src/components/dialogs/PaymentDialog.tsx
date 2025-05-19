@@ -1,6 +1,5 @@
 import { Modal, ModalBody, ModalHeader } from "@/components/Modal";
-import { FormGroup, FormLabel, FormLabelError } from "@/components/FormGroup";
-import { Input } from "../ui/input";
+import { FormGroup } from "@/components/FormGroup";
 import { Button } from "../ui/button";
 import { Client, GetClientsResponse } from "@/lib/types";
 import { useEffect, useState } from "react";
@@ -9,9 +8,7 @@ import { createPaymentRequest, getClientsRequest } from "@/api/api";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Label } from "../ui/label";
 import { CheckCircle, CircleX, Loader2 } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
 import InputSearch from "../ClientInputSearch";
@@ -19,7 +16,7 @@ import formatNumber from "@/lib/formatNumber";
 import { FormInput } from "../ui/form-input";
 import { DateInput } from "../ui/date-input";
 import { FormSelect } from "../ui/form-select";
-import { Currency, formatCurrency, getCurrencyOptions } from "@/lib/currency";
+import { Currency, getCurrencyOptions } from "@/lib/currency";
 
 interface PaymentDialogProps {
   isOpen: boolean;

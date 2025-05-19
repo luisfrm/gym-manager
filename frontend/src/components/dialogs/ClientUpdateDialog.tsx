@@ -9,7 +9,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
-import { AxiosError } from "axios";
 import { FormInput } from "../ui/form-input";
 import { DateInput } from "../ui/date-input";
 import { isEmailValid } from "@/lib/utils";
@@ -75,7 +74,7 @@ export const ClientUpdateDialog = ({ isOpen, onOpenChange, client, onClientUpdat
       onClientUpdated(data);
       handleClose();
     },
-    onError: (error: AxiosError) => {
+    onError: () => {
       toast.error("Error al actualizar el cliente", {
         description: "Por favor, intenta de nuevo o contacta con el administrador.",
         duration: 5000,
