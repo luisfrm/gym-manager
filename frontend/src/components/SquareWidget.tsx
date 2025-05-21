@@ -6,7 +6,7 @@ import { ReactNode } from "react";
 interface SquareWidgetProps {
   title: ReactNode;
   subtitle: string;
-  link: string;
+  link?: string;
   icon: ReactNode;
   className?: string;
   fontColor?: string;

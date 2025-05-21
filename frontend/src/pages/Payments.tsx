@@ -133,16 +133,14 @@ const Payments = () => {
           className="bg-slate-900 flex-1"
           title={paymentTotals?.todayPaymentsCount?.toString() ?? "0"}
           subtitle="Total de pagos del día actual"
-          link="/payments"
           icon={<Calendar className="text-white w-8 h-8" />}
           fontColor="text-white"
-          iconBgColor="bg-blue-700"
+          iconBgColor="bg-slate-800"
         />
         <SquareWidget
           className="bg-lime-500 flex-1"
           title={formatReportTitle(paymentTotals?.todayTotal?.current || { USD: 0, VES: 0 })}
           subtitle="Total de ingresos del día"
-          link="/payments"
           icon={<Receipt className="text-white w-8 h-8" />}
           fontColor="text-white"
           iconBgColor="bg-lime-700"
@@ -151,7 +149,6 @@ const Payments = () => {
           className="bg-emerald-500 flex-1"
           title={paymentTotals?.currentMonthPaymentsCount?.toString() ?? "0"}
           subtitle="Total de pagos del mes actual"
-          link="/payments"
           icon={<ChartNoAxesCombined className="text-white w-8 h-8" />}
           fontColor="text-white"
           iconBgColor="bg-emerald-700"
@@ -161,7 +158,6 @@ const Payments = () => {
             className="bg-blue-500 flex-1"
             title={formatReportTitle(paymentTotals?.currentMonthTotal?.current || { USD: 0, VES: 0 })}
             subtitle="Total de ingresos del mes actual"
-            link="/payments"
             icon={<DollarSign className="text-slate-900 w-8 h-8" />}
             fontColor="text-white"
           />

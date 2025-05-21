@@ -150,7 +150,6 @@ const Clients = () => {
           className="bg-slate-900 flex-1"
           title={totalClients.toString() ?? "0"}
           subtitle="Total de clientes"
-          link="/clients"
           icon={<UsersRound className="text-slate-900 w-8 h-8" />}
           fontColor="text-white"
         />
@@ -158,7 +157,6 @@ const Clients = () => {
           className="bg-lime-500 flex-1"
           title={newClientsLastMonth.toString() ?? "0"}
           subtitle="Nuevos clientes"
-          link="/clients"
           icon={<ChartNoAxesCombined className="text-white w-8 h-8" />}
           fontColor="text-white"
           iconBgColor="bg-slate-900"
@@ -167,7 +165,6 @@ const Clients = () => {
           className="bg-blue-500 flex-1"
           title={clientsExpiringNextWeek.toString() ?? "0"}
           subtitle="Clientes vencidos la siguiente semana"
-          link="/clients"
           icon={<Trash2 className="text-white w-8 h-8" />}
           fontColor="text-white"
           iconBgColor="bg-blue-700"
@@ -176,7 +173,6 @@ const Clients = () => {
           className="bg-emerald-500 flex-1"
           title={clientStatistic?.clientsExpiringNext30Days?.toString() ?? "0"}
           subtitle="Clientes por vencer en 30 días"
-          link="/clients"
           icon={<CalendarClock className="text-white w-8 h-8" />}
           fontColor="text-white"
           iconBgColor="bg-emerald-700"

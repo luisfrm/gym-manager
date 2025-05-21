@@ -96,7 +96,6 @@ const Dashboard = () => {
           className="bg-slate-900 flex-1"
           title={stats.totalClients.toString()}
           subtitle="Total de clientes"
-          link="/clients"
           icon={<UsersRound className="text-slate-900 w-8 h-8" />}
           fontColor="text-white"
         />
@@ -104,7 +103,6 @@ const Dashboard = () => {
           className="bg-lime-500 flex-1"
           title={stats.newClientsLastMonth.toString()}
           subtitle="Nuevos clientes este mes"
-          link="/clients"
           icon={<ChartNoAxesCombined className="text-white w-8 h-8" />}
           fontColor="text-white"
           iconBgColor="bg-slate-900"
@@ -113,7 +111,6 @@ const Dashboard = () => {
           className="bg-emerald-500 flex-1"
           title={clientStatistics?.activeClients?.toString() ?? "0"}
           subtitle="Clientes activos"
-          link="/clients"
           icon={<UserCheck className="text-white w-8 h-8" />}
           fontColor="text-white"
           iconBgColor="bg-emerald-700"
@@ -123,7 +120,6 @@ const Dashboard = () => {
             className="bg-blue-500 flex-1"
             title={formatReportTitle(paymentTotals?.currentMonthTotal?.current || { USD: 0, VES: 0 })}
             subtitle="Ingresos del mes actual"
-            link="/payments"
             icon={<DollarSign className="text-white w-8 h-8" />}
             fontColor="text-white"
             iconBgColor="bg-blue-700"

@@ -91,7 +91,7 @@ export const PaymentDialog = ({ isOpen, onOpenChange, onPaymentCreated = () => {
     setValue('expiredDate', date.toISOString().split('T')[0]);
   };
 
-  const { data: clients } = useQuery<GetClientsResponse>({
+  const { data: clients, isLoading: clientsLoading } = useQuery<GetClientsResponse>({
     queryKey: ["clients", filterValue],
     queryFn: () => getClientsRequest(filterValue),
     enabled: !!filterValue,
@@ -237,28 +237,25 @@ export const PaymentDialog = ({ isOpen, onOpenChange, onPaymentCreated = () => {
               placeholder="Buscar cliente por cédula o nombre"
               label="Cliente"
               onChange={handleClientSearch}
+              isLoading={clientsLoading}
             />
           </FormGroup>
-          {client && (
-            <>
-              <FormGroup>
-                <FormInput
-                  label="Nombre del cliente"
-                  name="clientName"
-                  register={register}
-                  disabled
-                />
-              </FormGroup>
-              <FormGroup>
-                <FormInput
-                  label="Cédula del cliente"
-                  name="clientCedula"
-                  register={register}
-                  disabled
-                />
-              </FormGroup>
-            </>
-          )}
+          <FormGroup>
+            <FormInput
+              label="Nombre del cliente"
+              name="clientName"
+              register={register}
+              disabled
+            />
+          </FormGroup>
+          <FormGroup>
+            <FormInput
+              label="Cédula del cliente"
+              name="clientCedula"
+              register={register}
+              disabled
+            />
+          </FormGroup>
           <FormGroup>
             <FormInput
               label="Monto"

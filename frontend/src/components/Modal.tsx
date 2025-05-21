@@ -43,9 +43,6 @@ export const Modal = ({
           e.preventDefault();
           handleOpenChange(false);
         }}
-        onInteractOutside={(e) => {
-          e.preventDefault();
-        }}
       >
         {children}
       </DialogContent>
