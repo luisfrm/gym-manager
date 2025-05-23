@@ -5,7 +5,8 @@
     "outDir": "./dist", // Asegúrate de que esta opción esté configurada
     "rootDir": "./src",
     "strict": false,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "types": ["@types/bun", "@types/node" ]
   },
   "include": [
     "src/**/*.ts" // Incluye todos los archivos TypeScript en la carpeta src

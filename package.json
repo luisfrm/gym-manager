@@ -3,7 +3,7 @@
   "version": "1.2.3",
   "description": "",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "bun test --dom",
     "install-all": "cd frontend && bun install && cd ../backend && bun install",
     "install-backend": "cd backend && bun install",
     "install-frontend": "cd frontend && bun install",
@@ -19,6 +19,12 @@
   "license": "ISC",
   "dependencies": {
     "concurrently": "^9.1.2",
+    "happy-dom": "^17.4.7",
     "prettier": "^3.4.2"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.2.14",
+    "@testing-library/react": "^14.1.2",
+    "@testing-library/jest-dom": "^6.4.4"
   }
 }
