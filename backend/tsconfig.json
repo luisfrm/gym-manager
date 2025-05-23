@@ -2,13 +2,17 @@
   "compilerOptions": {
     "target": "ES6",
     "module": "CommonJS",
-    "outDir": "./dist", // Asegúrate de que esta opción esté configurada
+    "outDir": "./dist",
     "rootDir": "./src",
     "strict": false,
     "esModuleInterop": true,
-    "types": ["@types/bun", "@types/node" ]
+    "skipLibCheck": true,
+    "types": ["node"]
   },
   "include": [
-    "src/**/*.ts" // Incluye todos los archivos TypeScript en la carpeta src
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "src/**/__tests__/*"
   ]
 }
