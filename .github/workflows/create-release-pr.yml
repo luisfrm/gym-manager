@@ -54,17 +54,18 @@ jobs:
           DOCS_COUNT=$(git log $LAST_RELEASE..HEAD --pretty=format:"%s" | grep -c "^docs" || echo "0")
           REFACTOR_COUNT=$(git log $LAST_RELEASE..HEAD --pretty=format:"%s" | grep -c "^refactor" || echo "0")
           CHORE_COUNT=$(git log $LAST_RELEASE..HEAD --pretty=format:"%s" | grep -c "^chore" || echo "0")
-          
+
+          # Ensure all outputs have valid values
           echo "commits<<EOF" >> $GITHUB_OUTPUT
           echo "$COMMITS" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
-          
-          echo "commit_count=$COMMIT_COUNT" >> $GITHUB_OUTPUT
-          echo "feat_count=$FEAT_COUNT" >> $GITHUB_OUTPUT
-          echo "fix_count=$FIX_COUNT" >> $GITHUB_OUTPUT
-          echo "docs_count=$DOCS_COUNT" >> $GITHUB_OUTPUT
-          echo "refactor_count=$REFACTOR_COUNT" >> $GITHUB_OUTPUT
-          echo "chore_count=$CHORE_COUNT" >> $GITHUB_OUTPUT
+
+          echo "commit_count=${COMMIT_COUNT:-0}" >> $GITHUB_OUTPUT
+          echo "feat_count=${FEAT_COUNT:-0}" >> $GITHUB_OUTPUT
+          echo "fix_count=${FIX_COUNT:-0}" >> $GITHUB_OUTPUT
+          echo "docs_count=${DOCS_COUNT:-0}" >> $GITHUB_OUTPUT
+          echo "refactor_count=${REFACTOR_COUNT:-0}" >> $GITHUB_OUTPUT
+          echo "chore_count=${CHORE_COUNT:-0}" >> $GITHUB_OUTPUT
 
       - name: Check for existing release branch
         id: check_branch
