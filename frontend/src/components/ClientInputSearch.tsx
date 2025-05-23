@@ -9,7 +9,7 @@ import { User, Loader2 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from "@/components/ui/command";
-import { FormGroup, FormLabel } from "./FormGroup";
+import { FormLabel } from "./FormGroup";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Client } from "@/lib/types";
 

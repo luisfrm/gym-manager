@@ -41,6 +41,11 @@ api.interceptors.request.use(config => {
   return config;
 });
 
+export const pingServer = async (): Promise<{ status: string }> => {
+  const res = await api.get("/ping");
+  return res.data;
+};
+
 export const loginRequest = async (req: LoginRequest): Promise<LoginResponse> => {
   const res = await api.post("/auth/login", req);
   return res.data;

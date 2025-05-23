@@ -1,6 +1,8 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
+import { ServerInitializingSpinner } from "@/components/ServerInitializingSpinner";
+import { pingServer } from "@/api/api";
 
 const Login = lazy(() => import("./pages/Login"));
 const ProtectedRoute = lazy(() => import("./pages/ProtectedRouted"));
@@ -12,6 +14,26 @@ const Settings = lazy(() => import("./pages/Settings"));
 const ClientDetails = lazy(() => import("./pages/ClientDetails"));
 
 function App() {
+  const [isServerReady, setIsServerReady] = useState(false);
+
+  useEffect(() => {
+    const checkServerStatus = async () => {
+      try {
+        await pingServer();
+        setIsServerReady(true);
+      } catch (error) {
+        console.error("Error verifying server status:", error);
+        setTimeout(checkServerStatus, 5000);
+      }
+    };
+
+    checkServerStatus();
+  }, []);
+
+  if (!isServerReady) {
+    return <ServerInitializingSpinner />;
+  }
+
   return (
     <Router>
       <Suspense

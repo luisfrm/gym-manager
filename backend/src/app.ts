@@ -18,6 +18,11 @@ const createApp = () => {
   app.use(express.json());
   app.use(morgan("dev"));
 
+  // Ping endpoint
+  app.get("/v1/ping", (_, res) => {
+    res.status(200).json({ status: "ok" });
+  });
+
   // Routes
   app.use("/v1/auth", authRouter);
   app.use("/v1/clients", clientRouter);
