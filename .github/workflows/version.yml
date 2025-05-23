@@ -21,21 +21,20 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
         with:
-          node-version: '20'
-          cache: 'npm'
+          bun-version: "latest"
 
       - name: Install dependencies
-        run: npm ci
+        run: bun install --frozen-lockfile
 
       - name: Install commitlint
-        run: npm install -g @commitlint/cli @commitlint/config-conventional
+        run: bun add -g @commitlint/cli @commitlint/config-conventional
 
       - name: Validate commit messages
         run: |
-          git log --format=%B ${{ github.event.before }}..${{ github.event.after }} | commitlint
+          git log --format=%B ${{ github.event.before }}..${{ github.event.after }} | bunx commitlint
 
       - name: Configure Git
         run: |
@@ -43,12 +42,12 @@ jobs:
           git config --global user.email 'github-actions@github.com'
 
       - name: Install semantic-release
-        run: npm install -g semantic-release @semantic-release/git
+        run: bun add -g semantic-release @semantic-release/git
 
       - name: Release
         id: release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          npx semantic-release
+          bunx semantic-release
           echo "new_version=$(jq -r '.version' ./package.json)" >> $GITHUB_OUTPUT 
