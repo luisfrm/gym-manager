@@ -83,12 +83,12 @@ A full-stack web application for managing gym memberships, clients, and payments
    **Backend (.env):**
    ```
    MONGODB_URI=mongodb://localhost:27017/gym-manager
-   TOKEN_SECRET_JWT="your_jwt_secret_key"
+   TOKEN_SECRET_JWT=""
    JWT_EXPIRATION_TIME=300
-   INITIAL_ADMIN_EMAIL=admin@gympro.com
-   INITIAL_ADMIN_PASSWORD=admin
-   INITIAL_ADMIN_USERNAME=admin
-   INITIAL_ADMIN_NAME=admin
+   INITIAL_ADMIN_EMAIL=
+   INITIAL_ADMIN_PASSWORD=
+   INITIAL_ADMIN_USERNAME=
+   INITIAL_ADMIN_NAME=
    ```
 
 4. **Start MongoDB service on your machine**
@@ -124,12 +124,12 @@ docker run -d \
   --name gym-manager-backend \
   --restart always \
   -e MONGODB_URI="mongodb://host.docker.internal:27017/gym-manager" \
-  -e TOKEN_SECRET_JWT="your_jwt_secret_key" \
+  -e TOKEN_SECRET_JWT="" \
   -e JWT_EXPIRATION_TIME=3600 \
-  -e INITIAL_ADMIN_EMAIL=admin@gympro.com \
-  -e INITIAL_ADMIN_PASSWORD=admin \
-  -e INITIAL_ADMIN_USERNAME=admin \
-  -e INITIAL_ADMIN_NAME=admin \
+  -e INITIAL_ADMIN_EMAIL= \
+  -e INITIAL_ADMIN_PASSWORD= \
+  -e INITIAL_ADMIN_USERNAME= \
+  -e INITIAL_ADMIN_NAME= \
   -p 3000:3000 \
   luisfrm/gym-manager-backend:latest
 ```
@@ -194,6 +194,72 @@ docker run -d \
 ## 📝 License
 
 This project is licensed under the MIT License.
+
+---
+
+## 🔄 Versioning
+
+This project follows [Semantic Versioning](https://semver.org/) (MAJOR.MINOR.PATCH):
+
+- **MAJOR** version for incompatible API changes
+- **MINOR** version for backwards-compatible functionality
+- **PATCH** version for backwards-compatible bug fixes
+
+### Commit Convention
+
+We follow the [Conventional Commits](https://www.conventionalcommits.org/) specification:
+
+```bash
+# Major version (breaking changes)
+git commit -m "feat!: change authentication system"
+# or
+git commit -m "feat: new auth system
+
+BREAKING CHANGE: Authentication flow has been completely redesigned"
+
+# Minor version (new features)
+git commit -m "feat: add user profile page"
+
+# Patch version (bug fixes and minor changes)
+git commit -m "fix: resolve login error"
+git commit -m "docs: update API documentation"
+git commit -m "perf: optimize database queries"
+```
+
+### Commit Types
+
+> **Note:** All commit types must be lowercase. `feat:` is valid, but `Feat:` or `FEAT:` are not.
+
+- `feat`: New feature (triggers minor version)
+- `fix`: Bug fix (triggers patch version)
+- `docs`: Documentation changes (triggers patch version)
+- `style`: Code style changes (triggers patch version)
+- `refactor`: Code refactoring (triggers patch version)
+- `test`: Adding or updating tests (triggers patch version)
+- `chore`: Maintenance tasks (triggers patch version)
+- `perf`: Performance improvements (triggers patch version)
+- `ci`: CI configuration changes (triggers patch version)
+
+### Breaking Changes
+
+To indicate a breaking change that triggers a major version:
+- Add `!` after the type/scope: `feat!` or `fix!`
+- Or add a `BREAKING CHANGE:` footer in the commit message
+
+### Examples of Valid and Invalid Commits
+
+```bash
+# Valid commits
+git commit -m "feat: add new feature"
+git commit -m "fix: resolve bug"
+git commit -m "docs: update readme"
+
+# Invalid commits (will fail validation)
+git commit -m "Feat: add new feature"    # Wrong case
+git commit -m "FEAT: add new feature"    # Wrong case
+git commit -m "new feature"              # Missing type
+git commit -m "added new feature"        # Missing type
+```
 
 ---
 
