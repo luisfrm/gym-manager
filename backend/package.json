@@ -21,14 +21,15 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/bun": "^1.2.14",
     "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
     "@types/jsonwebtoken": "^9.0.8",
     "@types/morgan": "^1.9.9",
-    "@types/express": "^5.0.0",
     "@types/node": "^22.10.2",
-    "@types/bcryptjs": "^2.4.6",
-    "ts-node-dev": "^2.0.0",
     "dotenv": "^16.4.7",
+    "ts-node-dev": "^2.0.0",
     "typescript": "^5.7.2"
   }
 }
