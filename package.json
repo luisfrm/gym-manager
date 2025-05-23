@@ -22,8 +22,8 @@
     "prettier": "^3.4.2"
   },
   "devDependencies": {
-    "@types/bun": "^1.2.14",
+    "@testing-library/jest-dom": "^6.4.4",
     "@testing-library/react": "^14.1.2",
-    "@testing-library/jest-dom": "^6.4.4"
+    "@types/bun": "^1.2.14"
   }
 }
