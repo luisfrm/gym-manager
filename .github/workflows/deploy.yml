@@ -29,7 +29,9 @@ jobs:
           node-version: lts/*
 
       - name: Install Bun
-        run: curl -fsSL https://bun.sh/install | bash
+        run: |
+          curl -fsSL https://bun.sh/install | bash
+          echo 'export PATH="$HOME/.bun/bin:$PATH"' >> $GITHUB_ENV
 
       - name: Install step
         run: "cd backend && npm install"
