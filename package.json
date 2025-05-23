@@ -19,7 +19,6 @@
   "license": "ISC",
   "dependencies": {
     "concurrently": "^9.1.2",
-    "happy-dom": "^17.4.7",
     "prettier": "^3.4.2"
   },
   "devDependencies": {
