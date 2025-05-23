@@ -23,16 +23,16 @@ jobs:
         with:
           deno-version: v2.x
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
+      - name: Install Node.js
+        uses: actions/setup-node@v4
         with:
-          bun-version: "latest"
+          node-version: lts/*
 
-      - name: Install dependencies
-        run: "cd backend && bun install"
+      - name: Install step
+        run: "cd backend && npm install"
 
       - name: Build step
-        run: "bun run start-backend"
+        run: "cd backend && npm run start-backend"
 
       - name: Upload to Deno Deploy
         uses: denoland/deployctl@v1
