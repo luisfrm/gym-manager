@@ -262,11 +262,34 @@ The project follows a structured release workflow:
    - A developer must review and approve the PR
 
 3. **Production Branch (`master`)**:
-   - Only accepts PRs from `develop` with the format `Release vX.Y.Z`
+   - Protected branch with strict rules:
+     - Requires all checks to pass before merging
+     - Requires at least one approving review
+     - Must be up to date with the base branch
+     - Enforces rules for repository administrators
    - When merged, automatically:
      - Updates the version in `package.json`
      - Creates a GitHub release
      - Builds and pushes Docker images
+
+### Branch Protection Rules
+
+The `master` branch is protected with the following rules:
+
+1. **Required Status Checks**:
+   - All workflows must pass:
+     - Version Management
+     - Build and Push Docker Images
+   - Branch must be up to date before merging
+
+2. **Pull Request Reviews**:
+   - Requires at least one approving review
+   - Dismisses stale pull request approvals when new commits are pushed
+   - No restrictions on who can review
+
+3. **Administrator Rules**:
+   - Rules apply to repository administrators
+   - Cannot bypass required checks
 
 ### Examples of Valid and Invalid Commits
 
