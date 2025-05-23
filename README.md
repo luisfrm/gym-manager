@@ -246,6 +246,28 @@ To indicate a breaking change that triggers a major version:
 - Add `!` after the type/scope: `feat!` or `fix!`
 - Or add a `BREAKING CHANGE:` footer in the commit message
 
+### Release Workflow
+
+The project follows a structured release workflow:
+
+1. **Development Branch (`develop`)**:
+   - All new features and fixes are pushed to `develop`
+   - Each push triggers an automatic check for version changes
+   - If changes are detected, a Release PR is created automatically
+
+2. **Release Process**:
+   - When pushing to `develop`, a PR is automatically created to `master`
+   - The PR is named `Release vX.Y.Z` with the next version number
+   - The PR includes all changes since the last release
+   - A developer must review and approve the PR
+
+3. **Production Branch (`master`)**:
+   - Only accepts PRs from `develop` with the format `Release vX.Y.Z`
+   - When merged, automatically:
+     - Updates the version in `package.json`
+     - Creates a GitHub release
+     - Builds and pushes Docker images
+
 ### Examples of Valid and Invalid Commits
 
 ```bash

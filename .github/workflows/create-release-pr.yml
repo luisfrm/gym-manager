@@ -1,0 +1,77 @@
+name: Create Release PR
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  create-release-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install semantic-release
+        run: npm install -g semantic-release @semantic-release/git
+
+      - name: Get next version
+        id: get_version
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          NEXT_VERSION=$(npx semantic-release --dry-run | grep "The next release version is" | cut -d' ' -f6)
+          echo "next_version=$NEXT_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Get commits since last release
+        id: get_commits
+        run: |
+          LAST_RELEASE=$(git describe --tags --abbrev=0 2>/dev/null || echo "initial")
+          COMMITS=$(git log $LAST_RELEASE..HEAD --pretty=format:"- %s (%h)")
+          echo "commits<<EOF" >> $GITHUB_OUTPUT
+          echo "$COMMITS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Check for existing release branch
+        id: check_branch
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: branches } = await github.rest.repos.listBranches({
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            });
+            const releaseBranch = branches.find(b => b.name.startsWith('release/'));
+            return releaseBranch ? releaseBranch.name : null;
+
+      - name: Create or Update Release PR
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          base: master
+          branch: release/v${{ steps.get_version.outputs.next_version }}
+          title: "Release v${{ steps.get_version.outputs.next_version }}"
+          body: |
+            ## Release v${{ steps.get_version.outputs.next_version }}
+            
+            This PR was automatically created to release version ${{ steps.get_version.outputs.next_version }}.
+            
+            ### Changes included in this release:
+            ${{ steps.get_commits.outputs.commits }}
+            
+            Please review the changes and merge this PR to deploy to production.
+          labels: |
+            release
+            automated pr
+          delete-branch: true 
