@@ -8,14 +8,19 @@ import { formatDate, isDateActive } from "@/lib/utils";
 import { Link } from "react-router-dom";
 import { Skeleton } from "./ui/skeleton";
 import CopyToClipboard from "./CopyToClipboard";
+import { Camera, Shield } from "lucide-react";
+import { Button } from "./ui/button";
+import { useState } from "react";
+import { FaceRegistrationDialog } from "./dialogs/FaceRegistrationDialog";
 
 interface ClientDataProps {
   isLoading: boolean;
   clients: Client[];
   limit?: number;
+  onClientUpdated?: () => void;
 }
 
-const ClientData = ({ isLoading, clients, limit = 10 }: ClientDataProps) => {
+const ClientData = ({ isLoading, clients, limit = 10, onClientUpdated }: ClientDataProps) => {
   const [innerWidth] = useSize();
 
   return (
@@ -33,9 +38,10 @@ const ClientData = ({ isLoading, clients, limit = 10 }: ClientDataProps) => {
               <TableHead className="cursor-pointer">Direccion</TableHead>
               <TableHead className="cursor-pointer">Fecha de vencimiento</TableHead>
               <TableHead className="cursor-pointer text-right">Estado</TableHead>
+              <TableHead className="cursor-pointer text-center">Acciones</TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody>{isLoading ? <ClientWaitingBody limit={limit} /> : <ClientBody clients={clients} />}</TableBody>
+          <TableBody>{isLoading ? <ClientWaitingBody limit={limit} /> : <ClientBody clients={clients} onClientUpdated={onClientUpdated} />}</TableBody>
           <TableCaption>Lista de clientes.</TableCaption>
         </Table>
       ) : (
@@ -46,6 +52,7 @@ const ClientData = ({ isLoading, clients, limit = 10 }: ClientDataProps) => {
               <ClientCard
                 client={client}
                 key={client.cedula}
+                onClientUpdated={onClientUpdated}
               />
             ))}
         </section>
@@ -56,6 +63,7 @@ const ClientData = ({ isLoading, clients, limit = 10 }: ClientDataProps) => {
 
 interface ClientBodyProps {
   clients: Client[];
+  onClientUpdated?: () => void;
 }
 
 interface TableCellProps {
@@ -81,7 +89,15 @@ const TableCellContent = ({ children, className = "", isLink = false, to }: Tabl
   );
 };
 
-const ClientBody = ({ clients }: ClientBodyProps) => {
+const ClientBody = ({ clients, onClientUpdated }: ClientBodyProps) => {
+  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+  const [showFaceRegistration, setShowFaceRegistration] = useState(false);
+
+  const handleFaceRegistration = (client: Client) => {
+    setSelectedClient(client);
+    setShowFaceRegistration(true);
+  };
+
   if (clients.length === 0) return null;
 
   return (
@@ -131,8 +147,39 @@ const ClientBody = ({ clients }: ClientBodyProps) => {
               {isDateActive(client.expiredDate) ? "Activo" : "Inactivo"}
             </Badge>
           </TableCellContent>
+
+          <TableCellContent className="text-center">
+            <div className="flex gap-1 justify-center">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => handleFaceRegistration(client)}
+                title={client.hasFaceRegistered ? "Actualizar registro facial" : "Registrar cara"}
+              >
+                {client.hasFaceRegistered ? (
+                  <Shield className="w-4 h-4 text-green-600" />
+                ) : (
+                  <Camera className="w-4 h-4" />
+                )}
+              </Button>
+            </div>
+          </TableCellContent>
         </TableRow>
-      ))}
+              ))}
+      
+      {/* Diálogo de registro facial */}
+      {selectedClient && (
+        <FaceRegistrationDialog
+          isOpen={showFaceRegistration}
+          onClose={() => setShowFaceRegistration(false)}
+          clientId={selectedClient._id}
+          clientName={`${selectedClient.firstname} ${selectedClient.lastname}`}
+          onSuccess={() => {
+            setShowFaceRegistration(false);
+            onClientUpdated?.();
+          }}
+        />
+      )}
     </>
   );
 };
@@ -170,6 +217,9 @@ const ClientWaitingBody = ({ limit = 10 }: { limit?: number }) => {
             </TableCell>
             <TableCell className="text-right">
               <Skeleton className="h-[20px] w-[50px]" />
+            </TableCell>
+            <TableCell className="text-center">
+              <Skeleton className="h-[20px] w-[40px]" />
             </TableCell>
           </TableRow>
         ))}

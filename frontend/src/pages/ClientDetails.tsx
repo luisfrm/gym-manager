@@ -1,4 +1,4 @@
-import { MoreVertical, ArrowLeft, Mail, Phone, MapPin, Calendar } from "lucide-react";
+import { MoreVertical, ArrowLeft, Mail, Phone, MapPin, Calendar, Camera, Shield } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import formatNumber from "@/lib/formatNumber";
 import PaymentHistory from "@/components/PaymentHistory";
 import { useStore } from "@/hooks/useStore";
+import { FaceRegistrationDialog } from "@/components/dialogs/FaceRegistrationDialog";
 
 export default function ClientDetails() {
   const { cedula = "" } = useParams();
@@ -37,6 +38,7 @@ export default function ClientDetails() {
 
   const [isUpdateClientOpen, setIsUpdateClientOpen] = useState(false);
   const [isRemoveClientOpen, setIsRemoveClientOpen] = useState(false);
+  const [showFaceRegistration, setShowFaceRegistration] = useState(false);
 
   const deleteClientMutation = useMutation({
     mutationFn: deleteClientRequest,
@@ -113,12 +115,32 @@ export default function ClientDetails() {
                     <h2 className="text-2xl font-bold">{`${client?.firstname} ${client?.lastname}`}</h2>
                     <p className="text-muted-foreground">Cédula: {formatNumber(client?.cedula ?? "")}</p>
                   </div>
-                  <Badge
-                    variant="default"
-                    className={`text-white ${isDateActive(client?.expiredDate) ? "bg-green-500" : "bg-red-500"}`}
-                  >
-                    {isDateActive(client?.expiredDate) ? "Activo" : "Inactivo"}
-                  </Badge>
+                  <div className="flex flex-col gap-2 items-end">
+                    <Badge
+                      variant="default"
+                      className={`text-white ${isDateActive(client?.expiredDate) ? "bg-green-500" : "bg-red-500"}`}
+                    >
+                      {isDateActive(client?.expiredDate) ? "Activo" : "Inactivo"}
+                    </Badge>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setShowFaceRegistration(true)}
+                      title={client?.hasFaceRegistered ? "Actualizar registro facial" : "Registrar cara"}
+                    >
+                      {client?.hasFaceRegistered ? (
+                        <>
+                          <Shield className="w-4 h-4 text-green-600 mr-2" />
+                          <span>Registrado</span>
+                        </>
+                      ) : (
+                        <>
+                          <Camera className="w-4 h-4 mr-2" />
+                          <span>Registrar cara</span>
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className="grid gap-6">
@@ -128,6 +150,19 @@ export default function ClientDetails() {
                     <div>
                       <p className="text-sm font-medium">Fecha de vencimiento</p>
                       <p className="text-sm text-muted-foreground">{client?.expiredDate}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {client?.hasFaceRegistered ? (
+                      <Shield className="h-5 w-5 text-green-600" />
+                    ) : (
+                      <Camera className="h-5 w-5 text-muted-foreground" />
+                    )}
+                    <div>
+                      <p className="text-sm font-medium">Reconocimiento Facial</p>
+                      <p className="text-sm text-muted-foreground">
+                        {client?.hasFaceRegistered ? "Registrado" : "No registrado"}
+                      </p>
                     </div>
                   </div>
                   {client?.email && (
@@ -195,6 +230,20 @@ export default function ClientDetails() {
         client={client}
         onClientRemoved={handleClientRemoved}
       />
+      
+      {/* Diálogo de registro facial */}
+      {client && (
+        <FaceRegistrationDialog
+          isOpen={showFaceRegistration}
+          onClose={() => setShowFaceRegistration(false)}
+          clientId={client._id}
+          clientName={`${client.firstname} ${client.lastname}`}
+          onSuccess={() => {
+            setShowFaceRegistration(false);
+            refetch(); // Actualizar datos del cliente
+          }}
+        />
+      )}
     </Template>
   );
 }

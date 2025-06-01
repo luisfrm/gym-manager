@@ -12,6 +12,7 @@ const Payments = lazy(() => import("./pages/Payments"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Settings = lazy(() => import("./pages/Settings"));
 const ClientDetails = lazy(() => import("./pages/ClientDetails"));
+const FaceVerification = lazy(() => import("./pages/FaceVerification"));
 
 function App() {
   const [isServerReady, setIsServerReady] = useState(false);
@@ -53,6 +54,7 @@ function App() {
             <Route path="/payments" element={<Payments />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/face-verification" element={<FaceVerification />} />
             <Route path="/logout" element={<div>Logout</div>} />
           </Route>
           <Route path="*" element={<div>404</div>} />

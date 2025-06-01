@@ -7,7 +7,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import { useEffect, useState } from "react";
 
 export const Modal = ({
   isOpen,
@@ -20,30 +19,9 @@ export const Modal = ({
   children: React.ReactNode;
   className?: string;
 }) => {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-    return () => setMounted(false);
-  }, []);
-
-  if (!mounted) return null;
-
-  const handleOpenChange = (open: boolean) => {
-    if (!open) {
-      onOpenChange(false);
-    }
-  };
-
   return (
-    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent 
-        className={cn("py-8", className)}
-        onEscapeKeyDown={(e) => {
-          e.preventDefault();
-          handleOpenChange(false);
-        }}
-      >
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <DialogContent className={cn("py-8", className)}>
         {children}
       </DialogContent>
     </Dialog>

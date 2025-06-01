@@ -48,6 +48,8 @@ export interface Client {
   phone: string;
   address: string;
   expiredDate: string;
+  hasFaceRegistered?: boolean;
+  faceImagePath?: string;
 }
 
 export interface CreateClientRequest {

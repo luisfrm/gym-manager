@@ -210,7 +210,12 @@ const Clients = () => {
         />
       </section>
       <section className="data-table w-full">
-        <ClientData isLoading={isLoading} clients={clients ?? []} limit={limit} />
+        <ClientData 
+          isLoading={isLoading} 
+          clients={clients ?? []} 
+          limit={limit} 
+          onClientUpdated={refetchClients}
+        />
         {pages > 1 && (
           <Pagination
             isLoading={isLoading}

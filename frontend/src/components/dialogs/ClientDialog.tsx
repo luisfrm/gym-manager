@@ -1,27 +1,23 @@
-import { Modal, ModalBody, ModalHeader } from "@/components/Modal";
-import { FormGroup } from "@/components/FormGroup";
-import { Button } from "../ui/button";
-import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
-import { createClientRequest } from "@/api/api";
-import { z } from "zod";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "sonner";
-import { CircleCheckBig, CircleX, Loader2 } from "lucide-react";
-import { AxiosError } from "axios";
+import { z } from "zod";
+import { useMutation } from "@tanstack/react-query";
+import { createClientRequest } from "@/api/api";
+import { Modal, ModalHeader, ModalBody } from "@/components/Modal";
+import { Button } from "../ui/button";
+import { FormGroup } from "@/components/FormGroup";
 import { FormInput } from "../ui/form-input";
 import { DateInput } from "../ui/date-input";
+import { toast } from "sonner";
+import { Loader2, CircleX, Camera, Shield, X, CircleCheckBig } from "lucide-react";
 import { isEmailValid } from "@/lib/utils";
+import { FaceCaptureComponent } from "./FaceCaptureComponent";
 
 interface ClientDialogProps {
   isOpen: boolean;
   onOpenChange: () => void;
   onClientCreated?: () => void;
-}
-
-interface ErrorResponse {
-  message: string;
 }
 
 const clientSchema = z.object({
@@ -54,6 +50,14 @@ type ClientSchema = z.infer<typeof clientSchema>;
 
 export const ClientDialog = ({ isOpen, onOpenChange, onClientCreated = () => {} }: ClientDialogProps) => {
   const [email, setEmail] = useState("");
+  const [showFaceCapture, setShowFaceCapture] = useState(false);
+  const [faceData, setFaceData] = useState<{
+    encoding: number[] | null;
+    image: string | null;
+  }>({
+    encoding: null,
+    image: null,
+  });
 
   const {
     handleSubmit,
@@ -83,34 +87,83 @@ export const ClientDialog = ({ isOpen, onOpenChange, onClientCreated = () => {} 
   };
 
   const createClientMutation = useMutation({
-    mutationFn: createClientRequest,
+    mutationFn: (data: ClientSchema) => {
+      const requestData = {
+        ...data,
+        email: data.email || '',
+        phone: data.phone || '',
+        address: data.address || '',
+      };
+      
+      // Agregar datos faciales si existen
+      const faceDataForAPI = faceData.encoding ? 
+        { encoding: faceData.encoding, image: faceData.image! } : 
+        undefined;
+      
+      return createClientRequest(requestData, faceDataForAPI);
+    },
     onSuccess: () => {
       onClientCreated();
-      reset();
       onOpenChange();
-
-      toast("Cliente creado.", {
-        description: "El cliente ha sido creado exitosamente.",
-        duration: 5000,
-        icon: <CircleCheckBig className="text-lime-500" />,
+      reset();
+      setFaceData({ encoding: null, image: null });
+      
+      toast("Cliente creado exitosamente", {
+        description: "El cliente ha sido registrado en la base de datos.",
+        duration: 4000,
+        icon: <CircleCheckBig className="w-6 h-6 text-green-500" />,
+        style: {
+          backgroundColor: '#F0FDF4',
+          borderColor: '#BBF7D0',
+          color: '#16A34A'
+        }
       });
     },
-    onError: (error: AxiosError<ErrorResponse>) => {
-      console.error(error);
+    onError: (error: any) => {
+      console.error("Error creating client:", error);
+      
+      // ✅ MANEJO ESPECÍFICO PARA CARA DUPLICADA
+      if (error.isDuplicate && error.existingClient) {
+        const { firstname, lastname, cedula } = error.existingClient;
+        const similarity = Math.round((error.similarity || 0) * 100);
+        
+        toast("Cara ya registrada", {
+          description: `Esta cara pertenece a ${firstname} ${lastname} (${cedula}) - Similitud: ${similarity}%`,
+          duration: 8000,
+          icon: <CircleX className="w-6 h-6 text-red-500" />,
+          style: {
+            backgroundColor: '#FEF2F2',
+            borderColor: '#FECACA',
+            color: '#DC2626'
+          }
+        });
+        return;
+      }
 
-      const errorMessage = error.response?.data?.message;
+      // Manejo de errores existentes
+      const errorMessage = error.response?.data?.message || error.message;
       
       if (errorMessage === "Client already exists") {
         toast("Error al crear cliente", {
           description: "Ya existe un cliente con esta cédula.",
           duration: 5000,
-          icon: <CircleX className="text-red-600" />,
+          icon: <CircleX className="w-6 h-6 text-red-500" />,
+          style: {
+            backgroundColor: '#FEF2F2',
+            borderColor: '#FECACA',
+            color: '#DC2626'
+          }
         });
       } else {
         toast("Error al crear cliente", {
-          description: "Por favor, intenta de nuevo o contacta con el administrador.",
+          description: errorMessage || "Por favor, intenta de nuevo o contacta con el administrador.",
           duration: 5000,
-          icon: <CircleX className="text-red-600" />,
+          icon: <CircleX className="w-6 h-6 text-red-500" />,
+          style: {
+            backgroundColor: '#FEF2F2',
+            borderColor: '#FECACA',
+            color: '#DC2626'
+          }
         });
       }
     },
@@ -128,7 +181,28 @@ export const ClientDialog = ({ isOpen, onOpenChange, onClientCreated = () => {} 
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>, field: 'firstname' | 'lastname') => {
     const value = e.target.value.replace(/[^A-Za-zÀ-ÿ\s]/g, '');
-    setValue(field, value);
+    const capitalizedValue = value.charAt(0).toUpperCase() + value.slice(1);
+    setValue(field, capitalizedValue);
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value;
+    
+    // Permitir solo dígitos, + y -
+    value = value.replace(/[^\d+-]/g, '');
+    
+    // Verificar si empieza con +
+    const startsWithPlus = value.startsWith('+');
+    
+    // Remover todos los +
+    value = value.replace(/\+/g, '');
+    
+    // Si originalmente empezaba con +, agregarlo al inicio
+    if (startsWithPlus) {
+      value = '+' + value;
+    }
+    
+    setValue('phone', value);
   };
 
   return (
@@ -197,6 +271,7 @@ export const ClientDialog = ({ isOpen, onOpenChange, onClientCreated = () => {} 
               register={register}
               error={errors.phone?.message}
               placeholder="Telefono del cliente"
+              onChange={handlePhoneChange}
             />
           </FormGroup>
           <FormGroup className="flex flex-col gap-2 col-span-2">
@@ -208,6 +283,66 @@ export const ClientDialog = ({ isOpen, onOpenChange, onClientCreated = () => {} 
               placeholder="Direccion del cliente"
             />
           </FormGroup>
+          
+          {/* Sección de Registro Facial */}
+          <FormGroup className="col-span-2">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium">Registro Facial (Opcional)</label>
+                <div className="flex items-center gap-2">
+                  {faceData.encoding ? (
+                    <div className="flex items-center gap-2 text-green-600">
+                      <Shield className="w-4 h-4" />
+                      <span className="text-sm">Rostro capturado</span>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setFaceData({ encoding: null, image: null })}
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setShowFaceCapture(true)}
+                      className="flex items-center gap-2"
+                    >
+                      <Camera className="w-4 h-4" />
+                      Capturar rostro
+                    </Button>
+                  )}
+                </div>
+              </div>
+              
+              {faceData.image && (
+                <div className="flex justify-center">
+                  <img
+                    src={faceData.image}
+                    alt="Rostro capturado"
+                    className="w-32 h-24 object-cover rounded border"
+                  />
+                </div>
+              )}
+            </div>
+          </FormGroup>
+
+          {/* Componente de captura facial */}
+          {showFaceCapture && (
+            <FormGroup className="col-span-2">
+              <FaceCaptureComponent
+                isOpen={showFaceCapture}
+                onFaceCaptured={(encoding, image) => {
+                  setFaceData({ encoding, image });
+                  setShowFaceCapture(false);
+                }}
+                onCancel={() => setShowFaceCapture(false)}
+              />
+            </FormGroup>
+          )}
+          
           <FormGroup className="col-span-2 flex justify-end">
             <Button disabled={createClientMutation.isPending} type="submit">
               {createClientMutation.isPending ? <Loader2 className="animate-spin" /> : "Guardar"}
