@@ -8,6 +8,7 @@ import clientRouter from "./routes/client.routes";
 import paymentRouter from "./routes/payment.routes";
 import logRouter from "./routes/log.routes";
 import statisticsRouter from "./routes/statistics.routes";
+import faceRecognitionRouter from "./routes/faceRecognition.routes";
 import createInitialAdmin from "./utils/createInitialAdmin";
 
 const PORT = process.env.PORT || 3000;
@@ -34,6 +35,7 @@ const createApp = () => {
   app.use("/v1/payments", paymentRouter);
   app.use("/v1/logs", logRouter);
   app.use("/v1/statistics", statisticsRouter);
+  app.use("/v1/face", faceRecognitionRouter);
   app.get("/", (_, res) => {
     res.send("Hello World!");
   });

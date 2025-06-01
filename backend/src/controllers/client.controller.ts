@@ -3,11 +3,27 @@ import Log from "../models/log.model";
 import Payment from "../models/payment.model";
 import { AppRequest, ClientPartial } from "../utils/types";
 import formatNumber from "../utils/formatNumber";
+import safeTrim from "../utils/safeTrim";
+import faceRecognitionService from "../services/faceRecognition.service";
+
+// Función auxiliar para calcular distancia euclidiana
+function calculateEuclideanDistance(vector1: number[], vector2: number[]): number {
+  if (vector1.length !== vector2.length) {
+    throw new Error("Los vectores deben tener la misma longitud");
+  }
+  
+  let sum = 0;
+  for (let i = 0; i < vector1.length; i++) {
+    sum += Math.pow(vector1[i] - vector2[i], 2);
+  }
+  
+  return Math.sqrt(sum);
+}
 
 class ClientController {
   static create = async (req: AppRequest, res: any) => {
     try {
-      const { cedula, firstname, lastname, email, phone, address, expiredDate } = req.body;
+      const { cedula, firstname, lastname, email, phone, address, expiredDate, faceEncoding } = req.body;
 
       const clientExists = await Client.findOne({ cedula: cedula });
 
@@ -15,20 +31,72 @@ class ClientController {
         return res.status(400).json({ message: "Client already exists" });
       }
 
-      const client = new Client({
-        cedula: cedula.trim(),
-        firstname: firstname.trim(),
-        lastname: lastname.trim(),
-        email: email.trim(),
-        phone: phone.trim(),
-        address: address.trim(),
-        expiredDate: expiredDate.trim(),
-      });
+      // Crear datos básicos del cliente
+      const clientData: any = {
+        cedula: safeTrim(cedula),
+        firstname: safeTrim(firstname),
+        lastname: safeTrim(lastname),
+        email: safeTrim(email),
+        phone: safeTrim(phone),
+        address: safeTrim(address),
+        expiredDate: safeTrim(expiredDate),
+      };
 
+      // Procesar datos faciales si están presentes
+      if (faceEncoding && req.file) {
+        try {
+          const encoding = Array.isArray(faceEncoding) ? faceEncoding : JSON.parse(faceEncoding);
+          
+          // ✅ VALIDACIÓN: Verificar si la cara ya está registrada
+          const clientsWithFaces = await Client.find({ 
+            hasFaceRegistered: true,
+            faceEncoding: { $exists: true, $ne: null }
+          });
+
+          if (clientsWithFaces.length > 0) {
+            const threshold = 0.6; // Mismo umbral que en verificación
+            
+            for (const existingClient of clientsWithFaces) {
+              if (existingClient.faceEncoding && existingClient.faceEncoding.length > 0) {
+                // Calcular distancia euclidiana
+                const distance = calculateEuclideanDistance(encoding, existingClient.faceEncoding);
+                
+                if (distance < threshold) {
+                  // La cara ya está registrada por otro cliente
+                  return res.status(409).json({
+                    message: "Esta cara ya está registrada en el sistema",
+                    existingClient: {
+                      id: existingClient._id,
+                      firstname: existingClient.firstname,
+                      lastname: existingClient.lastname,
+                      cedula: existingClient.cedula
+                    },
+                    similarity: Math.max(0, 1 - distance)
+                  });
+                }
+              }
+            }
+          }
+
+          // Si llegamos aquí, la cara no está duplicada
+          const imagePath = faceRecognitionService.getRelativeImagePath(req.file.path);
+          
+          clientData.faceEncoding = encoding;
+          clientData.faceImagePath = imagePath;
+          clientData.hasFaceRegistered = true;
+        } catch (error) {
+          console.error("Error processing face data:", error);
+          // Continuar sin datos faciales si hay error
+        }
+      }
+
+      const client = new Client(clientData);
       await client.save();
 
+      const logMessage = `Cliente ${client.firstname} ${client.lastname}, cedula: ${formatNumber(client.cedula)} creado${client.hasFaceRegistered ? ' con registro facial' : ''}.`;
+      
       await Log.create({
-        message: `Cliente ${client.firstname} ${client.lastname}, cedula: ${formatNumber(client.cedula)} creado.`,
+        message: logMessage,
         user: req.user.userId,
         type: "created",
       });
@@ -111,13 +179,13 @@ class ClientController {
       const { firstname, lastname, email, phone, address, expiredDate, cedula } = req.body;
 
       const client = await Client.findByIdAndUpdate(id, {
-        firstname: firstname.trim(),
-        lastname: lastname.trim(),
-        email: email.trim(),
-        phone: phone.trim(),
-        address: address.trim(),
-        expiredDate: expiredDate.trim(),
-        cedula: cedula.trim(),
+        firstname: safeTrim(firstname),
+        lastname: safeTrim(lastname),
+        email: safeTrim(email),
+        phone: safeTrim(phone),
+        address: safeTrim(address),
+        expiredDate: safeTrim(expiredDate),
+        cedula: safeTrim(cedula),
       });
 
       if (!client) {

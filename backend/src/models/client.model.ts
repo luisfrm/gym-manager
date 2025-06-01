@@ -31,6 +31,19 @@ const clientSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    // Campos para reconocimiento facial
+    faceEncoding: {
+      type: [Number], // Array de números para almacenar la codificación facial
+      default: null,
+    },
+    faceImagePath: {
+      type: String, // Ruta de la imagen de referencia
+      default: "",
+    },
+    hasFaceRegistered: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
