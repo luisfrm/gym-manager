@@ -1,0 +1,6 @@
+[test]
+# Testing configuration without preload to avoid jest-dom conflicts
+
+[test.env]
+# Set test environment variables
+NODE_ENV = "test" 
