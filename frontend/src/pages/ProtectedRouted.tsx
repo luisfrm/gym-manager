@@ -18,7 +18,6 @@ const ProtectedRoute: React.FC = () => {
   const [timeLeft, setTimeLeft] = useState(0);
   const [wasTokenExpiredShowed, setWasTokenExpiredShowed] = useState(false);
   const [isTokenExpiredPopupVisible, setIsTokenExpiredPopupVisible] = useState(false);
-  const timeLeftRef = useRef(timeLeft);
   const refreshAttemptsRef = useRef(0);
   const MAX_REFRESH_ATTEMPTS = 3;
 
@@ -42,7 +41,17 @@ const ProtectedRoute: React.FC = () => {
     onSuccess: (data: RefreshTokenResponse) => {
       refreshToken(data);
       setWasTokenExpiredShowed(false);
+      setIsTokenExpiredPopupVisible(false);
       refreshAttemptsRef.current = 0;
+      
+      // Recalculate time left with new token
+      if (data.tokenExpiration) {
+        const expirationDate = new Date(data.tokenExpiration);
+        const currentTime = Date.now();
+        const timeUntilExpiration = Math.floor((expirationDate.getTime() - currentTime) / 1000);
+        setTimeLeft(Math.max(0, timeUntilExpiration));
+      }
+      
       toast.success("Sesión renovada exitosamente");
     },
     onError: (error: AxiosError) => {
@@ -83,38 +92,44 @@ const ProtectedRoute: React.FC = () => {
     }
   }, [handleLogout, tokenExpiration]);
 
-  // Efecto para manejar el timer y la validación periódica
+  // Effect for handling the timer and periodic validation
   useEffect(() => {
-    timeLeftRef.current = timeLeft;
+    if (timeLeft <= 0) return;
 
     const timer = setInterval(() => {
       setTimeLeft(prevTime => {
-        if (prevTime <= 1) {
+        const newTime = prevTime - 1;
+        if (newTime <= 0) {
           handleLogout();
-          clearInterval(timer);
           return 0;
         }
-        return Math.floor(prevTime) - 1;
+        return newTime;
       });
     }, 1000);
 
-    // Validación periódica del token
+    return () => {
+      clearInterval(timer);
+    };
+  }, [handleLogout, timeLeft]);
+
+  // Separate effect for token validation
+  useEffect(() => {
     const tokenCheckInterval = setInterval(() => {
       validateToken();
     }, TOKEN_CHECK_INTERVAL);
 
     return () => {
-      clearInterval(timer);
       clearInterval(tokenCheckInterval);
     };
-  }, [handleLogout, validateToken, timeLeft]);
+  }, [validateToken]);
 
   // Efecto para manejar la visibilidad del popup
   useEffect(() => {
-    if (timeLeft === TOKEN_EXPIRY_WARNING && !wasTokenExpiredShowed) {
+    if (timeLeft <= TOKEN_EXPIRY_WARNING && timeLeft > 0 && !wasTokenExpiredShowed) {
       setIsTokenExpiredPopupVisible(true);
     } else if (timeLeft > TOKEN_EXPIRY_WARNING) {
       setIsTokenExpiredPopupVisible(false);
+      setWasTokenExpiredShowed(false); // Reset the flag when we're back to safe time
     }
   }, [timeLeft, wasTokenExpiredShowed]);
 
