@@ -8,7 +8,14 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test": "npm run build"
+    "test": "bun test",
+    "test:watch": "bun test --watch",
+    "test:coverage": "bun test --coverage",
+    "test:ui": "bun test src/components/__tests__/",
+    "test:hooks": "bun test src/hooks/__tests__/",
+    "test:utils": "bun test src/lib/__tests__/",
+    "download-models": "node download-models.cjs",
+    "setup": "npm run download-models"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.2",
@@ -29,6 +36,7 @@
     "clsx": "^2.1.1",
     "cmdk": "1.0.0",
     "date-fns": "^4.1.0",
+    "face-api.js": "^0.22.2",
     "framer-motion": "^11.18.0",
     "lucide-react": "^0.469.0",
     "react": "^18.3.1",
