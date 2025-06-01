@@ -78,11 +78,11 @@ export const createClientRequest = async (
   client: CreateClientRequest, 
   faceData?: { encoding: number[]; image: string }
 ): Promise<Client> => {
-  // Si hay datos faciales, usar FormData
+  // If there is facial data, send only the encoding (no image)
   if (faceData) {
     const formData = new FormData();
     
-    // Agregar datos del cliente
+    // Add client data
     Object.keys(client).forEach(key => {
       const value = client[key as keyof CreateClientRequest];
       if (value !== undefined && value !== '') {
@@ -90,15 +90,10 @@ export const createClientRequest = async (
       }
     });
     
-    // Agregar datos faciales
+    // Add only facial encoding (no image to save storage)
     formData.append('faceEncoding', JSON.stringify(faceData.encoding));
     
-    // Convertir base64 a blob
-    const response = await fetch(faceData.image);
-    const blob = await response.blob();
-    formData.append('faceImage', blob, 'face.jpg');
-    
-    // Hacer petición con FormData (sin axios para manejar FormData correctamente)
+    // Make request with FormData (optimized without image)
     const token = useStore.getState().auth.token;
     const apiResponse = await fetch(`${API_URL}/clients`, {
       method: 'POST',
@@ -111,7 +106,7 @@ export const createClientRequest = async (
     if (!apiResponse.ok) {
       const errorData = await apiResponse.json();
       
-      // ✅ MANEJO ESPECÍFICO PARA CARA DUPLICADA (409)
+      // ✅ SPECIFIC HANDLING FOR DUPLICATE FACE (409)
       if (apiResponse.status === 409) {
         const duplicateError = new Error(errorData.message || 'Esta cara ya está registrada en el sistema');
         (duplicateError as any).existingClient = errorData.existingClient;
@@ -126,7 +121,7 @@ export const createClientRequest = async (
     return apiResponse.json();
   }
   
-  // Si no hay datos faciales, usar el método normal
+  // If there is no facial data, use the normal method
   const res = await api.post("/clients", client);
   return res.data;
 };
@@ -212,12 +207,13 @@ export const registerFace = async (clientId: string, encoding: number[], image: 
   formData.append('clientId', clientId);
   formData.append('faceEncoding', JSON.stringify(encoding));
   
-  // Convertir base64 a blob
-  const response = await fetch(image);
-  const blob = await response.blob();
-  formData.append('faceImage', blob, 'face.jpg');
+  // Don't send image to optimize storage - only encoding is needed
+  // Convert base64 to blob
+  // const response = await fetch(image);
+  // const blob = await response.blob();
+  // formData.append('faceImage', blob, 'face.jpg');
   
-  // Hacer petición con FormData (sin axios para manejar FormData correctamente)
+  // Make request with FormData (optimized without image)
   const token = useStore.getState().auth.token;
   const apiResponse = await fetch(`${API_URL}/face/register`, {
     method: 'POST',
@@ -230,7 +226,7 @@ export const registerFace = async (clientId: string, encoding: number[], image: 
   if (!apiResponse.ok) {
     const errorData = await apiResponse.json();
     
-    // Crear error con estructura de axios para compatibilidad
+    // Create error with axios structure for compatibility
     const error = new Error(errorData.message || 'Error al registrar cara');
     (error as any).response = {
       status: apiResponse.status,

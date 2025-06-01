@@ -75,22 +75,15 @@ export const registerFace = async (req: MulterRequest, res: Response): Promise<v
     }
 
     // Si llegamos aquí, la cara no está duplicada - proceder con el registro
-    // Procesar la imagen si se envió
-    let imagePath = "";
-    if (req.file) {
-      imagePath = faceRecognitionService.getRelativeImagePath(req.file.path);
-    }
 
-    // Actualizar el cliente con los datos faciales
+    // Actualizar el cliente con los datos faciales (solo encoding)
     await Client.findByIdAndUpdate(clientId, {
       faceEncoding: encodingArray,
-      faceImagePath: imagePath,
       hasFaceRegistered: true,
     });
 
     res.status(200).json({
       message: "Registro facial completado exitosamente",
-      imagePath,
     });
   } catch (error) {
     console.error("Error en registro facial:", error);
@@ -191,7 +184,6 @@ export const getClientFaceStatus = async (req: Request, res: Response): Promise<
 
     res.status(200).json({
       hasFaceRegistered: client.hasFaceRegistered,
-      faceImagePath: client.faceImagePath,
     });
   } catch (error) {
     console.error("Error al obtener estado facial:", error);
@@ -213,15 +205,9 @@ export const deleteFaceRegistration = async (req: Request, res: Response): Promi
       return;
     }
 
-    // Eliminar imagen si existe
-    if (client.faceImagePath) {
-      faceRecognitionService.deleteFaceImage(client.faceImagePath);
-    }
 
-    // Limpiar datos faciales
     await Client.findByIdAndUpdate(clientId, {
       faceEncoding: null,
-      faceImagePath: "",
       hasFaceRegistered: false,
     });
 

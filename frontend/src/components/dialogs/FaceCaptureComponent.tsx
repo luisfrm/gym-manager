@@ -79,6 +79,13 @@ export const FaceCaptureComponent = ({ onFaceCaptured, onCancel, isOpen }: FaceC
     }
   }, []);
 
+  const resetCapture = useCallback(() => {
+    setStep('camera');
+    setCapturedImage(null);
+    setCapturedEncoding(null);
+    setError("");
+  }, []);
+
   const capturePhoto = useCallback(async () => {
     if (!videoRef.current || !canvasRef.current) return;
 
@@ -160,26 +167,20 @@ export const FaceCaptureComponent = ({ onFaceCaptured, onCancel, isOpen }: FaceC
         setStep('camera');
       }
     } catch (err) {
+      console.error('Error processing image:', err);
       setError("Error al procesar la imagen. Inténtalo de nuevo.");
       setStep('camera');
     } finally {
       setIsDetecting(false);
     }
-  }, [detectFace, validateFaceEncoding]);
+  }, [detectFace, resetCapture, validateFaceEncoding]);
 
   const confirmCapture = useCallback(() => {
     if (capturedEncoding && capturedImage) {
       onFaceCaptured(capturedEncoding, capturedImage);
       resetCapture();
     }
-  }, [capturedEncoding, capturedImage, onFaceCaptured]);
-
-  const resetCapture = useCallback(() => {
-    setStep('camera');
-    setCapturedImage(null);
-    setCapturedEncoding(null);
-    setError("");
-  }, []);
+  }, [capturedEncoding, capturedImage, onFaceCaptured, resetCapture]);
 
   const handleCancel = useCallback(() => {
     resetCapture();
@@ -193,9 +194,7 @@ export const FaceCaptureComponent = ({ onFaceCaptured, onCancel, isOpen }: FaceC
     }
     
     return () => {
-      if (!isOpen) {
-        stopCamera();
-      }
+      stopCamera();
     };
   }, [isOpen, step, startCamera, stopCamera]);
 
@@ -205,7 +204,7 @@ export const FaceCaptureComponent = ({ onFaceCaptured, onCancel, isOpen }: FaceC
     <div className="border rounded-lg p-4 bg-white">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold">Capturar Rostro</h3>
-        <Button variant="ghost" size="sm" onClick={handleCancel}>
+        <Button variant="ghost" size="sm" onClick={handleCancel} type="button">
           <X className="w-4 h-4" />
         </Button>
       </div>
@@ -240,11 +239,12 @@ export const FaceCaptureComponent = ({ onFaceCaptured, onCancel, isOpen }: FaceC
               onClick={capturePhoto}
               disabled={isDetecting || !isLoaded}
               className="flex items-center gap-2"
+              type="button"
             >
               <Camera className="w-4 h-4" />
               {!isLoaded ? "Cargando modelos..." : isDetecting ? "Procesando..." : "Capturar"}
             </Button>
-            <Button variant="outline" onClick={handleCancel}>
+            <Button variant="outline" onClick={handleCancel} type="button">
               Cancelar
             </Button>
           </div>
@@ -293,6 +293,7 @@ export const FaceCaptureComponent = ({ onFaceCaptured, onCancel, isOpen }: FaceC
             <Button
               onClick={confirmCapture}
               className="flex items-center gap-2"
+              type="button"
             >
               <Check className="w-4 h-4" />
               Confirmar
@@ -301,6 +302,7 @@ export const FaceCaptureComponent = ({ onFaceCaptured, onCancel, isOpen }: FaceC
               variant="outline"
               onClick={resetCapture}
               className="flex items-center gap-2"
+              type="button"
             >
               <RotateCcw className="w-4 h-4" />
               Capturar de nuevo

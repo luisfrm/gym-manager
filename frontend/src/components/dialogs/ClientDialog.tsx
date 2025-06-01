@@ -51,6 +51,7 @@ type ClientSchema = z.infer<typeof clientSchema>;
 export const ClientDialog = ({ isOpen, onOpenChange, onClientCreated = () => {} }: ClientDialogProps) => {
   const [email, setEmail] = useState("");
   const [showFaceCapture, setShowFaceCapture] = useState(false);
+  const [isClosingFaceCapture, setIsClosingFaceCapture] = useState(false);
   const [faceData, setFaceData] = useState<{
     encoding: number[] | null;
     image: string | null;
@@ -205,6 +206,14 @@ export const ClientDialog = ({ isOpen, onOpenChange, onClientCreated = () => {} 
     setValue('phone', value);
   };
 
+  const handleCloseFaceCapture = () => {
+    setIsClosingFaceCapture(true);
+    setTimeout(() => {
+      setShowFaceCapture(false);
+      setIsClosingFaceCapture(false);
+    }, 700); // Duración sincronizada con la animación
+  };
+
   return (
     <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
       <ModalHeader title="Registrar nuevo cliente" description="Agrega un nuevo cliente en la base de datos." />
@@ -332,14 +341,34 @@ export const ClientDialog = ({ isOpen, onOpenChange, onClientCreated = () => {} 
           {/* Componente de captura facial */}
           {showFaceCapture && (
             <FormGroup className="col-span-2">
-              <FaceCaptureComponent
-                isOpen={showFaceCapture}
-                onFaceCaptured={(encoding, image) => {
-                  setFaceData({ encoding, image });
-                  setShowFaceCapture(false);
+              <div 
+                className={`transition-all duration-700 ease-in-out overflow-hidden ${
+                  isClosingFaceCapture 
+                    ? "max-h-0 opacity-0 transform scale-95 -translate-y-4" 
+                    : "max-h-[600px] opacity-100 transform scale-100 translate-y-0"
+                }`}
+                style={{
+                  transitionProperty: 'max-height, opacity, transform',
+                  transitionTimingFunction: isClosingFaceCapture 
+                    ? 'cubic-bezier(0.4, 0, 1, 1)' 
+                    : 'cubic-bezier(0, 0, 0.2, 1)'
                 }}
-                onCancel={() => setShowFaceCapture(false)}
-              />
+              >
+                <div className={`bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200 shadow-sm transition-all duration-700 ${
+                  isClosingFaceCapture 
+                    ? 'shadow-none border-transparent' 
+                    : 'shadow-sm border-blue-200'
+                }`}>
+                  <FaceCaptureComponent
+                    isOpen={showFaceCapture}
+                    onFaceCaptured={(encoding, image) => {
+                      setFaceData({ encoding, image });
+                      handleCloseFaceCapture();
+                    }}
+                    onCancel={handleCloseFaceCapture}
+                  />
+                </div>
+              </div>
             </FormGroup>
           )}
           

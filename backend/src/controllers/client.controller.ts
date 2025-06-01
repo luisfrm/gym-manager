@@ -43,7 +43,7 @@ class ClientController {
       };
 
       // Procesar datos faciales si están presentes
-      if (faceEncoding && req.file) {
+      if (faceEncoding) {
         try {
           const encoding = Array.isArray(faceEncoding) ? faceEncoding : JSON.parse(faceEncoding);
           
@@ -79,14 +79,11 @@ class ClientController {
           }
 
           // Si llegamos aquí, la cara no está duplicada
-          const imagePath = faceRecognitionService.getRelativeImagePath(req.file.path);
-          
+          // Only save encoding - no image storage for optimization
           clientData.faceEncoding = encoding;
-          clientData.faceImagePath = imagePath;
           clientData.hasFaceRegistered = true;
         } catch (error) {
           console.error("Error processing face data:", error);
-          // Continuar sin datos faciales si hay error
         }
       }
 

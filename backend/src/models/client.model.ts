@@ -36,10 +36,6 @@ const clientSchema = new mongoose.Schema(
       type: [Number], // Array de números para almacenar la codificación facial
       default: null,
     },
-    faceImagePath: {
-      type: String, // Ruta de la imagen de referencia
-      default: "",
-    },
     hasFaceRegistered: {
       type: Boolean,
       default: false,
