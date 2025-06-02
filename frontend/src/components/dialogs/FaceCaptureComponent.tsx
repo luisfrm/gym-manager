@@ -139,17 +139,17 @@ export const FaceCaptureComponent = ({ onFaceCaptured, onCancel, isOpen }: FaceC
           resetCapture();
         }
       } else {
-        setError("No se detectó ninguna cara. Asegúrate de estar bien posicionado frente a la cámara.");
+        toastUtils.face.noFaceDetected();
         setStep('camera');
       }
     } catch (err) {
       console.error('Error processing image:', err);
-      setError("Error al procesar la imagen. Inténtalo de nuevo.");
+      toastUtils.face.error("Error al procesar la imagen. Inténtalo de nuevo.");
       setStep('camera');
     } finally {
       setIsDetecting(false);
     }
-  }, [detectFace, resetCapture, validateFaceEncoding]);
+  }, [detectFace, isDetecting, resetCapture, validateFaceEncoding]);
 
   const confirmCapture = useCallback(() => {
     if (capturedEncoding && capturedImage) {

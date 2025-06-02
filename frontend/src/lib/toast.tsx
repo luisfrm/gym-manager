@@ -275,6 +275,13 @@ export const toastUtils = {
         duration: 8000
       }),
 
+    noFaceDetected: () => 
+      showToast('error', 'No se detectó una cara', {
+        description: 'Por favor, asegúrate de que haya una cara visible en la pantalla',
+        category: 'face',
+        duration: 5000
+      }),
+
     error: (details?: string) => 
       showToast('error', 'Error en reconocimiento facial', {
         description: details || 'Error al procesar el rostro',
