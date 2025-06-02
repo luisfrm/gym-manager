@@ -58,7 +58,7 @@ export const ClientUpdateDialog = ({ isOpen, onOpenChange, client, onClientUpdat
   const updateClientMutation = useMutation({
     mutationFn: updateClientRequest,
     onSuccess: (data: Client) => {
-      const clientName = `${data.firstname} ${data.lastname}`;
+      const clientName = client ? `${client.firstname} ${client.lastname}` : undefined;
       toastUtils.client.updated(clientName);
       onClientUpdated(data);
       onOpenChange();

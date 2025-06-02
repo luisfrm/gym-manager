@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Mail, Phone, MapPin, Calendar, Camera, Shield } from "lucide-react";
+import { Mail, Phone, MapPin, Calendar, Camera, Shield, MoreVertical, Trash2, RefreshCw } from "lucide-react";
 import formatNumber from "@/lib/formatNumber";
 import { isDateActive } from "@/lib/utils";
 import { Link } from "react-router-dom";
@@ -8,6 +8,11 @@ import { Client } from "@/lib/types";
 import { Button } from "./ui/button";
 import { useState } from "react";
 import { FaceRegistrationDialog } from "./dialogs/FaceRegistrationDialog";
+import { 
+  DropdownMenuItem, 
+  DropdownMenuSeparator
+} from "./ui/dropdown-menu";
+import { ReusableDropdown } from "./ui/reusable-dropdown";
 
 interface ClientCardProps {
   client: Client;
@@ -20,7 +25,10 @@ export function ClientCard({ client, onClientUpdated }: ClientCardProps) {
   const [showFaceRegistration, setShowFaceRegistration] = useState(false);
 
   const handleFaceRegistration = () => {
-    setShowFaceRegistration(true);
+    // Forzar cierre del dropdown antes de abrir modal
+    setTimeout(() => {
+      setShowFaceRegistration(true);
+    }, 100);
   };
 
   return (
@@ -40,24 +48,44 @@ export function ClientCard({ client, onClientUpdated }: ClientCardProps) {
             >
               {isDateActive(client.expiredDate) ? "Activo" : "Inactivo"}
             </Badge>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={handleFaceRegistration}
-              title={client.hasFaceRegistered ? "Actualizar registro facial" : "Registrar cara"}
-            >
-              {client.hasFaceRegistered ? (
-                <>
-                  <Shield className="w-4 h-4 text-green-600 mr-1" />
-                  <span className="text-xs">Registrado</span>
-                </>
-              ) : (
-                <>
-                  <Camera className="w-4 h-4 mr-1" />
-                  <span className="text-xs">Registrar</span>
-                </>
-              )}
-            </Button>
+            {client.hasFaceRegistered ? (
+              <ReusableDropdown
+                trigger={
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    title="Opciones de registro facial"
+                  >
+                    <Shield className="w-4 h-4 text-green-600 mr-1" />
+                    <span className="text-xs mr-1">Registrado</span>
+                    <MoreVertical className="w-3 h-3" />
+                  </Button>
+                }
+              >
+                <DropdownMenuItem onClick={handleFaceRegistration}>
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Actualizar registro
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem 
+                  onClick={handleFaceRegistration}
+                  className="text-red-600"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Eliminar registro
+                </DropdownMenuItem>
+              </ReusableDropdown>
+            ) : (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleFaceRegistration}
+                title="Registrar cara"
+              >
+                <Camera className="w-4 h-4 mr-1" />
+                <span className="text-xs">Registrar</span>
+              </Button>
+            )}
           </div>
         </div>
         <div className="space-y-3">

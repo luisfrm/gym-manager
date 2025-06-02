@@ -337,16 +337,22 @@ export const registerFace = async (clientId: string, encoding: number[]): Promis
   return res.data;
 };
 
-export const faceLoginRequest = async (encodedImage: string): Promise<{ success: boolean, clientData?: any, message: string }> => {
-  try {
-    const response = await api.post('/face/login', { encodedImage });
-    return response.data;
-  } catch (error: any) {
-    if (error.response?.data?.message) {
-      throw new Error(error.response.data.message);
-    }
-    throw new Error('Error en el reconocimiento facial');
-  }
+export const deleteFaceRegistration = async (clientId: string): Promise<any> => {
+  const res = await api.delete(`/face/delete/${clientId}`);
+  return res.data;
+};
+
+export const getClientFaceStatus = async (clientId: string): Promise<{ hasFaceRegistered: boolean }> => {
+  const res = await api.get(`/face/status/${clientId}`);
+  return res.data;
+};
+
+export const validateFaceEncoding = async (encoding: number[], excludeClientId?: string): Promise<any> => {
+  const res = await api.post("/face/validate-encoding", {
+    faceEncoding: encoding,
+    excludeClientId
+  });
+  return res.data;
 };
 
 // #endregion FACE RECOGNITION

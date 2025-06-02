@@ -17,6 +17,7 @@ interface FaceVerificationBody {
 
 interface FaceValidationBody {
   faceEncoding: number[];
+  excludeClientId?: string;
 }
 
 export const registerFace = async (req: MulterRequest, res: Response): Promise<void> => {
@@ -224,7 +225,7 @@ export const deleteFaceRegistration = async (req: Request, res: Response): Promi
 
 export const validateFaceEncoding = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { faceEncoding } = req.body as FaceValidationBody;
+    const { faceEncoding, excludeClientId } = req.body as FaceValidationBody;
     
     if (!faceEncoding || !Array.isArray(faceEncoding)) {
       res.status(400).json({
@@ -233,11 +234,17 @@ export const validateFaceEncoding = async (req: Request, res: Response): Promise
       return;
     }
 
-    // Buscar todos los clientes con registro facial
-    const clientsWithFaces = await Client.find({ 
+    // Buscar todos los clientes con registro facial, excluyendo el cliente especificado
+    const query: any = { 
       hasFaceRegistered: true,
       faceEncoding: { $exists: true, $ne: null }
-    });
+    };
+    
+    if (excludeClientId) {
+      query._id = { $ne: excludeClientId };
+    }
+
+    const clientsWithFaces = await Client.find(query);
 
     if (clientsWithFaces.length === 0) {
       // No hay clientes con cara registrada, la validación pasa

@@ -1,14 +1,13 @@
-import { MoreVertical, ArrowLeft, Mail, Phone, MapPin, Calendar, Camera, Shield } from "lucide-react";
+import { MoreVertical, ArrowLeft, Mail, Phone, MapPin, Calendar, Camera, Shield, RefreshCw, Trash2 } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import { ReusableDropdown } from "@/components/ui/reusable-dropdown";
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
 import { getClientByIdRequest, getClientPaymentsRequest } from "@/api/api";
@@ -52,20 +51,47 @@ export default function ClientDetails() {
   });
 
   const handleUpdateClientOpen = () => {
-    setIsUpdateClientOpen(true);
+    // Forzar cierre del dropdown antes de abrir modal
+    setTimeout(() => {
+      setIsUpdateClientOpen(true);
+    }, 100);
   };
 
   const handleRemoveClientOpen = () => {
-    setIsRemoveClientOpen(true);
+    // Forzar cierre del dropdown antes de abrir modal
+    setTimeout(() => {
+      setIsRemoveClientOpen(true);
+    }, 100);
   };
 
   const handleClientUpdated = () => {
     refetch();
-    setIsUpdateClientOpen(false);
+    handleCloseUpdateDialog();
   };
 
   const handleClientRemoved = () => {
     navigate("/clients");
+  };
+
+  const handleCloseUpdateDialog = () => {
+    // Limpiar cualquier pointer-events pendiente del dropdown
+    document.body.style.pointerEvents = '';
+    document.body.style.overflow = '';
+    setIsUpdateClientOpen(false);
+  };
+
+  const handleCloseRemoveDialog = () => {
+    // Limpiar cualquier pointer-events pendiente del dropdown
+    document.body.style.pointerEvents = '';
+    document.body.style.overflow = '';
+    setIsRemoveClientOpen(false);
+  };
+
+  const handleFaceRegistration = () => {
+    // Forzar cierre del dropdown antes de abrir modal
+    setTimeout(() => {
+      setShowFaceRegistration(true);
+    }, 100);
   };
 
   return (
@@ -80,21 +106,21 @@ export default function ClientDetails() {
             </Button>
             <h1 className="text-2xl font-bold">Detalles del Cliente</h1>
           </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger className={`${isLoading ? "hidden" : ""}`} asChild>
+          <ReusableDropdown
+            className={`${isLoading ? "hidden" : ""}`}
+            trigger={
               <Button variant="ghost" size="icon">
                 <MoreVertical className="h-5 w-5" />
               </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={handleUpdateClientOpen}>Editar cliente</DropdownMenuItem>
-              {role === "admin" && (
-                <DropdownMenuItem onClick={handleRemoveClientOpen} className="text-destructive">
-                  Eliminar cliente
-                </DropdownMenuItem>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+            }
+          >
+            <DropdownMenuItem onClick={handleUpdateClientOpen}>Editar cliente</DropdownMenuItem>
+            {role === "admin" && (
+              <DropdownMenuItem onClick={handleRemoveClientOpen} className="text-destructive">
+                Eliminar cliente
+              </DropdownMenuItem>
+            )}
+          </ReusableDropdown>
         </div>
 
         <div className="grid gap-6">
@@ -115,24 +141,44 @@ export default function ClientDetails() {
                     >
                       {isDateActive(client?.expiredDate) ? "Activo" : "Inactivo"}
                     </Badge>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setShowFaceRegistration(true)}
-                      title={client?.hasFaceRegistered ? "Actualizar registro facial" : "Registrar cara"}
-                    >
-                      {client?.hasFaceRegistered ? (
-                        <>
-                          <Shield className="w-4 h-4 text-green-600 mr-2" />
-                          <span>Registrado</span>
-                        </>
-                      ) : (
-                        <>
-                          <Camera className="w-4 h-4 mr-2" />
-                          <span>Registrar cara</span>
-                        </>
-                      )}
-                    </Button>
+                    {client?.hasFaceRegistered ? (
+                      <ReusableDropdown
+                        trigger={
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            title="Opciones de registro facial"
+                          >
+                            <Shield className="w-4 h-4 text-green-600 mr-2" />
+                            <span>Registrado</span>
+                            <MoreVertical className="w-3 h-3 ml-2" />
+                          </Button>
+                        }
+                      >
+                        <DropdownMenuItem onClick={handleFaceRegistration}>
+                          <RefreshCw className="w-4 h-4 mr-2" />
+                          Actualizar registro
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem 
+                          onClick={handleFaceRegistration}
+                          className="text-red-600"
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Eliminar registro
+                        </DropdownMenuItem>
+                      </ReusableDropdown>
+                    ) : (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={handleFaceRegistration}
+                        title="Registrar cara"
+                      >
+                        <Camera className="w-4 h-4 mr-2" />
+                        <span>Registrar cara</span>
+                      </Button>
+                    )}
                   </div>
                 </div>
               </CardHeader>
@@ -206,13 +252,13 @@ export default function ClientDetails() {
       
       <ClientUpdateDialog
         isOpen={isUpdateClientOpen}
-        onOpenChange={() => setIsUpdateClientOpen(false)}
+        onOpenChange={handleCloseUpdateDialog}
         client={client}
         onClientUpdated={handleClientUpdated}
       />
       <ClientRemoveDialog
         isOpen={isRemoveClientOpen}
-        onOpenChange={() => setIsRemoveClientOpen(false)}
+        onOpenChange={handleCloseRemoveDialog}
         client={client}
         onClientDeleted={handleClientRemoved}
       />

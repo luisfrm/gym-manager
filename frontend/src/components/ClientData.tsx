@@ -8,10 +8,15 @@ import { formatDate, isDateActive } from "@/lib/utils";
 import { Link } from "react-router-dom";
 import { Skeleton } from "./ui/skeleton";
 import { CopyToClipboard } from "./CopyToClipboard";
-import { Camera, Shield } from "lucide-react";
+import { Camera, Shield, MoreVertical, Trash2, RefreshCw } from "lucide-react";
 import { Button } from "./ui/button";
 import { useState } from "react";
 import { FaceRegistrationDialog } from "./dialogs/FaceRegistrationDialog";
+import { 
+  DropdownMenuItem, 
+  DropdownMenuSeparator
+} from "./ui/dropdown-menu";
+import { ReusableDropdown } from "./ui/reusable-dropdown";
 
 interface ClientDataProps {
   isLoading: boolean;
@@ -95,7 +100,11 @@ const ClientBody = ({ clients, onClientUpdated }: ClientBodyProps) => {
 
   const handleFaceRegistration = (client: Client) => {
     setSelectedClient(client);
-    setShowFaceRegistration(true);
+    
+    // Forzar cierre del dropdown antes de abrir modal
+    setTimeout(() => {
+      setShowFaceRegistration(true);
+    }, 100);
   };
 
   if (clients.length === 0) return null;
@@ -150,18 +159,42 @@ const ClientBody = ({ clients, onClientUpdated }: ClientBodyProps) => {
 
           <TableCellContent className="text-center">
             <div className="flex gap-1 justify-center">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => handleFaceRegistration(client)}
-                title={client.hasFaceRegistered ? "Actualizar registro facial" : "Registrar cara"}
-              >
-                {client.hasFaceRegistered ? (
-                  <Shield className="w-4 h-4 text-green-600" />
-                ) : (
+              {client.hasFaceRegistered ? (
+                <ReusableDropdown
+                  trigger={
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      title="Opciones de registro facial"
+                    >
+                      <Shield className="w-4 h-4 text-green-600 mr-1" />
+                      <MoreVertical className="w-3 h-3" />
+                    </Button>
+                  }
+                >
+                  <DropdownMenuItem onClick={() => handleFaceRegistration(client)}>
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Actualizar registro
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem 
+                    onClick={() => handleFaceRegistration(client)}
+                    className="text-red-600"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Eliminar registro
+                  </DropdownMenuItem>
+                </ReusableDropdown>
+              ) : (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleFaceRegistration(client)}
+                  title="Registrar cara"
+                >
                   <Camera className="w-4 h-4" />
-                )}
-              </Button>
+                </Button>
+              )}
             </div>
           </TableCellContent>
         </TableRow>
@@ -176,6 +209,7 @@ const ClientBody = ({ clients, onClientUpdated }: ClientBodyProps) => {
           onFaceRegistered={() => {
             setShowFaceRegistration(false);
             onClientUpdated?.();
+            setSelectedClient(null);
           }}
         />
       )}

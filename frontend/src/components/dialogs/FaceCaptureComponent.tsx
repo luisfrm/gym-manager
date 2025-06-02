@@ -8,11 +8,12 @@ interface FaceCaptureComponentProps {
   onFaceCaptured: (encoding: number[], image: string) => void;
   onCancel: () => void;
   isOpen: boolean;
+  excludeClientId?: string;
 }
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
-export const FaceCaptureComponent = ({ onFaceCaptured, onCancel, isOpen }: FaceCaptureComponentProps) => {
+export const FaceCaptureComponent = ({ onFaceCaptured, onCancel, isOpen, excludeClientId }: FaceCaptureComponentProps) => {
   const [step, setStep] = useState<'camera' | 'preview' | 'validating'>('camera');
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [capturedEncoding, setCapturedEncoding] = useState<number[] | null>(null);
@@ -56,7 +57,10 @@ export const FaceCaptureComponent = ({ onFaceCaptured, onCancel, isOpen }: FaceC
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({ faceEncoding: encoding }),
+        body: JSON.stringify({ 
+          faceEncoding: encoding,
+          excludeClientId
+        }),
       });
 
       if (!response.ok) {
@@ -77,7 +81,7 @@ export const FaceCaptureComponent = ({ onFaceCaptured, onCancel, isOpen }: FaceC
       console.error('Error validating face:', error);
       throw error;
     }
-  }, []);
+  }, [excludeClientId]);
 
   const resetCapture = useCallback(() => {
     setStep('camera');

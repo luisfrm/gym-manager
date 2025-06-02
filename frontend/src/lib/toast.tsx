@@ -259,6 +259,20 @@ export const toastUtils = {
         duration: 4000
       }),
 
+    updated: (clientName: string) => 
+      showToast('success', 'Registro facial actualizado', {
+        description: `El rostro de ${clientName} ha sido actualizado exitosamente`,
+        category: 'face',
+        duration: 4000
+      }),
+
+    deleted: (clientName: string) => 
+      showToast('success', 'Registro facial eliminado', {
+        description: `El registro facial de ${clientName} ha sido eliminado del sistema`,
+        category: 'delete',
+        duration: 4000
+      }),
+
     captured: () => 
       showToast('success', 'Rostro capturado', {
         description: 'Rostro capturado correctamente',
