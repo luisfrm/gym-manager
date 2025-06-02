@@ -13,9 +13,13 @@ export const isEmailValid = (email = "") => {
 
 export const isDateActive = (expirationDateStr: string | undefined) => {
   if (!expirationDateStr) return false;
-  const expirationDate = new Date(expirationDateStr);
-  const currentDate = new Date();
-  return expirationDate > currentDate;
+  
+  const today = new Date();
+  const todayStr = today.getFullYear() + '-' + 
+    String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+    String(today.getDate()).padStart(2, '0');
+  
+  return expirationDateStr >= todayStr;
 };
 
 export const formatDate = (date?: string) => {

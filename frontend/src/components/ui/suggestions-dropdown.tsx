@@ -45,28 +45,21 @@ export const SuggestionsDropdown: React.FC<SuggestionsDropdownProps> = ({
             ) : (
               <>
                 <CommandEmpty className="py-6 text-center text-sm">{emptyMessage}</CommandEmpty>
-                {filteredOptions.map(option => (
+                {options.map(option => (
                   <CommandItem
                     key={option.id}
                     onSelect={() => onSelect(option)}
-                    className="flex items-center gap-3 cursor-pointer p-3 hover:bg-accent hover:text-accent-foreground rounded-md mb-1"
-                    style={{ minHeight: '60px' }}
+                    className="flex items-center gap-2 cursor-pointer hover:bg-accent hover:text-accent-foreground rounded-md mb-1"
                   >
                     {option.icon && (
-                      <div className="flex-shrink-0 text-muted-foreground">
+                      <div className="text-muted-foreground">
                         {option.icon}
                       </div>
                     )}
-                    
                     <div className="flex-1 min-w-0">
                       <div className="font-medium truncate">
                         {option.label}
                       </div>
-                      {option.description && (
-                        <div className="text-sm text-muted-foreground truncate">
-                          {option.description}
-                        </div>
-                      )}
                     </div>
                   </CommandItem>
                 ))}

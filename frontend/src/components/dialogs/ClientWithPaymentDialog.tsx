@@ -11,10 +11,11 @@ import { FormInput } from "../ui/form-input";
 import { DateInput } from "../ui/date-input";
 import { FormSelect } from "../ui/form-select";
 import { toastUtils } from "@/lib/toast";
-import { Loader2, Camera, Shield, X } from "lucide-react";
+import { Loader2, Camera, Shield, X, FileText, CreditCard } from "lucide-react";
 import { isEmailValid } from "@/lib/utils";
 import { FaceCaptureComponent } from "./FaceCaptureComponent";
 import { Currency, getCurrencyOptions } from "@/lib/currency";
+import { serviceOptions, paymentMethodOptions } from "@/lib/suggestions";
 
 interface ClientWithPaymentDialogProps {
   isOpen: boolean;
@@ -453,8 +454,15 @@ export const ClientWithPaymentDialog = ({ isOpen, onOpenChange, onClientAndPayme
               name="service"
               register={register}
               error={errors.service?.message}
-              placeholder="Tipo de servicio"
+              placeholder="Servicio"
               required
+              icon={<FileText className="w-4 h-4" />}
+              suggestions={serviceOptions}
+              onSuggestionSelect={(option) => {
+                setValue('service', option.label);
+              }}
+              suggestionsGroupHeading="Servicios Comunes"
+              suggestionsEmptyMessage="No se encontraron servicios que coincidan"
             />
           </FormGroup>
           
@@ -466,6 +474,13 @@ export const ClientWithPaymentDialog = ({ isOpen, onOpenChange, onClientAndPayme
               error={errors.paymentMethod?.message}
               placeholder="Método de pago"
               required
+              icon={<CreditCard className="w-4 h-4" />}
+              suggestions={paymentMethodOptions}
+              onSuggestionSelect={(option) => {
+                setValue('paymentMethod', option.label);
+              }}
+              suggestionsGroupHeading="Métodos de Pago"
+              suggestionsEmptyMessage="No se encontraron métodos de pago que coincidan"
             />
           </FormGroup>
           
