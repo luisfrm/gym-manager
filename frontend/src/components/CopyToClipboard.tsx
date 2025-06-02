@@ -1,43 +1,31 @@
-import { Check, Copy } from "lucide-react";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Copy } from "lucide-react";
+import { toastUtils } from "@/lib/toast";
 
-interface CopyToClipboardProps {
+export interface CopyToClipboardProps {
   text: string;
+  className?: string;
 }
 
-const CopyToClipboard = ({ text }: CopyToClipboardProps) => {
-  const [isCopied, setIsCopied] = useState(false);
-
-  useEffect(() => {
-    if (isCopied) {
-      setTimeout(() => {
-        setIsCopied(false);
-      }, 2000);
+export const CopyToClipboard = ({ text, className }: CopyToClipboardProps) => {
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toastUtils.system.copied();
+    } catch (error) {
+      console.error("Error copying text: ", error);
+      toastUtils.system.copyError();
     }
-  }, [isCopied]);
-
-  const handleOnClick = () => {
-    navigator.clipboard
-      .writeText(text)
-      .then(() => {
-        toast.success("Texto copiado al portapapeles");
-        setIsCopied(true);
-      })
-      .catch(() => {
-        toast.error("Error al copiar el texto");
-      });
   };
 
   return (
-    <div>
-      {isCopied ? (
-        <Check className="w-4 h-4 cursor-pointer" />
-      ) : (
-        <Copy className="w-4 h-4 cursor-pointer" onClick={handleOnClick} />
-      )}
-    </div>
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={handleCopy}
+      className={className}
+    >
+      <Copy className="h-4 w-4" />
+    </Button>
   );
 };
-
-export default CopyToClipboard;

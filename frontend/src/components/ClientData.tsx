@@ -7,7 +7,7 @@ import { Badge } from "./ui/badge";
 import { formatDate, isDateActive } from "@/lib/utils";
 import { Link } from "react-router-dom";
 import { Skeleton } from "./ui/skeleton";
-import CopyToClipboard from "./CopyToClipboard";
+import { CopyToClipboard } from "./CopyToClipboard";
 import { Camera, Shield } from "lucide-react";
 import { Button } from "./ui/button";
 import { useState } from "react";
@@ -171,10 +171,9 @@ const ClientBody = ({ clients, onClientUpdated }: ClientBodyProps) => {
       {selectedClient && (
         <FaceRegistrationDialog
           isOpen={showFaceRegistration}
-          onClose={() => setShowFaceRegistration(false)}
-          clientId={selectedClient._id}
-          clientName={`${selectedClient.firstname} ${selectedClient.lastname}`}
-          onSuccess={() => {
+          onOpenChange={() => setShowFaceRegistration(false)}
+          client={selectedClient}
+          onFaceRegistered={() => {
             setShowFaceRegistration(false);
             onClientUpdated?.();
           }}

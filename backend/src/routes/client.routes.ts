@@ -9,6 +9,8 @@ const clientRouter = Router();
 
 clientRouter.post("/", authMiddleware(["admin", "employee"]), faceRecognitionService.upload.single('faceImage'), validateSchema(clientSchema), ClientController.create);
 
+clientRouter.post("/with-payment", authMiddleware(["admin", "employee"]), faceRecognitionService.upload.single('faceImage'), ClientController.createWithPayment);
+
 clientRouter.get("/", authMiddleware(["admin", "employee"]), ClientController.getAll);
 
 clientRouter.get("/:cedula", authMiddleware(["admin", "employee"]), ClientController.getById);

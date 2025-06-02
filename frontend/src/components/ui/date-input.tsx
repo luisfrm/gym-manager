@@ -4,6 +4,8 @@ import { Button } from "./button";
 import { CalendarMinus, CalendarPlus } from "lucide-react";
 import { UseFormRegister } from "react-hook-form";
 import { FormLabel, FormLabelError } from "@/components/FormGroup";
+import { cn } from "@/lib/utils";
+import React from "react";
 
 interface DateInputProps {
   label: string;
@@ -14,6 +16,7 @@ interface DateInputProps {
   onAdjustDate: (months: number) => void;
   placeholder?: string;
   required?: boolean;
+  icon?: React.ReactNode;
 }
 
 export const DateInput = ({
@@ -25,6 +28,7 @@ export const DateInput = ({
   onAdjustDate,
   placeholder,
   required = false,
+  icon,
 }: DateInputProps) => {
   return (
     <div className="space-y-2">
@@ -33,12 +37,20 @@ export const DateInput = ({
         {error && <FormLabelError>{error}</FormLabelError>}
       </FormLabel>
       <div className="relative flex items-center">
+        {icon && (
+          <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none z-10">
+            {icon}
+          </div>
+        )}
         <Input 
           type="date" 
           placeholder={placeholder} 
           {...register(name)} 
           disabled={disabled}
-          className="pr-24"
+          className={cn(
+            "pr-24",
+            icon && "pl-10" // Add left padding when icon is present
+          )}
         />
         <div className="absolute right-1 flex items-center gap-1">
           <Button

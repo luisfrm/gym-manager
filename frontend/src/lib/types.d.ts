@@ -177,7 +177,34 @@ export interface GetPaymentsResponse {
   results: Payment[];
 }
 
+export interface PaymentDialogProps {
+  isOpen: boolean;
+  onOpenChange: () => void;
+  onPaymentCreated?: () => void;
+}
+
 export interface RefreshTokenResponse {
   token: string;
   tokenExpiration: string;
 }
+
+// #Mark: Suggestions Dropdown
+export interface SuggestionOption {
+  id: string | number;
+  label: string;
+  description?: string;
+  icon?: React.ReactNode;
+  data?: any;
+}
+
+export interface SuggestionsDropdownProps {
+  isOpen: boolean;
+  options: SuggestionOption[];
+  searchValue: string;
+  onSelect: (option: SuggestionOption) => void;
+  isLoading?: boolean;
+  emptyMessage?: string;
+  groupHeading?: string;
+  className?: string;
+}
+// #Mark: End of Suggestions Dropdown

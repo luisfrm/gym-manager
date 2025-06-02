@@ -3,24 +3,28 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useMutation } from "@tanstack/react-query";
-import { createClientRequest } from "@/api/api";
+import { createClientWithPaymentRequest } from "@/api/api";
 import { Modal, ModalHeader, ModalBody } from "@/components/Modal";
 import { Button } from "../ui/button";
 import { FormGroup } from "@/components/FormGroup";
 import { FormInput } from "../ui/form-input";
 import { DateInput } from "../ui/date-input";
+import { FormSelect } from "../ui/form-select";
 import { toastUtils } from "@/lib/toast";
-import { Loader2, Camera, Shield, X, User, Mail, Phone, MapPin, CreditCard, Calendar } from "lucide-react";
+import { Loader2, Camera, Shield, X } from "lucide-react";
 import { isEmailValid } from "@/lib/utils";
 import { FaceCaptureComponent } from "./FaceCaptureComponent";
+import { Currency, getCurrencyOptions } from "@/lib/currency";
 
-interface ClientDialogProps {
+interface ClientWithPaymentDialogProps {
   isOpen: boolean;
   onOpenChange: () => void;
-  onClientCreated?: () => void;
+  onClientAndPaymentCreated?: () => void;
 }
 
-const clientSchema = z.object({
+// Schema combinado para cliente y pago
+const clientWithPaymentSchema = z.object({
+  // Datos del cliente
   cedula: z.string()
     .min(3, { message: "La cédula es requerida" })
     .regex(/^\d+$/, { message: "Solo se permiten números" }),
@@ -30,13 +34,23 @@ const clientSchema = z.object({
   lastname: z.string()
     .min(3, { message: "El apellido es requerido" })
     .regex(/^[A-Za-zÀ-ÿ\s]+$/, { message: "Solo se permiten letras" }),
-  expiredDate: z.string().min(1, { message: "La fecha es requerida" }),
+  expiredDate: z.string().min(1, { message: "La fecha de expiración es requerida" }),
   email: z.string().optional(),
   phone: z.string().optional(),
   address: z.string().optional(),
+  
+  // Datos del pago
+  amount: z.string().min(1, { message: "El monto es requerido" }),
+  date: z.string().min(1, { message: "La fecha del pago es requerida" }),
+  service: z.string().min(1, { message: "El servicio es requerido" }),
+  paymentMethod: z.string().min(1, { message: "El método de pago es requerido" }),
+  paymentReference: z.string().optional(),
+  paymentStatus: z.enum(["pending", "paid", "failed"]),
+  currency: z.enum(["USD", "VES"]),
 });
 
-const initialValues: ClientSchema = {
+const initialValues: ClientWithPaymentSchema = {
+  // Cliente
   cedula: "",
   firstname: "",
   lastname: "",
@@ -44,14 +58,25 @@ const initialValues: ClientSchema = {
   email: "",
   phone: "",
   address: "",
+  
+  // Pago
+  amount: "0",
+  date: new Date().toISOString().split('T')[0],
+  service: "",
+  paymentMethod: "",
+  paymentReference: "",
+  paymentStatus: "paid",
+  currency: "USD",
 };
 
-type ClientSchema = z.infer<typeof clientSchema>;
+type ClientWithPaymentSchema = z.infer<typeof clientWithPaymentSchema>;
 
-export const ClientDialog = ({ isOpen, onOpenChange, onClientCreated = () => {} }: ClientDialogProps) => {
+export const ClientWithPaymentDialog = ({ isOpen, onOpenChange, onClientAndPaymentCreated = () => {} }: ClientWithPaymentDialogProps) => {
   const [email, setEmail] = useState("");
   const [showFaceCapture, setShowFaceCapture] = useState(false);
   const [isClosingFaceCapture, setIsClosingFaceCapture] = useState(false);
+  const [paymentStatus, setPaymentStatus] = useState<"pending" | "paid" | "failed">("paid");
+  const [paymentCurrency, setPaymentCurrency] = useState<Currency>("USD");
   const [faceData, setFaceData] = useState<{
     encoding: number[] | null;
     image: string | null;
@@ -67,54 +92,75 @@ export const ClientDialog = ({ isOpen, onOpenChange, onClientCreated = () => {} 
     reset,
     setValue,
     watch,
-  } = useForm<ClientSchema>({
-    resolver: zodResolver(clientSchema),
+  } = useForm<ClientWithPaymentSchema>({
+    resolver: zodResolver(clientWithPaymentSchema),
     defaultValues: initialValues,
   });
 
-  const currentDate = watch('expiredDate');
+  const currentDate = watch('date');
+  const currentExpiredDate = watch('expiredDate');
 
   const adjustDate = (months: number) => {
     if (!currentDate) return;
     
     const date = new Date(currentDate);
     date.setMonth(date.getMonth() + months);
+    setValue('date', date.toISOString().split('T')[0]);
+  };
+
+  const adjustExpiredDate = (months: number) => {
+    if (!currentExpiredDate) return;
+    
+    const date = new Date(currentExpiredDate);
+    date.setMonth(date.getMonth() + months);
     setValue('expiredDate', date.toISOString().split('T')[0]);
   };
 
-  const handleCreateClient = (data: ClientSchema) => {
-    const { cedula, firstname, lastname, email, expiredDate, phone, address } = data;
-    createClientMutation.mutate({ cedula, firstname, lastname, email, expiredDate, phone, address });
+  const handleCreateClientWithPayment = (data: ClientWithPaymentSchema) => {
+    createClientWithPaymentMutation.mutate(data);
   };
 
-  const createClientMutation = useMutation({
-    mutationFn: (data: ClientSchema) => {
-      const requestData = {
-        ...data,
+  const createClientWithPaymentMutation = useMutation({
+    mutationFn: (data: ClientWithPaymentSchema) => {
+      const clientData = {
+        cedula: data.cedula,
+        firstname: data.firstname,
+        lastname: data.lastname,
         email: data.email || '',
         phone: data.phone || '',
         address: data.address || '',
+        expiredDate: data.expiredDate,
       };
       
-      // Agregar datos faciales si existen
+      const paymentData = {
+        amount: data.amount,
+        date: data.date,
+        service: data.service,
+        paymentMethod: data.paymentMethod,
+        paymentReference: data.paymentReference,
+        paymentStatus,
+        currency: paymentCurrency,
+        expiredDate: data.expiredDate,
+      };
+      
       const faceDataForAPI = faceData.encoding ? 
         { encoding: faceData.encoding, image: faceData.image! } : 
         undefined;
       
-      return createClientRequest(requestData, faceDataForAPI);
+      return createClientWithPaymentRequest(clientData, paymentData, faceDataForAPI);
     },
     onSuccess: () => {
-      onClientCreated();
+      onClientAndPaymentCreated();
       onOpenChange();
       reset();
       setFaceData({ encoding: null, image: null });
       
-      toastUtils.client.created();
+      toastUtils.combined.clientAndPayment();
     },
     onError: (error: any) => {
-      console.error("Error creating client:", error);
+      console.error("Error creating client with payment:", error);
       
-      // ✅ MANEJO ESPECÍFICO PARA CARA DUPLICADA
+      // Manejo específico para cara duplicada
       if (error.isDuplicate && error.existingClient) {
         const { firstname, lastname, cedula } = error.existingClient;
         const similarity = error.similarity || 0;
@@ -132,7 +178,7 @@ export const ClientDialog = ({ isOpen, onOpenChange, onClientCreated = () => {} 
       if (errorMessage === "Client already exists") {
         toastUtils.client.exists();
       } else {
-        toastUtils.client.error('crear', errorMessage);
+        toastUtils.client.error('crear cliente y pago', errorMessage);
       }
     },
   });
@@ -156,16 +202,9 @@ export const ClientDialog = ({ isOpen, onOpenChange, onClientCreated = () => {} 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value;
     
-    // Permitir solo dígitos, + y -
     value = value.replace(/[^\d+-]/g, '');
-    
-    // Verificar si empieza con +
     const startsWithPlus = value.startsWith('+');
-    
-    // Remover todos los +
     value = value.replace(/\+/g, '');
-    
-    // Si originalmente empezaba con +, agregarlo al inicio
     if (startsWithPlus) {
       value = '+' + value;
     }
@@ -173,28 +212,53 @@ export const ClientDialog = ({ isOpen, onOpenChange, onClientCreated = () => {} 
     setValue('phone', value);
   };
 
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value;
+    value = value.replace(/^0+/, '');
+    if (!value) value = '0';
+    e.target.value = value;
+    setValue('amount', value);
+  };
+
+  const handleAmountBlur = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (value === "0") {
+      e.target.value = "0";
+      setValue('amount', "0");
+      return;
+    }
+    const formattedValue = Number(value).toFixed(2);
+    e.target.value = formattedValue;
+    setValue('amount', formattedValue);
+  };
+
+  const handlePaymentStatusChange = (value: "pending" | "paid" | "failed") => {
+    setPaymentStatus(value);
+  };
+
+  const handlePaymentCurrencyChange = (value: Currency) => {
+    setPaymentCurrency(value);
+  };
+
   const handleCloseFaceCapture = () => {
     setIsClosingFaceCapture(true);
     setTimeout(() => {
       setShowFaceCapture(false);
       setIsClosingFaceCapture(false);
-    }, 700); // Duración sincronizada con la animación
+    }, 700);
   };
 
   return (
-    <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
-      <ModalHeader title="Registrar nuevo cliente" description="Agrega un nuevo cliente en la base de datos." />
+    <Modal isOpen={isOpen} onOpenChange={onOpenChange} className="sm:max-w-4xl">
+      <ModalHeader title="Registrar cliente con primer pago" description="Crea un nuevo cliente y registra su primer pago en una sola operación." />
       <ModalBody>
-        <form onSubmit={handleSubmit(handleCreateClient)} className="grid grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit(handleCreateClientWithPayment)} className="grid grid-cols-3 gap-4">
           
-          {/* TÍTULO CON ÍCONO */}
-          <div className="col-span-2 mb-2">
-            <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2 border-b pb-2">
-              <User className="w-5 h-5 text-blue-600" />
-              Información del Cliente
-            </h3>
+          {/* DATOS DEL CLIENTE */}
+          <div className="col-span-3">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">📋 Datos del Cliente</h3>
           </div>
-
+          
           <FormGroup>
             <FormInput
               label="Cédula"
@@ -204,19 +268,6 @@ export const ClientDialog = ({ isOpen, onOpenChange, onClientCreated = () => {} 
               placeholder="Cédula del cliente"
               required
               onChange={handleCedulaChange}
-              icon={<CreditCard className="w-4 h-4" />}
-            />
-          </FormGroup>
-          
-          <FormGroup>
-            <DateInput
-              label="Fecha de vencimiento"
-              name="expiredDate"
-              register={register}
-              error={errors.expiredDate?.message}
-              onAdjustDate={adjustDate}
-              required
-              icon={<Calendar className="w-4 h-4" />}
             />
           </FormGroup>
           
@@ -229,7 +280,6 @@ export const ClientDialog = ({ isOpen, onOpenChange, onClientCreated = () => {} 
               placeholder="Nombre del cliente"
               required
               onChange={(e) => handleNameChange(e, 'firstname')}
-              icon={<User className="w-4 h-4" />}
             />
           </FormGroup>
           
@@ -242,7 +292,6 @@ export const ClientDialog = ({ isOpen, onOpenChange, onClientCreated = () => {} 
               placeholder="Apellido del cliente"
               required
               onChange={(e) => handleNameChange(e, 'lastname')}
-              icon={<User className="w-4 h-4" />}
             />
           </FormGroup>
           
@@ -255,7 +304,6 @@ export const ClientDialog = ({ isOpen, onOpenChange, onClientCreated = () => {} 
               placeholder="Email del cliente"
               type="email"
               onChange={handleEmailChange}
-              icon={<Mail className="w-4 h-4" />}
             />
           </FormGroup>
           
@@ -267,29 +315,35 @@ export const ClientDialog = ({ isOpen, onOpenChange, onClientCreated = () => {} 
               error={errors.phone?.message}
               placeholder="Teléfono del cliente"
               onChange={handlePhoneChange}
-              icon={<Phone className="w-4 h-4" />}
             />
           </FormGroup>
           
-          <FormGroup className="flex flex-col gap-2 col-span-2">
+          <FormGroup>
+            <DateInput
+              label="Fecha de vencimiento"
+              name="expiredDate"
+              register={register}
+              error={errors.expiredDate?.message}
+              onAdjustDate={adjustExpiredDate}
+              required
+            />
+          </FormGroup>
+          
+          <FormGroup className="col-span-3">
             <FormInput
               label="Dirección"
               name="address"
               register={register}
               error={errors.address?.message}
               placeholder="Dirección del cliente"
-              icon={<MapPin className="w-4 h-4" />}
             />
           </FormGroup>
-          
-          {/* Sección de Registro Facial */}
-          <FormGroup className="col-span-2">
+
+          {/* REGISTRO FACIAL */}
+          <FormGroup className="col-span-3">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Camera className="w-4 h-4 text-blue-600" />
-                  <label className="text-sm font-medium">Registro Facial (Opcional)</label>
-                </div>
+                <label className="text-sm font-medium">Registro Facial (Opcional)</label>
                 <div className="flex items-center gap-2">
                   {faceData.encoding ? (
                     <div className="flex items-center gap-2 text-green-600">
@@ -332,7 +386,7 @@ export const ClientDialog = ({ isOpen, onOpenChange, onClientCreated = () => {} 
 
           {/* Componente de captura facial */}
           {showFaceCapture && (
-            <FormGroup className="col-span-2">
+            <FormGroup className="col-span-3">
               <div 
                 className={`transition-all duration-700 ease-in-out overflow-hidden ${
                   isClosingFaceCapture 
@@ -363,14 +417,105 @@ export const ClientDialog = ({ isOpen, onOpenChange, onClientCreated = () => {} 
               </div>
             </FormGroup>
           )}
+
+          {/* DATOS DEL PAGO */}
+          <div className="col-span-3 mt-6">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">💳 Datos del Primer Pago</h3>
+          </div>
           
-          <FormGroup className="col-span-2 flex justify-end">
-            <Button disabled={createClientMutation.isPending} type="submit">
-              {createClientMutation.isPending ? <Loader2 className="animate-spin" /> : "Guardar"}
+          <FormGroup>
+            <FormInput
+              label="Monto"
+              name="amount"
+              register={register}
+              error={errors.amount?.message}
+              placeholder={`Monto en ${paymentCurrency}`}
+              required
+              onChange={handleAmountChange}
+              onBlur={handleAmountBlur}
+            />
+          </FormGroup>
+          
+          <FormGroup>
+            <DateInput
+              label="Fecha del pago"
+              name="date"
+              register={register}
+              error={errors.date?.message}
+              onAdjustDate={adjustDate}
+              required
+            />
+          </FormGroup>
+          
+          <FormGroup>
+            <FormInput
+              label="Servicio"
+              name="service"
+              register={register}
+              error={errors.service?.message}
+              placeholder="Tipo de servicio"
+              required
+            />
+          </FormGroup>
+          
+          <FormGroup>
+            <FormInput
+              label="Método de pago"
+              name="paymentMethod"
+              register={register}
+              error={errors.paymentMethod?.message}
+              placeholder="Método de pago"
+              required
+            />
+          </FormGroup>
+          
+          <FormGroup>
+            <FormInput
+              label="Referencia"
+              name="paymentReference"
+              register={register}
+              error={errors.paymentReference?.message}
+              placeholder="Referencia del pago"
+            />
+          </FormGroup>
+          
+          <FormGroup>
+            <FormSelect<"pending" | "paid" | "failed">
+              label="Estado del pago"
+              name="paymentStatus"
+              register={register}
+              error={errors.paymentStatus?.message}
+              placeholder="Selecciona el estado"
+              required
+              options={[
+                { value: "paid", label: "Pagado" },
+                { value: "pending", label: "Pendiente" },
+                { value: "failed", label: "Fallido" },
+              ]}
+              onValueChange={handlePaymentStatusChange}
+            />
+          </FormGroup>
+          
+          <FormGroup>
+            <FormSelect<Currency>
+              label="Moneda"
+              name="currency"
+              register={register}
+              error={errors.currency?.message}
+              placeholder="Selecciona la moneda"
+              required
+              options={getCurrencyOptions()}
+              onValueChange={handlePaymentCurrencyChange}
+            />
+          </FormGroup>
+          
+          <FormGroup className="col-span-3 flex justify-end mt-6">
+            <Button disabled={createClientWithPaymentMutation.isPending} type="submit" className="px-8">
+              {createClientWithPaymentMutation.isPending ? <Loader2 className="animate-spin" /> : "Crear Cliente y Pago"}
             </Button>
           </FormGroup>
         </form>
       </ModalBody>
     </Modal>
   );
-};
+}; 

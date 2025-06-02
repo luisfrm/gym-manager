@@ -5,6 +5,7 @@ import { AppRequest, ClientPartial } from "../utils/types";
 import formatNumber from "../utils/formatNumber";
 import safeTrim from "../utils/safeTrim";
 import faceRecognitionService from "../services/faceRecognition.service";
+import mongoose from "mongoose";
 
 // Función auxiliar para calcular distancia euclidiana
 function calculateEuclideanDistance(vector1: number[], vector2: number[]): number {
@@ -266,6 +267,179 @@ class ClientController {
       return res.status(500).json({ message: "Error deleting client" });
     }
   };
+
+  static createWithPayment = async (req: AppRequest, res: any) => {
+    // For simplicity and compatibility, always use sequential operations
+    // This ensures compatibility with both standalone and replica set MongoDB
+    try {
+      console.log("Creating client with payment using sequential operations");
+      await createClientWithPaymentSequential(req, res);
+    } catch (error: any) {
+      console.error("Error creating client with payment:", error);
+      
+      // Handle specific errors
+      if (error.message === "Client already exists") {
+        return res.status(400).json({ message: "Client already exists" });
+      }
+      
+      if (error.isDuplicate) {
+        return res.status(409).json({
+          message: "Esta cara ya está registrada en el sistema",
+          existingClient: error.existingClient,
+          similarity: error.similarity
+        });
+      }
+      
+      return res.status(500).json({ message: "Error creating client with payment" });
+    }
+  };
+}
+
+// Helper function for sequential creation (without transactions)
+async function createClientWithPaymentSequential(req: AppRequest, res: any) {
+  const { 
+    // Client data
+    cedula, firstname, lastname, email, phone, address, expiredDate, faceEncoding,
+    // Payment data
+    amount, date, service, paymentMethod, paymentReference, paymentStatus, currency
+  } = req.body;
+
+  // Check if client already exists
+  const clientExists = await Client.findOne({ cedula: cedula });
+  if (clientExists) {
+    throw new Error("Client already exists");
+  }
+
+  // Create basic client data
+  const clientData: any = {
+    cedula: safeTrim(cedula),
+    firstname: safeTrim(firstname),
+    lastname: safeTrim(lastname),
+    email: safeTrim(email),
+    phone: safeTrim(phone),
+    address: safeTrim(address),
+    expiredDate: safeTrim(expiredDate),
+  };
+
+  // Process facial data if present
+  if (faceEncoding) {
+    try {
+      const encoding = Array.isArray(faceEncoding) ? faceEncoding : JSON.parse(faceEncoding);
+      
+      // Check if face is already registered
+      const clientsWithFaces = await Client.find({ 
+        hasFaceRegistered: true,
+        faceEncoding: { $exists: true, $ne: null }
+      });
+
+      if (clientsWithFaces.length > 0) {
+        const threshold = 0.6;
+        
+        for (const existingClient of clientsWithFaces) {
+          if (existingClient.faceEncoding && existingClient.faceEncoding.length > 0) {
+            const distance = calculateEuclideanDistance(encoding, existingClient.faceEncoding);
+            
+            if (distance < threshold) {
+              const error = new Error("Duplicate face detected") as any;
+              error.isDuplicate = true;
+              error.existingClient = {
+                id: existingClient._id,
+                firstname: existingClient.firstname,
+                lastname: existingClient.lastname,
+                cedula: existingClient.cedula
+              };
+              error.similarity = Math.max(0, 1 - distance);
+              throw error;
+            }
+          }
+        }
+      }
+
+      clientData.faceEncoding = encoding;
+      clientData.hasFaceRegistered = true;
+    } catch (error) {
+      console.error("Error processing face data:", error);
+      throw error;
+    }
+  }
+
+  let client: any = null;
+  let payment: any = null;
+
+  try {
+    // Create client first
+    client = new Client(clientData);
+    await client.save();
+
+    // Create associated payment
+    const paymentData = {
+      client: client._id,
+      clientCedula: cedula,
+      amount: parseFloat(amount),
+      date: safeTrim(date),
+      service: safeTrim(service),
+      paymentMethod: safeTrim(paymentMethod),
+      paymentReference: safeTrim(paymentReference),
+      paymentStatus: paymentStatus || 'paid',
+      currency: currency || 'USD',
+      expiredDate: safeTrim(expiredDate)
+    };
+
+    payment = new Payment(paymentData);
+    await payment.save();
+
+    // Create logs
+    const clientLogMessage = `Cliente ${client.firstname} ${client.lastname}, cedula: ${formatNumber(client.cedula)} creado${client.hasFaceRegistered ? ' con registro facial' : ''}.`;
+    const paymentLogMessage = `Pago de ${payment.amount} ${payment.currency} registrado para ${client.firstname} ${client.lastname}.`;
+    
+    await Log.create([
+      {
+        message: clientLogMessage,
+        user: req.user.userId,
+        type: "created",
+      },
+      {
+        message: paymentLogMessage,
+        user: req.user.userId,
+        type: "created",
+      }
+    ]);
+
+    return res.status(201).json({
+      client,
+      payment,
+      message: "Cliente y pago creados exitosamente"
+    });
+
+  } catch (error) {
+    // If payment creation fails, try to rollback client creation
+    if (client && client._id) {
+      try {
+        await Client.findByIdAndDelete(client._id);
+        console.log("Rolled back client creation due to payment error");
+      } catch (rollbackError) {
+        console.error("Error rolling back client creation:", rollbackError);
+      }
+    }
+    throw error;
+  }
+}
+
+// Function to check if MongoDB supports transactions (kept for future use)
+async function checkTransactionSupport(): Promise<boolean> {
+  try {
+    const admin = mongoose.connection.db.admin();
+    const serverStatus = await admin.serverStatus();
+    
+    // Check if we're in a replica set or sharded cluster
+    const isReplicaSet = serverStatus.repl && serverStatus.repl.setName;
+    const isSharded = serverStatus.process === 'mongos';
+    
+    return isReplicaSet || isSharded;
+  } catch (error) {
+    console.log("Could not determine transaction support, assuming standalone MongoDB");
+    return false;
+  }
 }
 
 export default ClientController;

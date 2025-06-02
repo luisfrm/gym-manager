@@ -83,10 +83,9 @@ export function ClientCard({ client, onClientUpdated }: ClientCardProps) {
       {/* Diálogo de registro facial */}
       <FaceRegistrationDialog
         isOpen={showFaceRegistration}
-        onClose={() => setShowFaceRegistration(false)}
-        clientId={client._id}
-        clientName={`${client.firstname} ${client.lastname}`}
-        onSuccess={() => {
+        onOpenChange={() => setShowFaceRegistration(false)}
+        client={client}
+        onFaceRegistered={() => {
           setShowFaceRegistration(false);
           onClientUpdated?.();
         }}

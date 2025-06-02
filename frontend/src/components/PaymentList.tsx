@@ -9,7 +9,7 @@ import formatNumber from "@/lib/formatNumber";
 import { formatDate } from "@/lib/utils";
 import { Link } from "react-router-dom";
 import { Skeleton } from "./ui/skeleton";
-import CopyToClipboard from "./CopyToClipboard";
+import { CopyToClipboard } from "./CopyToClipboard";
 import { Button } from "./ui/button";
 import { Pencil } from "lucide-react";
 import { PaymentUpdateDialog } from "./dialogs/PaymentUpdateDialog";

@@ -1,118 +1,79 @@
-import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
-import { FaceCaptureComponent } from "./FaceCaptureComponent";
+import { Modal, ModalBody, ModalHeader } from "@/components/Modal";
+import { Client } from "@/lib/types";
+import { useMutation } from "@tanstack/react-query";
 import { registerFace } from "@/api/api";
-import { toast } from "sonner";
-import { CircleCheckBig, CircleX } from "lucide-react";
+import { toastUtils } from "@/lib/toast";
+import { Loader2 } from "lucide-react";
+import { FaceCaptureComponent } from "./FaceCaptureComponent";
 
 interface FaceRegistrationDialogProps {
-  clientId: string;
-  clientName: string;
   isOpen: boolean;
-  onClose: () => void;
-  onSuccess: () => void;
+  onOpenChange: () => void;
+  client?: Client | null;
+  onFaceRegistered?: () => void;
 }
 
-export const FaceRegistrationDialog = ({
-  clientId,
-  clientName,
-  isOpen,
-  onClose,
-  onSuccess,
-}: FaceRegistrationDialogProps) => {
-  const [isRegistering, setIsRegistering] = useState(false);
+export const FaceRegistrationDialog = ({ isOpen, onOpenChange, client, onFaceRegistered = () => {} }: FaceRegistrationDialogProps) => {
 
-  const handleFaceCaptured = async (encoding: number[], image: string) => {
-    try {
-      setIsRegistering(true);
+  const registerFaceMutation = useMutation({
+    mutationFn: ({ encoding }: { encoding: number[] }) => {
+      if (!client) throw new Error('No client selected');
+      return registerFace(client._id, encoding);
+    },
+    onSuccess: () => {
+      onFaceRegistered();
+      onOpenChange();
+      const clientName = client ? `${client.firstname} ${client.lastname}` : '';
+      toastUtils.face.registered(clientName);
+    },
+    onError: (error: any) => {
+      console.error('Error registering face:', error);
       
-      await registerFace(clientId, encoding, image);
+      const errorData = error?.response?.data;
       
-      toast("Registro facial exitoso", {
-        description: `El rostro de ${clientName} ha sido registrado correctamente`,
-        duration: 4000,
-        icon: <CircleCheckBig className="w-6 h-6 text-green-500" />,
-        style: {
-          backgroundColor: '#F0FDF4',
-          borderColor: '#BBF7D0',
-          color: '#16A34A'
-        }
-      });
-      
-      onSuccess();
-      onClose();
-    } catch (error: any) {
-      console.error("Error registering face:", error);
-      
-      // Manejo específico de error 409 (cara duplicada)
-      if (error.response?.status === 409) {
-        const errorData = error.response.data;
-        if (errorData.existingClient) {
+      if (error?.response?.status === 409) {
+        // Cara duplicada
+        if (errorData?.existingClient) {
           const { firstname, lastname, cedula } = errorData.existingClient;
-          const similarity = Math.round((errorData.similarity || 0) * 100);
-          
-          toast("Cara ya registrada", {
-            description: `Esta cara pertenece a ${firstname} ${lastname} (${cedula}) - Similitud: ${similarity}%`,
-            duration: 8000,
-            icon: <CircleX className="w-6 h-6 text-red-500" />,
-            style: {
-              backgroundColor: '#FEF2F2',
-              borderColor: '#FECACA',
-              color: '#DC2626'
-            }
-          });
+          const similarity = errorData.similarity;
+          toastUtils.face.duplicate(
+            { firstname, lastname, cedula },
+            similarity
+          );
         } else {
-          toast("Cara ya registrada", {
-            description: "Esta cara ya está registrada en el sistema",
-            duration: 5000,
-            icon: <CircleX className="w-6 h-6 text-red-500" />,
-            style: {
-              backgroundColor: '#FEF2F2',
-              borderColor: '#FECACA',
-              color: '#DC2626'
-            }
-          });
+          toastUtils.face.duplicate();
         }
       } else {
-        // Otros errores
-        toast("Error en el registro", {
-          description: error.response?.data?.message || "Error al registrar el rostro",
-          duration: 5000,
-          icon: <CircleX className="w-6 h-6 text-red-500" />,
-          style: {
-            backgroundColor: '#FEF2F2',
-            borderColor: '#FECACA',
-            color: '#DC2626'
-          }
-        });
+        const errorMessage = errorData?.message || error.message || 'Error al registrar rostro';
+        toastUtils.face.error(errorMessage);
       }
-    } finally {
-      setIsRegistering(false);
-    }
+    },
+  });
+
+  const handleFaceCaptured = (encoding: number[]) => {
+    registerFaceMutation.mutate({ encoding });
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>Registrar Rostro - {clientName}</DialogTitle>
-        </DialogHeader>
+    <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
+      <ModalHeader 
+        title="Registro Facial" 
+        description={`Registrar rostro para ${client?.firstname} ${client?.lastname}`} 
+      />
+      <ModalBody>
+        <FaceCaptureComponent
+          isOpen={isOpen}
+          onFaceCaptured={handleFaceCaptured}
+          onCancel={onOpenChange}
+        />
         
-        <div className="space-y-4">
-          {!isRegistering ? (
-            <FaceCaptureComponent
-              onFaceCaptured={handleFaceCaptured}
-              onCancel={onClose}
-              isOpen={isOpen}
-            />
-          ) : (
-            <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-              <p>Registrando rostro...</p>
-            </div>
-          )}
-        </div>
-      </DialogContent>
-    </Dialog>
+        {registerFaceMutation.isPending && (
+          <div className="flex items-center justify-center gap-2 mt-4 text-blue-600">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            <span>Registrando rostro...</span>
+          </div>
+        )}
+      </ModalBody>
+    </Modal>
   );
 }; 

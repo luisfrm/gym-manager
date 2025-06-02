@@ -6,12 +6,13 @@ import { updatePartialPaymentRequest } from "@/api/api";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { toastUtils } from "@/lib/toast";
+import { Loader2, DollarSign, Calendar, CreditCard, FileText, Hash, Edit } from "lucide-react";
 import { FormInput } from "../ui/form-input";
 import { DateInput } from "../ui/date-input";
 import { FormSelect } from "../ui/form-select";
 import { Client, Payment } from "@/lib/types";
+import React from "react";
 
 interface PaymentUpdateDialogProps {
   isOpen: boolean;
@@ -49,24 +50,30 @@ export const PaymentUpdateDialog = ({ isOpen, onOpenChange, payment, onPaymentUp
     watch,
   } = useForm<PaymentSchema>({
     resolver: zodResolver(paymentSchema),
-    defaultValues: {
-      _id: payment?._id || "",
-      client: payment?.client._id || "",
-      clientCedula: payment?.clientCedula || "",
-      clientName: payment?.client ? `${payment.client.firstname} ${payment.client.lastname}` : "",
-      amount: payment?.amount || "",
-      date: payment?.date || "",
-      service: payment?.service || "",
-      description: payment?.description || "",
-      paymentMethod: payment?.paymentMethod || "",
-      paymentReference: payment?.paymentReference || "",
-      paymentStatus: payment?.paymentStatus || "pending",
-      currency: payment?.currency || "USD",
-      expiredDate: payment?.client?.expiredDate || "",
-    },
   });
 
   const currentDate = watch('date');
+
+  // Actualizar los valores del formulario cuando cambie el payment
+  React.useEffect(() => {
+    if (payment && isOpen) {
+      reset({
+        _id: payment._id || "",
+        client: payment.client._id || "",
+        clientCedula: payment.clientCedula || "",
+        clientName: payment.client ? `${payment.client.firstname} ${payment.client.lastname}` : "",
+        amount: payment.amount ? payment.amount.toString() : "",
+        date: payment.date || "",
+        service: payment.service || "",
+        description: payment.description || "",
+        paymentMethod: payment.paymentMethod || "",
+        paymentReference: payment.paymentReference || "",
+        paymentStatus: payment.paymentStatus || "pending",
+        currency: payment.currency || "USD",
+        expiredDate: payment.client?.expiredDate || "",
+      });
+    }
+  }, [payment, isOpen, reset]);
 
   const adjustDate = (months: number) => {
     if (!currentDate) return;
@@ -82,26 +89,17 @@ export const PaymentUpdateDialog = ({ isOpen, onOpenChange, payment, onPaymentUp
       onPaymentUpdated();
       reset();
       onOpenChange();
-      toast.success("Pago actualizado", {
-        description: "El pago ha sido actualizado exitosamente.",
-        duration: 5000,
-      });
+      toastUtils.payment.updated();
     },
     onError: (error: any) => {
       if (error?.response?.data?.errors) {
         const refError = error.response.data.errors.find((e: any) => e.field === "paymentReference");
         if (refError) {
-          toast.error("Error al actualizar el pago", {
-            description: refError.message,
-            duration: 5000,
-          });
+          toastUtils.payment.referenceError(refError.message);
           return;
         }
       }
-      toast.error("Error al actualizar el pago", {
-        description: "Por favor, intenta de nuevo o contacta con el administrador.",
-        duration: 5000,
-      });
+      toastUtils.payment.error('actualizar');
     },
   });
 
@@ -172,6 +170,15 @@ export const PaymentUpdateDialog = ({ isOpen, onOpenChange, payment, onPaymentUp
       <ModalHeader title="Actualizar pago" description="Actualiza la información del pago." />
       <ModalBody>
         <form onSubmit={handleSubmit(handleUpdatePayment)} className="grid grid-cols-2 gap-4">
+          
+          {/* TÍTULO CON ÍCONO */}
+          <div className="col-span-2 mb-2">
+            <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2 border-b pb-2">
+              <Edit className="w-5 h-5 text-orange-600" />
+              Editar Información del Pago
+            </h3>
+          </div>
+
           <FormGroup>
             <FormInput
               label="Monto"
@@ -182,8 +189,10 @@ export const PaymentUpdateDialog = ({ isOpen, onOpenChange, payment, onPaymentUp
               required
               onChange={handleAmountChange}
               onBlur={handleAmountBlur}
+              icon={<DollarSign className="w-4 h-4" />}
             />
           </FormGroup>
+          
           <FormGroup>
             <DateInput
               label="Fecha"
@@ -192,8 +201,10 @@ export const PaymentUpdateDialog = ({ isOpen, onOpenChange, payment, onPaymentUp
               error={errors.date?.message}
               onAdjustDate={adjustDate}
               required
+              icon={<Calendar className="w-4 h-4" />}
             />
           </FormGroup>
+          
           <FormGroup>
             <FormInput
               label="Servicio"
@@ -202,8 +213,10 @@ export const PaymentUpdateDialog = ({ isOpen, onOpenChange, payment, onPaymentUp
               error={errors.service?.message}
               placeholder="Servicio"
               required
+              icon={<FileText className="w-4 h-4" />}
             />
           </FormGroup>
+          
           <FormGroup>
             <FormInput
               label="Método de pago"
@@ -212,8 +225,10 @@ export const PaymentUpdateDialog = ({ isOpen, onOpenChange, payment, onPaymentUp
               error={errors.paymentMethod?.message}
               placeholder="Método de pago"
               required
+              icon={<CreditCard className="w-4 h-4" />}
             />
           </FormGroup>
+          
           <FormGroup>
             <FormInput
               label="Referencia"
@@ -221,8 +236,10 @@ export const PaymentUpdateDialog = ({ isOpen, onOpenChange, payment, onPaymentUp
               register={register}
               error={errors.paymentReference?.message}
               placeholder="Referencia del pago"
+              icon={<Hash className="w-4 h-4" />}
             />
           </FormGroup>
+          
           <FormGroup>
             <FormSelect<"pending" | "paid" | "failed">
               label="Estado del pago"
@@ -239,6 +256,7 @@ export const PaymentUpdateDialog = ({ isOpen, onOpenChange, payment, onPaymentUp
               onValueChange={handlePaymentStatusChange}
             />
           </FormGroup>
+          
           <FormGroup>
             <FormSelect<"USD" | "VES">
               label="Moneda"
@@ -254,6 +272,7 @@ export const PaymentUpdateDialog = ({ isOpen, onOpenChange, payment, onPaymentUp
               onValueChange={handlePaymentCurrencyChange}
             />
           </FormGroup>
+          
           <FormGroup>
             <DateInput
               label="Fecha de vencimiento"
@@ -262,8 +281,10 @@ export const PaymentUpdateDialog = ({ isOpen, onOpenChange, payment, onPaymentUp
               error={errors.expiredDate?.message}
               onAdjustDate={adjustDate}
               required
+              icon={<Calendar className="w-4 h-4" />}
             />
           </FormGroup>
+          
           <FormGroup className="col-span-2 flex justify-end">
             <Button disabled={updatePartialPaymentMutation.isPending} type="submit">
               {updatePartialPaymentMutation.isPending ? <Loader2 className="animate-spin" /> : "Actualizar pago"}

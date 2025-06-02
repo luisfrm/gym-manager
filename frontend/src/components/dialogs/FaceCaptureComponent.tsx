@@ -1,8 +1,8 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { Button } from "../ui/button";
-import { Camera, X, Check, RotateCcw, Loader2, CircleX, CircleCheckBig } from "lucide-react";
+import { Camera, X, Check, RotateCcw, Loader2 } from "lucide-react";
 import { useFaceRecognition } from "@/hooks/useFaceRecognition";
-import { toast } from "sonner";
+import { toastUtils } from "@/lib/toast";
 
 interface FaceCaptureComponentProps {
   onFaceCaptured: (encoding: number[], image: string) => void;
@@ -20,7 +20,7 @@ export const FaceCaptureComponent = ({ onFaceCaptured, onCancel, isOpen }: FaceC
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { detectFace, isLoaded, error: detectionError } = useFaceRecognition();
+  const { detectFace, isLoaded, error: faceDetectionError } = useFaceRecognition();
   const [isDetecting, setIsDetecting] = useState(false);
 
   const startCamera = useCallback(async () => {
@@ -87,79 +87,55 @@ export const FaceCaptureComponent = ({ onFaceCaptured, onCancel, isOpen }: FaceC
   }, []);
 
   const capturePhoto = useCallback(async () => {
-    if (!videoRef.current || !canvasRef.current) return;
+    if (!videoRef.current || !canvasRef.current || isDetecting) return;
 
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    
-    if (!ctx) return;
+    setIsDetecting(true);
+    setError("");
+    setStep('validating');
 
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    
-    ctx.drawImage(video, 0, 0);
-    
-    const imageDataUrl = canvas.toDataURL('image/jpeg', 0.8);
-    
     try {
-      setIsDetecting(true);
-      setError("");
+      const canvas = canvasRef.current;
+      const video = videoRef.current;
       
-      const encoding = await detectFace(video);
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
       
-      if (encoding && encoding.length > 0) {
-        setCapturedImage(imageDataUrl);
-        setCapturedEncoding(encoding);
-        setStep('validating');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('No se pudo obtener el contexto del canvas');
+      
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      
+      const imageDataUrl = canvas.toDataURL('image/jpeg');
+      setCapturedImage(imageDataUrl);
 
+      const detections = await detectFace(video);
+      
+      if (detections && detections.length > 0) {
+        const encoding = detections as number[];
+        setCapturedEncoding(encoding);
+        
         try {
           const validation = await validateFaceEncoding(encoding);
           
           if (validation.isDuplicate) {
             if (validation.existingClient) {
               const { firstname, lastname, cedula } = validation.existingClient;
-              const similarity = Math.round((validation.similarity || 0) * 100);
+              const similarity = validation.similarity || 0;
               
-              toast("Cara ya registrada", {
-                description: `Esta cara pertenece a ${firstname} ${lastname} (${cedula}) - Similitud: ${similarity}%`,
-                duration: 8000,
-                icon: <CircleX className="w-6 h-6 text-red-500" />,
-                style: {
-                  backgroundColor: '#FEF2F2',
-                  borderColor: '#FECACA',
-                  color: '#DC2626'
-                }
-              });
+              toastUtils.face.duplicate(
+                { firstname, lastname, cedula },
+                similarity
+              );
             }
             
             resetCapture();
           } else {
             setStep('preview');
-            
-            toast("Rostro capturado correctamente", {
-              description: "El rostro ha sido validado y está listo para registrar",
-              duration: 4000,
-              icon: <CircleCheckBig className="w-6 h-6 text-green-500" />,
-              style: {
-                backgroundColor: '#F0FDF4',
-                borderColor: '#BBF7D0',
-                color: '#16A34A'
-              }
-            });
+            toastUtils.face.captured();
           }
         } catch (validationError) {
           console.error('Error validating face:', validationError);
-          toast("Error de validación", {
-            description: "No se pudo validar el rostro. Inténtalo de nuevo.",
-            duration: 5000,
-            icon: <CircleX className="w-6 h-6 text-red-500" />,
-            style: {
-              backgroundColor: '#FEF2F2',
-              borderColor: '#FECACA',
-              color: '#DC2626'
-            }
-          });
+          toastUtils.face.validationError("No se pudo validar el rostro. Inténtalo de nuevo.");
           resetCapture();
         }
       } else {
@@ -228,9 +204,9 @@ export const FaceCaptureComponent = ({ onFaceCaptured, onCancel, isOpen }: FaceC
             </div>
           )}
           
-          {detectionError && (
+          {faceDetectionError && (
             <div className="text-red-600 text-sm bg-red-50 p-2 rounded">
-              {detectionError}
+              {faceDetectionError}
             </div>
           )}
 

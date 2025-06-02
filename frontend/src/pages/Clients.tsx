@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import ClientData from "@/components/ClientData";
 import { useEffect, useState } from "react";
 import { ClientDialog } from "@/components/dialogs/ClientDialog";
+import { ClientWithPaymentDialog } from "@/components/dialogs/ClientWithPaymentDialog";
 import { useQuery } from "@tanstack/react-query";
 import { getClientsRequest, getClientStatisticsRequest } from "@/api/api";
 import { ClientStatisticsResponse, GetClientsResponse } from "@/lib/types";
@@ -65,12 +66,15 @@ const limitsOptions: Option[] = [
 const Clients = () => {
   const username = useStore(state => state.auth.user?.username ?? "");
   const [isNewClientModalOpen, setIsNewClientModalOpen] = useState(false);
+  const [isClientWithPaymentModalOpen, setIsClientWithPaymentModalOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [sortField, setSortField] = useState("updatedAt");
   const [sortOrder, setSortOrder] = useState("desc");
   const [page, setPage] = useState(DEFAULT_PAGE);
   const [limit, setLimit] = useState(DEFAULT_LIMIT);
   const debouncedSearch = useDebounce(search, 500);
+
+  const queryClient = useQueryClient();
 
   const {
     data,
@@ -81,7 +85,7 @@ const Clients = () => {
     queryFn: () => getClientsRequest(debouncedSearch, page, limit, sortField, sortOrder),
   });
 
-  const { data: clientStatistic, refetch: refetchClientStatistics } = useQuery<ClientStatisticsResponse>({
+  const { data: clientStatistic } = useQuery<ClientStatisticsResponse>({
     queryKey: ["clientStatistics"],
     queryFn: () => getClientStatisticsRequest(),
   });
@@ -94,10 +98,18 @@ const Clients = () => {
   const { newClientsLastMonth, clientsExpiringNextWeek, totalClients } =
     clientStatistic ?? InitialClientStatisticsResponse;
 
-  const queryClient = useQueryClient();
+  // Función para refrescar datos después de crear cliente/pago
+  const handleDataRefresh = () => {
+    refetchClients();
+    queryClient.invalidateQueries({ queryKey: ["clientStatistics"] });
+  };
 
   const handleOpenNewClientModal = () => {
     setIsNewClientModalOpen(!isNewClientModalOpen);
+  };
+
+  const handleOpenClientWithPaymentModal = () => {
+    setIsClientWithPaymentModalOpen(!isClientWithPaymentModalOpen);
   };
 
   const handleChangeLimit = (value: string) => {
@@ -183,9 +195,14 @@ const Clients = () => {
         id="clients-filter-bar"
         className="flex flex-col-reverse lg:flex-row justify-between items-center gap-4 w-full"
       >
-        <Button variant="default" className="w-full lg:w-auto" onClick={handleOpenNewClientModal}>
-          Agregar nuevo
-        </Button>
+        <div className="flex gap-2 w-full lg:w-auto">
+          <Button variant="default" className="flex-1 lg:flex-none" onClick={handleOpenNewClientModal}>
+            Agregar nuevo
+          </Button>
+          <Button variant="outline" className="flex-1 lg:flex-none" onClick={handleOpenClientWithPaymentModal}>
+            Cliente + Pago
+          </Button>
+        </div>
         <Input placeholder="Buscar cliente" className="" onChange={handleSearchClient} />
         <SelectComponent
           onValueChange={handleChangeSortField}
@@ -229,14 +246,17 @@ const Clients = () => {
           />
         )}
       </section>
+      
+      {/* Diálogos optimizados - solo props esenciales */}
       <ClientDialog
-        onClientCreated={() => {
-          refetchClients();
-          queryClient.invalidateQueries({ queryKey: ["clientStatistics"] });
-          refetchClientStatistics();
-        }}
         isOpen={isNewClientModalOpen}
         onOpenChange={handleOpenNewClientModal}
+        onClientCreated={handleDataRefresh}
+      />
+      <ClientWithPaymentDialog
+        isOpen={isClientWithPaymentModalOpen}
+        onOpenChange={handleOpenClientWithPaymentModal}
+        onClientAndPaymentCreated={handleDataRefresh}
       />
     </Template>
   );

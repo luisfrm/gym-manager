@@ -1,27 +1,22 @@
 import { Modal, ModalBody, ModalHeader } from "@/components/Modal";
 import { FormGroup } from "@/components/FormGroup";
 import { Button } from "../ui/button";
-import { Client, GetClientsResponse } from "@/lib/types";
+import { Client, GetClientsResponse, PaymentDialogProps } from "@/lib/types";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createPaymentRequest, getClientsRequest } from "@/api/api";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CheckCircle, CircleX, Loader2 } from "lucide-react";
-import { toast } from "sonner";
+import { Loader2, User, DollarSign, Calendar, CreditCard, FileText, Hash } from "lucide-react";
+import { toastUtils } from "@/lib/toast";
 import InputSearch from "../ClientInputSearch";
 import formatNumber from "@/lib/formatNumber";
 import { FormInput } from "../ui/form-input";
 import { DateInput } from "../ui/date-input";
 import { FormSelect } from "../ui/form-select";
 import { Currency, getCurrencyOptions } from "@/lib/currency";
-
-interface PaymentDialogProps {
-  isOpen: boolean;
-  onOpenChange: () => void;
-  onPaymentCreated?: () => void;
-}
+import { serviceOptions, paymentMethodOptions } from "@/lib/suggestions";
 
 const paymentSchema = z.object({
   client: z.string().min(1, { message: "El cliente es requerido" }),
@@ -133,30 +128,18 @@ export const PaymentDialog = ({ isOpen, onOpenChange, onPaymentCreated = () => {
         clientName: client ? `${client.firstname} ${client.lastname}` : "",
       });
       onOpenChange();
-      toast("Pago registrado.", {
-        description: "El pago se ha registrado correctamente.",
-        duration: 5000,
-        icon: <CheckCircle className="text-lime-500" />,
-      });
+      toastUtils.payment.created();
       setFilterValue("");
     },
     onError: (error: any) => {
       if (error?.response?.data?.errors) {
         const refError = error.response.data.errors.find((e: any) => e.field === "paymentReference");
         if (refError) {
-          toast("Error al crear pago", {
-            description: refError.message,
-            duration: 5000,
-            icon: <CircleX className="text-red-600" />,
-          });
+          toastUtils.payment.referenceError(refError.message);
           return;
         }
       }
-      toast("Error al crear pago", {
-        description: "Por favor, intenta de nuevo o contacta con el administrador.",
-        duration: 5000,
-        icon: <CircleX className="text-red-600" />,
-      });
+      toastUtils.payment.error('crear');
     },
   });
 
@@ -181,10 +164,10 @@ export const PaymentDialog = ({ isOpen, onOpenChange, onPaymentCreated = () => {
     setValue("clientCedula", client.cedula);
     setValue("clientName", `${client.firstname} ${client.lastname}`);
     setFilterValue("");
-    toast.success("Cliente seleccionado correctamente", {
-      description: `${client.firstname} ${client.lastname} - ${formatNumber(client.cedula)}`,
-      duration: 3000,
-    });
+    toastUtils.client.selected(
+      `${client.firstname} ${client.lastname}`,
+      formatNumber(client.cedula)
+    );
   };
 
   const handleClientSearch = (value: string) => {
@@ -230,6 +213,15 @@ export const PaymentDialog = ({ isOpen, onOpenChange, onPaymentCreated = () => {
       <ModalHeader title="Registrar pago" description="Registra un nuevo pago en la base de datos." />
       <ModalBody>
         <form onSubmit={handleSubmit(handleCreatePayment)} className="grid grid-cols-2 gap-4">
+          
+          {/* TÍTULO SELECCIÓN DE CLIENTE */}
+          <div className="col-span-2 mb-2">
+            <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2 border-b pb-2">
+              <User className="w-5 h-5 text-blue-600" />
+              Seleccionar Cliente
+            </h3>
+          </div>
+
           <FormGroup className="col-span-2">
             <InputSearch
               clients={clients?.results ?? []}
@@ -240,22 +232,35 @@ export const PaymentDialog = ({ isOpen, onOpenChange, onPaymentCreated = () => {
               isLoading={clientsLoading}
             />
           </FormGroup>
+          
           <FormGroup>
             <FormInput
               label="Nombre del cliente"
               name="clientName"
               register={register}
               disabled
+              icon={<User className="w-4 h-4" />}
             />
           </FormGroup>
+          
           <FormGroup>
             <FormInput
               label="Cédula del cliente"
               name="clientCedula"
               register={register}
               disabled
+              icon={<Hash className="w-4 h-4" />}
             />
           </FormGroup>
+
+          {/* TÍTULO INFORMACIÓN DEL PAGO */}
+          <div className="col-span-2 mt-4 mb-2">
+            <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2 border-b pb-2">
+              <CreditCard className="w-5 h-5 text-green-600" />
+              Información del Pago
+            </h3>
+          </div>
+          
           <FormGroup>
             <FormInput
               label="Monto"
@@ -267,8 +272,10 @@ export const PaymentDialog = ({ isOpen, onOpenChange, onPaymentCreated = () => {
               onChange={handleAmountChange}
               onBlur={handleAmountBlur}
               disabled={!client}
+              icon={<DollarSign className="w-4 h-4" />}
             />
           </FormGroup>
+          
           <FormGroup>
             <DateInput
               label="Fecha"
@@ -278,8 +285,10 @@ export const PaymentDialog = ({ isOpen, onOpenChange, onPaymentCreated = () => {
               onAdjustDate={adjustDate}
               required
               disabled={!client}
+              icon={<Calendar className="w-4 h-4" />}
             />
           </FormGroup>
+          
           <FormGroup>
             <FormInput
               label="Servicio"
@@ -289,8 +298,16 @@ export const PaymentDialog = ({ isOpen, onOpenChange, onPaymentCreated = () => {
               placeholder="Servicio"
               required
               disabled={!client}
+              icon={<FileText className="w-4 h-4" />}
+              suggestions={serviceOptions}
+              onSuggestionSelect={(option) => {
+                setValue('service', option.label);
+              }}
+              suggestionsGroupHeading="Servicios Comunes"
+              suggestionsEmptyMessage="No se encontraron servicios que coincidan"
             />
           </FormGroup>
+          
           <FormGroup>
             <FormInput
               label="Método de pago"
@@ -300,8 +317,16 @@ export const PaymentDialog = ({ isOpen, onOpenChange, onPaymentCreated = () => {
               placeholder="Método de pago"
               required
               disabled={!client}
+              icon={<CreditCard className="w-4 h-4" />}
+              suggestions={paymentMethodOptions}
+              onSuggestionSelect={(option) => {
+                setValue('paymentMethod', option.label);
+              }}
+              suggestionsGroupHeading="Métodos de Pago"
+              suggestionsEmptyMessage="No se encontraron métodos de pago que coincidan"
             />
           </FormGroup>
+          
           <FormGroup>
             <FormInput
               label="Referencia"
@@ -310,8 +335,10 @@ export const PaymentDialog = ({ isOpen, onOpenChange, onPaymentCreated = () => {
               error={errors.paymentReference?.message}
               placeholder="Referencia del pago"
               disabled={!client}
+              icon={<Hash className="w-4 h-4" />}
             />
           </FormGroup>
+          
           <FormGroup>
             <FormSelect<"pending" | "paid" | "failed">
               label="Estado del pago"
@@ -329,6 +356,7 @@ export const PaymentDialog = ({ isOpen, onOpenChange, onPaymentCreated = () => {
               onValueChange={handlePaymentStatusChange}
             />
           </FormGroup>
+          
           <FormGroup>
             <FormSelect<Currency>
               label="Moneda"
@@ -342,6 +370,7 @@ export const PaymentDialog = ({ isOpen, onOpenChange, onPaymentCreated = () => {
               onValueChange={handlePaymentCurrencyChange}
             />
           </FormGroup>
+          
           <FormGroup>
             <DateInput
               label="Fecha de vencimiento"
@@ -351,8 +380,10 @@ export const PaymentDialog = ({ isOpen, onOpenChange, onPaymentCreated = () => {
               onAdjustDate={adjustExpiredDate}
               required
               disabled={!client}
+              icon={<Calendar className="w-4 h-4" />}
             />
           </FormGroup>
+          
           <FormGroup className="col-span-2 flex justify-end">
             <Button disabled={!client || createPaymentMutation.isPending} type="submit">
               {createPaymentMutation.isPending ? <Loader2 className="animate-spin" /> : "Registrar pago"}

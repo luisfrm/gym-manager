@@ -201,7 +201,7 @@ export const getPaymentTotalsRequest = async () => {
   return response.data;
 };
 
-export const registerFace = async (clientId: string, encoding: number[], image: string): Promise<any> => {
+export const registerFace = async (clientId: string, encoding: number[]): Promise<any> => {
   const formData = new FormData();
   
   formData.append('clientId', clientId);
@@ -236,4 +236,70 @@ export const registerFace = async (clientId: string, encoding: number[], image: 
   }
   
   return apiResponse.json();
+};
+
+export const createClientWithPaymentRequest = async (
+  clientData: CreateClientRequest,
+  paymentData: Omit<CreatePaymentRequest, 'client' | 'clientCedula'>,
+  faceData?: { encoding: number[]; image: string }
+): Promise<{ client: Client; payment: Payment; message: string }> => {
+  const combinedData = {
+    // Client data
+    ...clientData,
+    // Payment data
+    amount: paymentData.amount,
+    date: paymentData.date,
+    service: paymentData.service,
+    paymentMethod: paymentData.paymentMethod,
+    paymentReference: paymentData.paymentReference,
+    paymentStatus: paymentData.paymentStatus,
+    currency: paymentData.currency,
+  };
+
+  // If there is facial data, send only the encoding (no image)
+  if (faceData) {
+    const formData = new FormData();
+    
+    // Add combined data
+    Object.keys(combinedData).forEach(key => {
+      const value = combinedData[key as keyof typeof combinedData];
+      if (value !== undefined && value !== '') {
+        formData.append(key, value.toString());
+      }
+    });
+    
+    // Add only facial encoding (no image to save storage)
+    formData.append('faceEncoding', JSON.stringify(faceData.encoding));
+    
+    // Make request with FormData (optimized without image)
+    const token = useStore.getState().auth.token;
+    const apiResponse = await fetch(`${API_URL}/clients/with-payment`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: formData,
+    });
+    
+    if (!apiResponse.ok) {
+      const errorData = await apiResponse.json();
+      
+      // ✅ SPECIFIC HANDLING FOR DUPLICATE FACE (409)
+      if (apiResponse.status === 409) {
+        const duplicateError = new Error(errorData.message || 'Esta cara ya está registrada en el sistema');
+        (duplicateError as any).existingClient = errorData.existingClient;
+        (duplicateError as any).similarity = errorData.similarity;
+        (duplicateError as any).isDuplicate = true;
+        throw duplicateError;
+      }
+      
+      throw new Error(errorData.message || 'Error al crear cliente con pago');
+    }
+    
+    return apiResponse.json();
+  }
+  
+  // If there is no facial data, use the normal method
+  const res = await api.post("/clients/with-payment", combinedData);
+  return res.data;
 };

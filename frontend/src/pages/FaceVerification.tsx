@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import { toastUtils } from "@/lib/toast";
 import { CircleCheckBig, CircleX, Loader2, Camera, Shield, Clock, User, Play, Pause, Volume2 } from "lucide-react";
 import { useFaceRecognition } from "@/hooks/useFaceRecognition";
 import Template from "./Template";
@@ -172,9 +172,9 @@ const FaceVerification = () => {
 
       let message = "";
       if (isSuccess && clientName) {
-        message = `Acceso autorizado. Bienvenido, ${clientName}.`;
+        message = `Acceso autorizado. Bienvenido al Marivi-Llim, ${clientName}.`;
       } else if (isSuccess) {
-        message = "Acceso autorizado. Bienvenido al gimnasio.";
+        message = "Acceso autorizado. Bienvenido al Marivi-Llim.";
       } else if (clientName) {
         message = `Acceso denegado. La membresía de ${clientName} ha expirado.`;
       } else {
@@ -325,17 +325,9 @@ const FaceVerification = () => {
         playSound(data.isActive, clientName);
         
         if (data.isActive) {
-          toast("¡Acceso autorizado!", {
-            description: `Bienvenido ${data.client.firstname} ${data.client.lastname}`,
-            duration: 8000,
-            icon: <CircleCheckBig className="text-lime-500" />,
-          });
+          toastUtils.access.authorized(clientName);
         } else {
-          toast("Membresía vencida", {
-            description: `${data.client.firstname} ${data.client.lastname} - Membresía expirada`,
-            duration: 8000,
-            icon: <CircleX className="text-red-600" />,
-          });
+          toastUtils.access.expired(clientName);
         }
 
         // Iniciar cooldown de 5 segundos después de cualquier verificación exitosa
@@ -345,20 +337,12 @@ const FaceVerification = () => {
         playSound(false);
 
         const errorData = await response.json();
-        toast("No se pudo verificar", {
-          description: errorData.message || "No se encontró coincidencia facial.",
-          duration: 5000,
-          icon: <CircleX className="text-red-600" />,
-        });
+        toastUtils.access.denied(errorData.message || "No se encontró coincidencia facial.");
       }
     } catch (error) {
       console.error("Error in auto verification:", error);
       playSound(false);
-      toast("Error al procesar imagen", {
-        description: "Error en verificación automática.",
-        duration: 5000,
-        icon: <CircleX className="text-red-600" />,
-      });
+      toastUtils.access.denied("Error en verificación automática.");
     } finally {
       setIsVerifying(false);
     }
@@ -390,17 +374,9 @@ const FaceVerification = () => {
       playSound(data.isActive, clientName);
       
       if (data.isActive) {
-        toast("¡Acceso autorizado!", {
-          description: `Bienvenido ${data.client.firstname} ${data.client.lastname}`,
-          duration: 8000,
-          icon: <CircleCheckBig className="text-lime-500" />,
-        });
+        toastUtils.access.authorized(clientName);
       } else {
-        toast("Membresía vencida", {
-          description: `${data.client.firstname} ${data.client.lastname} - Membresía expirada`,
-          duration: 8000,
-          icon: <CircleX className="text-red-600" />,
-        });
+        toastUtils.access.expired(clientName);
       }
 
       // Iniciar cooldown de 5 segundos después de cualquier verificación exitosa
@@ -412,11 +388,7 @@ const FaceVerification = () => {
       setIsVerifying(false);
       playSound(false);
       console.error("Error verifying face:", error);
-      toast("No se pudo verificar", {
-        description: error.message || "No se encontró coincidencia facial.",
-        duration: 5000,
-        icon: <CircleX className="text-red-600" />,
-      });
+      toastUtils.access.denied(error.message || "No se encontró coincidencia facial.");
     },
   });
 
@@ -430,11 +402,7 @@ const FaceVerification = () => {
       const encoding = await detectFace(videoRef.current);
 
       if (!encoding) {
-        toast("No se detectó ninguna cara", {
-          description: "Asegúrate de que tu cara esté bien iluminada y centrada.",
-          duration: 5000,
-          icon: <CircleX className="text-red-600" />,
-        });
+        toastUtils.access.denied("No se detectó ninguna cara. Asegúrate de que tu cara esté bien iluminada y centrada.");
         setIsVerifying(false);
         return;
       }
@@ -442,11 +410,7 @@ const FaceVerification = () => {
       verifyFaceMutation.mutate(encoding);
     } catch (error) {
       console.error("Error detecting face:", error);
-      toast("Error al procesar imagen", {
-        description: "Inténtalo de nuevo.",
-        duration: 5000,
-        icon: <CircleX className="text-red-600" />,
-      });
+      toastUtils.access.denied("Error al procesar imagen. Inténtalo de nuevo.");
       setIsVerifying(false);
     }
   };

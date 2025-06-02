@@ -17,7 +17,8 @@ class LogController {
       .sort({ [sortField]: sortOrder });
 
     const total = await Log.countDocuments();
-    const totalPages = Math.ceil(total / limit);
+    let totalPages = Math.ceil(total / limit);
+    if (totalPages > 5) totalPages = 5;
     const response = {
       info: {
         total,

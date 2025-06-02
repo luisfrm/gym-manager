@@ -5,10 +5,10 @@ import { useStore } from "@/hooks/useStore";
 import SquareWidget from "@/components/SquareWidget";
 import { ChartNoAxesCombined, DollarSign, Search, Receipt, Calendar } from "lucide-react";
 import { PaymentDialog } from "@/components/dialogs/PaymentDialog";
+import { ClientWithPaymentDialog } from "@/components/dialogs/ClientWithPaymentDialog";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ClientDialog } from "@/components/dialogs/ClientDialog";
 import { useQuery } from "@tanstack/react-query";
 import { useDebounce } from "@/hooks/useDebounce";
 import { getPaymentsRequest, getPaymentTotalsRequest } from "@/api/api";
@@ -26,7 +26,7 @@ const Payments = () => {
   const username = useStore(state => state.auth.user?.username ?? "");
   const role = useStore(state => state.auth.user?.role ?? "");
   const [isOpenPaymentDialog, setIsOpenPaymentDialog] = useState(false);
-  const [isNewClientModalOpen, setIsNewClientModalOpen] = useState(false);
+  const [isClientWithPaymentModalOpen, setIsClientWithPaymentModalOpen] = useState(false);
   const [page, setPage] = useState(DEFAULT_PAGE);
   const [limit, setLimit] = useState(DEFAULT_LIMIT);
   const [search, setSearch] = useState("");
@@ -64,6 +64,13 @@ const Payments = () => {
     queryFn: getPaymentTotalsRequest,
   });
 
+  // Función centralizada para refrescar datos después de crear/actualizar pagos
+  const handleDataRefresh = () => {
+    refetchPayments();
+    queryClient.invalidateQueries({ queryKey: ["paymentTotals"] });
+    refetchPaymentTotals();
+  };
+
   useEffect(() => {
     refetchPayments();
   }, [page, limit, refetchPayments, debouncedSearch, sortField, sortOrder]);
@@ -72,14 +79,8 @@ const Payments = () => {
     setIsOpenPaymentDialog(!isOpenPaymentDialog);
   };
 
-  const handleOpenNewClientModal = () => {
-    setIsNewClientModalOpen(!isNewClientModalOpen);
-  };
-
-  const onPaymentCreated = () => {
-    refetchPayments();
-    queryClient.invalidateQueries({ queryKey: ["paymentTotals"] });
-    refetchPaymentTotals();
+  const handleOpenClientWithPaymentModal = () => {
+    setIsClientWithPaymentModalOpen(!isClientWithPaymentModalOpen);
   };
 
   const handleSearchPayments = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -112,11 +113,6 @@ const Payments = () => {
   const handleChangeSortOrder = (value: string) => {
     setSortOrder(value);
     setPage(DEFAULT_PAGE);
-  };
-
-  const handleOnUpdatedPayment = () => {
-    refetchPayments();
-    refetchPaymentTotals();
   };
 
   return (
@@ -165,9 +161,14 @@ const Payments = () => {
       </WidgetsContainer>
       <section className="data-table w-full flex flex-col gap-4">
         <div className="flex justify-between items-center gap-2">
-          <Button className="bg-slate-900 text-white" onClick={onOpenChangePaymentDialog}>
-            Agregar pago
-          </Button>
+          <div className="flex gap-2">
+            <Button className="bg-slate-900 text-white" onClick={onOpenChangePaymentDialog}>
+              Agregar pago
+            </Button>
+            <Button variant="outline" onClick={handleOpenClientWithPaymentModal}>
+              Cliente + Pago
+            </Button>
+          </div>
           <div className="relative w-full">
             <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
             <Input
@@ -208,7 +209,7 @@ const Payments = () => {
             </SelectContent>
           </Select>
         </div>
-        <PaymentList onUpdatedPayment={handleOnUpdatedPayment} payments={payments} isLoading={isLoadingPayments} />
+        <PaymentList onUpdatedPayment={handleDataRefresh} payments={payments} isLoading={isLoadingPayments} />
         {pages > 1 && (
           <Pagination
             isLoading={isLoadingPayments}
@@ -222,12 +223,18 @@ const Payments = () => {
           />
         )}
       </section>
+      
+      {/* Diálogos optimizados - solo props esenciales */}
       <PaymentDialog
         isOpen={isOpenPaymentDialog}
         onOpenChange={onOpenChangePaymentDialog}
-        onPaymentCreated={onPaymentCreated}
+        onPaymentCreated={handleDataRefresh}
       />
-      <ClientDialog isOpen={isNewClientModalOpen} onOpenChange={handleOpenNewClientModal} />
+      <ClientWithPaymentDialog
+        isOpen={isClientWithPaymentModalOpen}
+        onOpenChange={handleOpenClientWithPaymentModal}
+        onClientAndPaymentCreated={handleDataRefresh}
+      />
     </Template>
   );
 };

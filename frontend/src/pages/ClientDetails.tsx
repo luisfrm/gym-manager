@@ -10,9 +10,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { deleteClientRequest, getClientByIdRequest, getClientPaymentsRequest } from "@/api/api";
+import { useQuery } from "@tanstack/react-query";
+import { getClientByIdRequest, getClientPaymentsRequest } from "@/api/api";
 import { isDateActive } from "@/lib/utils";
+import { Client, Payment } from "@/lib/types";
 import Template from "./Template";
 import { ClientUpdateDialog } from "@/components/dialogs/ClientUpdateDialog";
 import { useState } from "react";
@@ -24,55 +25,47 @@ import { useStore } from "@/hooks/useStore";
 import { FaceRegistrationDialog } from "@/components/dialogs/FaceRegistrationDialog";
 
 export default function ClientDetails() {
-  const { cedula = "" } = useParams();
+  const role = useStore(state => state.auth.user?.role ?? "");
   const navigate = useNavigate();
-  const {
-    data: client,
-    isLoading,
-    refetch,
-  } = useQuery({
-    queryKey: ["client", cedula],
-    queryFn: () => getClientByIdRequest(cedula),
-  });
-  const role = useStore(state => state.auth.user?.role);
-
+  const { cedula } = useParams<{ cedula: string }>();
   const [isUpdateClientOpen, setIsUpdateClientOpen] = useState(false);
   const [isRemoveClientOpen, setIsRemoveClientOpen] = useState(false);
   const [showFaceRegistration, setShowFaceRegistration] = useState(false);
 
-  const deleteClientMutation = useMutation({
-    mutationFn: deleteClientRequest,
-    onSuccess: () => {
-      console.log("Cliente eliminado");
-    },
-    onError: () => {
-      console.log("Error al eliminar cliente");
-    },
+  const {
+    data: client,
+    isLoading,
+    refetch,
+  } = useQuery<Client>({
+    queryKey: ["client", cedula],
+    queryFn: () => getClientByIdRequest(cedula!),
+    enabled: !!cedula,
   });
 
-  const { data: payments, isLoading: isPaymentsLoading } = useQuery({
-    queryKey: ["payments", cedula],
-    queryFn: () => getClientPaymentsRequest(cedula),
+  const {
+    data: payments,
+    isLoading: isPaymentsLoading,
+  } = useQuery<Payment[]>({
+    queryKey: ["clientPayments", cedula],
+    queryFn: () => getClientPaymentsRequest(cedula!),
+    enabled: !!cedula,
   });
 
   const handleUpdateClientOpen = () => {
-    setIsUpdateClientOpen(!isUpdateClientOpen);
+    setIsUpdateClientOpen(true);
   };
 
   const handleRemoveClientOpen = () => {
-    setIsRemoveClientOpen(!isRemoveClientOpen)
+    setIsRemoveClientOpen(true);
   };
 
   const handleClientUpdated = () => {
     refetch();
-    handleUpdateClientOpen();
+    setIsUpdateClientOpen(false);
   };
 
   const handleClientRemoved = () => {
-    const _id = client?._id ?? "";
-    deleteClientMutation.mutateAsync({ _id }).then(() => {
-      navigate("/clients");
-    });
+    navigate("/clients");
   };
 
   return (
@@ -198,14 +191,6 @@ export default function ClientDetails() {
           )}
 
           <div className="grid gap-6 md:grid-cols-2">
-            {/* <Card>
-              <CardHeader>
-                <h3 className="text-lg font-semibold">Historial de pagos</h3>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">Aquí se mostrará el historial de pagos del cliente</p>
-              </CardContent>
-            </Card> */}
             <PaymentHistory isLoading={isPaymentsLoading} payments={payments ?? []} />
             <Card>
               <CardHeader>
@@ -218,29 +203,28 @@ export default function ClientDetails() {
           </div>
         </div>
       </section>
+      
       <ClientUpdateDialog
         isOpen={isUpdateClientOpen}
-        onOpenChange={handleUpdateClientOpen}
+        onOpenChange={() => setIsUpdateClientOpen(false)}
         client={client}
         onClientUpdated={handleClientUpdated}
       />
       <ClientRemoveDialog
         isOpen={isRemoveClientOpen}
-        onOpenChange={handleRemoveClientOpen}
+        onOpenChange={() => setIsRemoveClientOpen(false)}
         client={client}
-        onClientRemoved={handleClientRemoved}
+        onClientDeleted={handleClientRemoved}
       />
       
-      {/* Diálogo de registro facial */}
       {client && (
         <FaceRegistrationDialog
           isOpen={showFaceRegistration}
-          onClose={() => setShowFaceRegistration(false)}
-          clientId={client._id}
-          clientName={`${client.firstname} ${client.lastname}`}
-          onSuccess={() => {
+          onOpenChange={() => setShowFaceRegistration(false)}
+          client={client}
+          onFaceRegistered={() => {
             setShowFaceRegistration(false);
-            refetch(); // Actualizar datos del cliente
+            refetch();
           }}
         />
       )}

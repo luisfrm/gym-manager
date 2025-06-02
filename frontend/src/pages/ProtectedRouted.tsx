@@ -3,10 +3,9 @@ import TokenExpiryPopup from "@/components/dialogs/TokenExpiryPopup";
 import { AppState, useStore } from "@/hooks/useStore";
 import { RefreshTokenResponse } from "@/lib/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { AxiosError } from "axios";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Outlet, Navigate, useNavigate } from "react-router-dom";
-import { toast } from "sonner";
+import { toastUtils } from "@/lib/toast";
 
 const TOKEN_CHECK_INTERVAL = 30000; // 30 segundos
 const TOKEN_EXPIRY_WARNING = 60; // segundos antes de expirar para mostrar el popup
@@ -19,9 +18,7 @@ const ProtectedRoute: React.FC = () => {
   const [wasTokenExpiredShowed, setWasTokenExpiredShowed] = useState(false);
   const [isTokenExpiredPopupVisible, setIsTokenExpiredPopupVisible] = useState(false);
   const refreshAttemptsRef = useRef(0);
-  const MAX_REFRESH_ATTEMPTS = 3;
 
-  // Validar token periódicamente
   const { refetch: validateToken, isError } = useQuery({
     queryKey: ["validateToken"],
     queryFn: validateTokenRequest,
@@ -33,7 +30,7 @@ const ProtectedRoute: React.FC = () => {
     logout();
     localStorage.removeItem("token");
     navigate("/");
-    toast.error("Sesión expirada. Por favor, inicia sesión nuevamente.");
+    toastUtils.access.sessionExpired();
   }, [logout, navigate]);
 
   const refreshTokenMutation = useMutation({
@@ -52,17 +49,11 @@ const ProtectedRoute: React.FC = () => {
         setTimeLeft(Math.max(0, timeUntilExpiration));
       }
       
-      toast.success("Sesión renovada exitosamente");
+      toastUtils.access.sessionRenewed();
     },
-    onError: (error: AxiosError) => {
-      console.error(error);
-      refreshAttemptsRef.current += 1;
-      
-      if (refreshAttemptsRef.current >= MAX_REFRESH_ATTEMPTS) {
-        handleLogout();
-      } else {
-        toast.error("Error al renovar la sesión. Intentando nuevamente...");
-      }
+    onError: () => {
+      toastUtils.access.sessionExpired();
+      handleLogout();
     },
   });
 

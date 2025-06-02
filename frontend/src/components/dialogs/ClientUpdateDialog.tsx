@@ -7,8 +7,8 @@ import { updateClientRequest } from "@/api/api";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { toastUtils } from "@/lib/toast";
+import { Loader2, User, Mail, Phone, MapPin, CreditCard, Calendar, Edit } from "lucide-react";
 import { FormInput } from "../ui/form-input";
 import { DateInput } from "../ui/date-input";
 import { isEmailValid } from "@/lib/utils";
@@ -53,40 +53,20 @@ export const ClientUpdateDialog = ({ isOpen, onOpenChange, client, onClientUpdat
     watch,
   } = useForm<ClientSchema>({
     resolver: zodResolver(clientSchema),
-    defaultValues: {
-      cedula: client?.cedula || "",
-      firstname: client?.firstname || "",
-      lastname: client?.lastname || "",
-      expiredDate: client?.expiredDate || "",
-      email: client?.email || "",
-      phone: client?.phone || "",
-      address: client?.address || "",
-    },
   });
 
   const updateClientMutation = useMutation({
     mutationFn: updateClientRequest,
     onSuccess: (data: Client) => {
-      toast.success("Cliente actualizado", {
-        description: "El cliente ha sido actualizado exitosamente.",
-        duration: 5000,
-      });
+      const clientName = `${data.firstname} ${data.lastname}`;
+      toastUtils.client.updated(clientName);
       onClientUpdated(data);
-      handleClose();
+      onOpenChange();
     },
     onError: () => {
-      toast.error("Error al actualizar el cliente", {
-        description: "Por favor, intenta de nuevo o contacta con el administrador.",
-        duration: 5000,
-      });
+      toastUtils.client.error('actualizar');
     },
   });
-
-  const handleClose = () => {
-    reset();
-    setEmail("");
-    onOpenChange();
-  };
 
   const currentDate = watch('expiredDate');
 
@@ -129,37 +109,55 @@ export const ClientUpdateDialog = ({ isOpen, onOpenChange, client, onClientUpdat
   };
 
   useEffect(() => {
-    if (client) {
-      setValue("cedula", client.cedula);
-      setValue("firstname", client.firstname);
-      setValue("lastname", client.lastname);
-      setValue("expiredDate", client.expiredDate || "");
-      setValue("email", client.email);
-      setValue("phone", client.phone);
-      setValue("address", client.address);
-      setValue("_id", client._id);
+    if (client && isOpen) {
+      reset({
+        _id: client._id,
+        cedula: client.cedula,
+        firstname: client.firstname,
+        lastname: client.lastname,
+        expiredDate: client.expiredDate || "",
+        email: client.email || "",
+        phone: client.phone || "",
+        address: client.address || "",
+      });
       setEmail(client.email || "");
     }
-  }, [client, setValue]);
+  }, [client, isOpen, reset]);
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    if (!isOpen) {
+      reset();
+      setEmail("");
+    }
+  }, [isOpen, reset]);
 
   return (
-    <Modal isOpen={isOpen} onOpenChange={handleClose}>
+    <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
       <ModalHeader title="Actualizar cliente" description="Actualiza la información del cliente." />
       <ModalBody>
         <form onSubmit={handleSubmit(handleUpdateClient)} className="grid grid-cols-2 gap-4">
+          
+          {/* TÍTULO CON ÍCONO */}
+          <div className="col-span-2 mb-2">
+            <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2 border-b pb-2">
+              <Edit className="w-5 h-5 text-orange-600" />
+              Editar Información del Cliente
+            </h3>
+          </div>
+
           <FormGroup>
             <FormInput
-              label="Cedula"
+              label="Cédula"
               name="cedula"
               register={register}
               error={errors.cedula?.message}
               placeholder="Cédula del cliente"
               required
               onChange={handleCedulaChange}
+              icon={<CreditCard className="w-4 h-4" />}
             />
           </FormGroup>
+          
           <FormGroup>
             <DateInput
               label="Fecha de vencimiento"
@@ -168,8 +166,10 @@ export const ClientUpdateDialog = ({ isOpen, onOpenChange, client, onClientUpdat
               error={errors.expiredDate?.message}
               onAdjustDate={adjustDate}
               required
+              icon={<Calendar className="w-4 h-4" />}
             />
           </FormGroup>
+          
           <FormGroup>
             <FormInput
               label="Nombre"
@@ -179,8 +179,10 @@ export const ClientUpdateDialog = ({ isOpen, onOpenChange, client, onClientUpdat
               placeholder="Nombre del cliente"
               required
               onChange={(e) => handleNameChange(e, 'firstname')}
+              icon={<User className="w-4 h-4" />}
             />
           </FormGroup>
+          
           <FormGroup>
             <FormInput
               label="Apellido"
@@ -190,8 +192,10 @@ export const ClientUpdateDialog = ({ isOpen, onOpenChange, client, onClientUpdat
               placeholder="Apellido del cliente"
               required
               onChange={(e) => handleNameChange(e, 'lastname')}
+              icon={<User className="w-4 h-4" />}
             />
           </FormGroup>
+          
           <FormGroup>
             <FormInput
               label="Email"
@@ -201,26 +205,32 @@ export const ClientUpdateDialog = ({ isOpen, onOpenChange, client, onClientUpdat
               placeholder="Email del cliente"
               type="email"
               onChange={handleEmailChange}
+              icon={<Mail className="w-4 h-4" />}
             />
           </FormGroup>
+          
           <FormGroup>
             <FormInput
-              label="Telefono"
+              label="Teléfono"
               name="phone"
               register={register}
               error={errors.phone?.message}
-              placeholder="Telefono del cliente"
+              placeholder="Teléfono del cliente"
+              icon={<Phone className="w-4 h-4" />}
             />
           </FormGroup>
+          
           <FormGroup className="flex flex-col gap-2 col-span-2">
             <FormInput
-              label="Direccion"
+              label="Dirección"
               name="address"
               register={register}
               error={errors.address?.message}
-              placeholder="Direccion del cliente"
+              placeholder="Dirección del cliente"
+              icon={<MapPin className="w-4 h-4" />}
             />
           </FormGroup>
+          
           <FormGroup className="col-span-2 flex justify-end">
             <Button disabled={updateClientMutation.isPending} type="submit">
               {updateClientMutation.isPending ? <Loader2 className="animate-spin" /> : "Actualizar"}

@@ -3,18 +3,17 @@ import { FormGroup, FormLabel, FormLabelError } from "./FormGroup";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { Label } from "./ui/label";
-import { CircleX, Eye, EyeOff, LoaderCircle } from "lucide-react";
+import { Eye, EyeOff, LoaderCircle } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useStore } from "@/hooks/useStore";
-import { toast } from "sonner";
+import { toastUtils } from "@/lib/toast";
 import { Input } from "./ui/input";
 import { useMutation } from "@tanstack/react-query";
 import { loginRequest } from "@/api/api";
 import { LoginResponse } from "@/lib/types";
 import { AxiosError } from "axios";
-import { TIME_TO_HIDE_ERROR } from "@/lib/config";
 import { useNavigate } from "react-router-dom";
 
 const loginSchema = z.object({
@@ -37,7 +36,6 @@ export default function LoginForm() {
     handleSubmit,
     register,
     formState: { errors },
-    resetField,
   } = useForm<FormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: initialValues,
@@ -65,30 +63,19 @@ export default function LoginForm() {
       navigate("/dashboard");
     },
     onError: (error: AxiosError) => {
-      console.error(error);
-      if (error.response?.status === 400) {
-        const errorMessage =
-          (error.response?.data as { message: string })?.message ?? "Correo o contraseña incorrectos";
-        resetField("password");
-        setAuth({ isAuthenticated: false, user: null, error: errorMessage, token: "", tokenExpiration: null });
-        toast("Error al iniciar sesión", {
-          classNames: {
-            icon: "text-red-600",
-          },
-          description: errorMessage,
-          duration: 15000,
-          icon: <CircleX />,
-        });
-
-        setTimeout(() => {
-          setAuth({ isAuthenticated: false, user: null, error: null, token: "", tokenExpiration: null });
-        }, TIME_TO_HIDE_ERROR);
+      console.error("Error:", error);
+      if (error.response) {
+        if (error.response.status === 400) {
+          toastUtils.access.loginError('Usuario no encontrado o datos incorrectos. Verifica tu email y contraseña.');
+        } else if (error.response.status === 401) {
+          toastUtils.access.loginError('Credenciales incorrectas. Verifica tu email y contraseña.');
+        } else if (error.response.status >= 500) {
+          toastUtils.access.loginError('Error interno del servidor. Inténtalo de nuevo más tarde.');
+        } else {
+          toastUtils.access.loginError('Ocurrió un error inesperado. Inténtalo de nuevo más tarde.');
+        }
       } else {
-        toast("Error al iniciar sesión", {
-          description: "Por favor, contacta con el administrador.",
-          duration: 5000,
-          icon: <CircleX className="text-red-600" />,
-        });
+        toastUtils.access.loginError('No se pudo conectar con el servidor. Verifica tu conexión a internet.');
       }
     },
   });

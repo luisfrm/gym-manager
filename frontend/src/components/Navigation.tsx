@@ -1,4 +1,4 @@
-import { CreditCard, Home, LogOut, PanelLeft, Settings, User, User2, Shield } from "lucide-react";
+import { CreditCard, Home, LogOut, PanelLeft, Settings, User, User2, Shield, Lightbulb } from "lucide-react";
 
 import {
   Sidebar,
@@ -41,6 +41,12 @@ const items = [
     url: "#",
     icon: Shield,
     slug: "/face-verification",
+  },
+  {
+    title: "Sugerencias",
+    url: "#",
+    icon: Lightbulb,
+    slug: "/suggestions",
   },
   {
     title: "Configuración",
