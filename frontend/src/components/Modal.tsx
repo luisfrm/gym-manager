@@ -23,10 +23,10 @@ export const Modal = ({
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className={cn(
         "py-0 flex flex-col",
-        // Desktop: max-height 90svh
-        "sm:max-h-[90svh]",
-        // Mobile: keep default behavior
-        "max-h-screen",
+        // Mobile: Full screen
+        "h-screen w-screen max-w-none rounded-none border-0",
+        // Desktop: Original behavior with max-height
+        "sm:h-auto sm:w-auto sm:max-h-[90svh] sm:rounded-lg sm:border",
         className
       )}>
         {children}
@@ -51,10 +51,10 @@ export const SimpleModal = ({
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className={cn(
         "py-8", // Keep original padding for simple content
-        // Desktop: max-height 90svh with scroll
-        "sm:max-h-[90svh] sm:overflow-y-auto",
-        // Mobile: keep default behavior
-        "max-h-screen overflow-y-auto",
+        // Mobile: Full screen with scroll
+        "h-screen w-screen max-w-none rounded-none border-0 overflow-y-auto",
+        // Desktop: Original behavior with max-height and scroll
+        "sm:h-auto sm:w-auto sm:max-h-[90svh] sm:overflow-y-auto sm:rounded-lg sm:border",
         className
       )}>
         {children}
@@ -70,7 +70,7 @@ interface ModalHeaderProps {
 
 export const ModalHeader = ({ title, description }: ModalHeaderProps) => {
   return (
-    <DialogHeader className="px-6 pt-6 pb-4 border-b border-gray-100 flex-shrink-0">
+    <DialogHeader className="px-1 pt-6 pb-4 border-b border-gray-100 flex-shrink-0">
       <DialogTitle>{title}</DialogTitle>
       <DialogDescription>
         <span dangerouslySetInnerHTML={{ __html: description }} />
@@ -85,7 +85,7 @@ interface ModalBodyProps {
 
 export const ModalBody = ({ children }: ModalBodyProps) => {
   return (
-    <div className="flex-1 overflow-y-auto px-6 py-4">
+    <div className="flex-1 overflow-y-auto px-1 lg:px-2 py-4">
       {children}
     </div>
   );
@@ -99,7 +99,7 @@ interface ModalFooterProps {
 export const ModalFooter = ({ children, className = "flex justify-end" }: ModalFooterProps) => {
   return (
     <DialogFooter className={cn(
-      "px-6 py-4 border-t border-gray-100 flex-shrink-0",
+      "px-1 py-4 border-t border-gray-100 flex-shrink-0",
       className
     )}>
       {children}
