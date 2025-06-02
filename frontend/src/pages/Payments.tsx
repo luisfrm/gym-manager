@@ -12,7 +12,6 @@ import { Input } from "@/components/ui/input";
 import { useQuery } from "@tanstack/react-query";
 import { useDebounce } from "@/hooks/useDebounce";
 import { getPaymentsRequest, getPaymentTotalsRequest } from "@/api/api";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Pagination from "@/components/Pagination";
 import { formatReportTitle } from "@/lib/reports";
 import WidgetsContainer from "@/components/WidgetsContainer";
