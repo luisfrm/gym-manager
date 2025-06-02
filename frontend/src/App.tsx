@@ -10,7 +10,6 @@ const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Clients = lazy(() => import("./pages/Clients"));
 const Payments = lazy(() => import("./pages/Payments"));
 const Profile = lazy(() => import("./pages/Profile"));
-const Settings = lazy(() => import("./pages/Settings"));
 const ClientDetails = lazy(() => import("./pages/ClientDetails"));
 const FaceVerification = lazy(() => import("./pages/FaceVerification"));
 
@@ -52,8 +51,7 @@ function App() {
             <Route path="/clients" element={<Clients />} />
             <Route path="/clients/:cedula" element={<ClientDetails />} />
             <Route path="/payments" element={<Payments />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/settings" element={<Settings />} />
+            <Route path="/settings" element={<Profile />} />
             <Route path="/face-verification" element={<FaceVerification />} />
             <Route path="/logout" element={<div>Logout</div>} />
           </Route>

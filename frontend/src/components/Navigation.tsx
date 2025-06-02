@@ -43,22 +43,10 @@ const items = [
     slug: "/face-verification",
   },
   {
-    title: "Sugerencias",
-    url: "#",
-    icon: Lightbulb,
-    slug: "/suggestions",
-  },
-  {
     title: "Configuración",
     url: "#",
     icon: Settings,
     slug: "/settings",
-  },
-  {
-    title: "Perfil",
-    url: "#",
-    icon: User,
-    slug: "/profile",
   },
 ];
 

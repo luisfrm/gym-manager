@@ -198,7 +198,6 @@ export interface SuggestionOption {
 }
 
 export interface SuggestionsDropdownProps {
-  isOpen: boolean;
   options: SuggestionOption[];
   searchValue: string;
   onSelect: (option: SuggestionOption) => void;
@@ -207,4 +206,76 @@ export interface SuggestionsDropdownProps {
   groupHeading?: string;
   className?: string;
 }
-// #Mark: End of Suggestions Dropdown
+
+// ===================================
+// #region PROFILE MANAGEMENT
+// ===================================
+
+export interface ProfileData {
+  _id: string;
+  email: string;
+  username: string;
+  name: string;
+  role: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UpdateProfileRequest {
+  username: string;
+  email: string;
+}
+
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}
+
+export interface CreateUserRequest {
+  name: string;
+  username: string;
+  email: string;
+  password: string;
+  role: "admin" | "employee";
+}
+
+export interface CreateUserResponse {
+  message: string;
+  user: ProfileData;
+}
+
+// #endregion PROFILE MANAGEMENT
+
+// ===================================
+// #region BACKUP MANAGEMENT
+// ===================================
+
+export interface BackupFile {
+  filename: string;
+  size: number;
+  createdAt: string;
+  type: "manual" | "automatic";
+}
+
+export interface BackupConfiguration {
+  automaticBackup: boolean;
+  backupFrequency: "daily" | "weekly" | "monthly";
+}
+
+// #endregion BACKUP MANAGEMENT
+
+// ===================================
+// #region UI CONFIGURATION
+// ===================================
+
+export interface UIConfiguration {
+  theme: "light" | "dark" | "system";
+  language: string;
+  emailNotifications: boolean;
+  pushNotifications: boolean;
+  profileVisibility: "public" | "private" | "friends";
+}
+
+export interface AppConfiguration extends UIConfiguration, BackupConfiguration {}
+
+// #endregion UI CONFIGURATION
