@@ -1,4 +1,4 @@
-import { CreditCard, Home, LogOut, PanelLeft, Settings, User, User2, Shield, Lightbulb } from "lucide-react";
+import { CreditCard, Home, LogOut, PanelLeft, Settings, User2, Shield } from "lucide-react";
 
 import {
   Sidebar,

@@ -198,6 +198,7 @@ export interface SuggestionOption {
 }
 
 export interface SuggestionsDropdownProps {
+  isOpen: boolean;
   options: SuggestionOption[];
   searchValue: string;
   onSelect: (option: SuggestionOption) => void;

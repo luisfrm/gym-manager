@@ -16,8 +16,7 @@ import {
   EyeOff, 
   UserPlus,
   Users,
-  Activity,
-  MapPin
+  Activity
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -55,17 +54,11 @@ import {
 } from "@/api/api";
 import {
   ProfileData,
-  UpdateProfileRequest,
-  ChangePasswordRequest,
-  CreateUserRequest,
 } from "@/lib/types";
 import {
   formatDateTime,
   formatUserRole,
-  validatePassword,
-  validateUsername,
   generateUsername,
-  capitalizeFirstLetter,
   getFormErrors,
   clearFormErrors,
 } from "@/lib/utils";

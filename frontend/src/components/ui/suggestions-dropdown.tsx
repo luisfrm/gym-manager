@@ -6,21 +6,12 @@ import { SuggestionsDropdownProps } from "@/lib/types";
 export const SuggestionsDropdown: React.FC<SuggestionsDropdownProps> = ({
   isOpen,
   options,
-  searchValue,
   onSelect,
   isLoading = false,
   emptyMessage = "No se encontraron resultados.",
   groupHeading = "Opciones",
   className = ""
 }) => {
-  // Filtrar opciones basado en la búsqueda
-  // Si no hay texto de búsqueda, mostrar todas las opciones
-  const filteredOptions = searchValue.trim() === "" 
-    ? options 
-    : options.filter(option =>
-        option.label.toLowerCase().includes(searchValue.toLowerCase()) ||
-        (option.description && option.description.toLowerCase().includes(searchValue.toLowerCase()))
-      );
 
   if (!isOpen) {
     return null;
