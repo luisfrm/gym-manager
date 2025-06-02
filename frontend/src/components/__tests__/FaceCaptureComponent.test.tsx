@@ -130,7 +130,7 @@ describe("FaceCaptureComponent Logic", () => {
 
   describe("API endpoint validation", () => {
     it("should validate API endpoint structure", () => {
-      const API_BASE_URL = 'http://localhost:3000';
+      const API_BASE_URL = 'http://localhost:3000/v1';
       const validateEndpoint = `${API_BASE_URL}/face/validate-encoding`;
 
       expect(validateEndpoint).toBe('http://localhost:3000/v1/face/validate-encoding');
