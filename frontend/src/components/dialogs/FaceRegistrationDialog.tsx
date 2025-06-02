@@ -1,7 +1,7 @@
 import { Modal, ModalBody, ModalHeader } from "@/components/Modal";
 import { Client } from "@/lib/types";
 import { useMutation } from "@tanstack/react-query";
-import { registerFace, deleteFaceRegistration, validateFaceEncoding } from "@/api/api";
+import { registerFace, deleteFaceRegistration } from "@/api/api";
 import { toastUtils } from "@/lib/toast";
 import { Loader2, Trash2 } from "lucide-react";
 import { FaceCaptureComponent } from "./FaceCaptureComponent";
