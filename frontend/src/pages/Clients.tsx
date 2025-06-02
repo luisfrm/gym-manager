@@ -207,7 +207,7 @@ const Clients = () => {
           </Button>
         </div>
         
-        <div className="relative w-full lg:max-w-sm">
+        <div className="relative w-full lg:flex-grow">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
           <Input 
             placeholder="Buscar cliente" 
@@ -218,7 +218,7 @@ const Clients = () => {
         
         <SelectComponent
           onValueChange={handleChangeSortField}
-          className="w-full lg:w-[200px]"
+          className="w-full lg:w-[250px]"
           items={sortOptions}
           defaultValue="updatedAt"
           placeholder="Ordenar por"
@@ -226,7 +226,7 @@ const Clients = () => {
         
         <SelectComponent
           onValueChange={handleChangeSortOrder}
-          className="w-full lg:w-[150px]"
+          className="w-full lg:w-[175px]"
           items={orderOptions}
           defaultValue="desc"
           placeholder="Orden"
@@ -234,7 +234,7 @@ const Clients = () => {
         
         <SelectComponent
           onValueChange={handleChangeLimit}
-          className="w-full lg:w-[120px]"
+          className="w-full lg:w-[175px]"
           items={limitsOptions}
           defaultValue={limitsOptions[0].value}
           placeholder="Mostrar"
