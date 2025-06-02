@@ -212,17 +212,17 @@ export const PaymentDialog = ({ isOpen, onOpenChange, onPaymentCreated = () => {
     <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
       <ModalHeader title="Registrar pago" description="Registra un nuevo pago en la base de datos." />
       <ModalBody>
-        <form onSubmit={handleSubmit(handleCreatePayment)} className="grid grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit(handleCreatePayment)} className="grid grid-cols-1 md:grid-cols-2 gap-4">
           
           {/* TÍTULO SELECCIÓN DE CLIENTE */}
-          <div className="col-span-2 mb-2">
+          <div className="col-span-1 md:col-span-2 mb-2">
             <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2 border-b pb-2">
               <User className="w-5 h-5 text-blue-600" />
               Seleccionar Cliente
             </h3>
           </div>
 
-          <FormGroup className="col-span-2">
+          <FormGroup className="col-span-1 md:col-span-2">
             <InputSearch
               clients={clients?.results ?? []}
               onSelect={handleClientSelect}
@@ -254,7 +254,7 @@ export const PaymentDialog = ({ isOpen, onOpenChange, onPaymentCreated = () => {
           </FormGroup>
 
           {/* TÍTULO INFORMACIÓN DEL PAGO */}
-          <div className="col-span-2 mt-4 mb-2">
+          <div className="col-span-1 md:col-span-2 mt-4 mb-2">
             <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2 border-b pb-2">
               <CreditCard className="w-5 h-5 text-green-600" />
               Información del Pago
@@ -384,8 +384,8 @@ export const PaymentDialog = ({ isOpen, onOpenChange, onPaymentCreated = () => {
             />
           </FormGroup>
           
-          <FormGroup className="col-span-2 flex justify-end">
-            <Button disabled={!client || createPaymentMutation.isPending} type="submit">
+          <FormGroup className="col-span-1 md:col-span-2 flex justify-end">
+            <Button disabled={!client || createPaymentMutation.isPending} type="submit" className="w-full sm:w-auto">
               {createPaymentMutation.isPending ? <Loader2 className="animate-spin" /> : "Registrar pago"}
             </Button>
           </FormGroup>

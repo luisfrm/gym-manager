@@ -1,6 +1,6 @@
 import { useStore } from "@/hooks/useStore";
 import Template from "./Template";
-import { ChartNoAxesCombined, Trash2, UsersRound, CalendarClock } from "lucide-react";
+import { ChartNoAxesCombined, Trash2, UsersRound, CalendarClock, Plus, UserPlus, Search } from "lucide-react";
 import SquareWidget from "@/components/SquareWidget";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -162,8 +162,9 @@ const Clients = () => {
           className="bg-slate-900 flex-1"
           title={totalClients.toString() ?? "0"}
           subtitle="Total de clientes"
-          icon={<UsersRound className="text-slate-900 w-8 h-8" />}
+          icon={<UsersRound className="text-white w-8 h-8" />}
           fontColor="text-white"
+          iconBgColor="bg-slate-800"
         />
         <SquareWidget
           className="bg-lime-500 flex-1"
@@ -171,7 +172,7 @@ const Clients = () => {
           subtitle="Nuevos clientes"
           icon={<ChartNoAxesCombined className="text-white w-8 h-8" />}
           fontColor="text-white"
-          iconBgColor="bg-slate-900"
+          iconBgColor="bg-lime-700"
         />
         <SquareWidget
           className="bg-blue-500 flex-1"
@@ -197,35 +198,49 @@ const Clients = () => {
       >
         <div className="flex gap-2 w-full lg:w-auto">
           <Button variant="default" className="flex-1 lg:flex-none" onClick={handleOpenNewClientModal}>
+            <Plus className="w-4 h-4 mr-2" />
             Agregar nuevo
           </Button>
           <Button variant="outline" className="flex-1 lg:flex-none" onClick={handleOpenClientWithPaymentModal}>
+            <UserPlus className="w-4 h-4 mr-2" />
             Cliente + Pago
           </Button>
         </div>
-        <Input placeholder="Buscar cliente" className="" onChange={handleSearchClient} />
+        
+        <div className="relative w-full lg:max-w-sm">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+          <Input 
+            placeholder="Buscar cliente" 
+            onChange={handleSearchClient}
+            className="pl-10 w-full"
+          />
+        </div>
+        
         <SelectComponent
           onValueChange={handleChangeSortField}
-          className="w-full lg:w-[250px]"
+          className="w-full lg:w-[200px]"
           items={sortOptions}
           defaultValue="updatedAt"
           placeholder="Ordenar por"
         />
+        
         <SelectComponent
           onValueChange={handleChangeSortOrder}
-          className="w-full lg:w-[250px]"
+          className="w-full lg:w-[150px]"
           items={orderOptions}
-          defaultValue="asc"
-          placeholder="Ordenar de forma"
+          defaultValue="desc"
+          placeholder="Orden"
         />
+        
         <SelectComponent
           onValueChange={handleChangeLimit}
-          className="w-full lg:w-[250px]"
+          className="w-full lg:w-[120px]"
           items={limitsOptions}
           defaultValue={limitsOptions[0].value}
-          placeholder="Limite de clientes"
+          placeholder="Mostrar"
         />
       </section>
+      
       <section className="data-table w-full">
         <ClientData 
           isLoading={isLoading} 

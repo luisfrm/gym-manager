@@ -210,17 +210,17 @@ export const FaceCaptureComponent = ({ onFaceCaptured, onCancel, isOpen }: FaceC
             </div>
           )}
 
-          <div className="flex gap-2 justify-center">
+          <div className="flex flex-col sm:flex-row gap-2 justify-center">
             <Button
               onClick={capturePhoto}
               disabled={isDetecting || !isLoaded}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 w-full sm:w-auto"
               type="button"
             >
               <Camera className="w-4 h-4" />
               {!isLoaded ? "Cargando modelos..." : isDetecting ? "Procesando..." : "Capturar"}
             </Button>
-            <Button variant="outline" onClick={handleCancel} type="button">
+            <Button variant="outline" onClick={handleCancel} type="button" className="w-full sm:w-auto">
               Cancelar
             </Button>
           </div>
@@ -265,10 +265,10 @@ export const FaceCaptureComponent = ({ onFaceCaptured, onCancel, isOpen }: FaceC
             </div>
           </div>
           
-          <div className="flex gap-2 justify-center">
+          <div className="flex flex-col sm:flex-row gap-2 justify-center">
             <Button
               onClick={confirmCapture}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 w-full sm:w-auto"
               type="button"
             >
               <Check className="w-4 h-4" />
@@ -277,7 +277,7 @@ export const FaceCaptureComponent = ({ onFaceCaptured, onCancel, isOpen }: FaceC
             <Button
               variant="outline"
               onClick={resetCapture}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 w-full sm:w-auto"
               type="button"
             >
               <RotateCcw className="w-4 h-4" />

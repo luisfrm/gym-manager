@@ -185,10 +185,10 @@ export const ClientDialog = ({ isOpen, onOpenChange, onClientCreated = () => {} 
     <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
       <ModalHeader title="Registrar nuevo cliente" description="Agrega un nuevo cliente en la base de datos." />
       <ModalBody>
-        <form onSubmit={handleSubmit(handleCreateClient)} className="grid grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit(handleCreateClient)} className="grid grid-cols-1 md:grid-cols-2 gap-4">
           
           {/* TÍTULO CON ÍCONO */}
-          <div className="col-span-2 mb-2">
+          <div className="col-span-1 md:col-span-2 mb-2">
             <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2 border-b pb-2">
               <User className="w-5 h-5 text-blue-600" />
               Información del Cliente
@@ -271,7 +271,7 @@ export const ClientDialog = ({ isOpen, onOpenChange, onClientCreated = () => {} 
             />
           </FormGroup>
           
-          <FormGroup className="flex flex-col gap-2 col-span-2">
+          <FormGroup className="flex flex-col gap-2 col-span-1 md:col-span-2">
             <FormInput
               label="Dirección"
               name="address"
@@ -283,9 +283,9 @@ export const ClientDialog = ({ isOpen, onOpenChange, onClientCreated = () => {} 
           </FormGroup>
           
           {/* Sección de Registro Facial */}
-          <FormGroup className="col-span-2">
+          <FormGroup className="col-span-1 md:col-span-2">
             <div className="space-y-3">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div className="flex items-center gap-2">
                   <Camera className="w-4 h-4 text-blue-600" />
                   <label className="text-sm font-medium">Registro Facial (Opcional)</label>
@@ -309,7 +309,7 @@ export const ClientDialog = ({ isOpen, onOpenChange, onClientCreated = () => {} 
                       type="button"
                       variant="outline"
                       onClick={() => setShowFaceCapture(true)}
-                      className="flex items-center gap-2"
+                      className="flex items-center gap-2 w-full sm:w-auto"
                     >
                       <Camera className="w-4 h-4" />
                       Capturar rostro
@@ -332,7 +332,7 @@ export const ClientDialog = ({ isOpen, onOpenChange, onClientCreated = () => {} 
 
           {/* Componente de captura facial */}
           {showFaceCapture && (
-            <FormGroup className="col-span-2">
+            <FormGroup className="col-span-1 md:col-span-2">
               <div 
                 className={`transition-all duration-700 ease-in-out overflow-hidden ${
                   isClosingFaceCapture 
@@ -364,8 +364,8 @@ export const ClientDialog = ({ isOpen, onOpenChange, onClientCreated = () => {} 
             </FormGroup>
           )}
           
-          <FormGroup className="col-span-2 flex justify-end">
-            <Button disabled={createClientMutation.isPending} type="submit">
+          <FormGroup className="col-span-1 md:col-span-2 flex justify-end">
+            <Button disabled={createClientMutation.isPending} type="submit" className="w-full sm:w-auto">
               {createClientMutation.isPending ? <Loader2 className="animate-spin" /> : "Guardar"}
             </Button>
           </FormGroup>

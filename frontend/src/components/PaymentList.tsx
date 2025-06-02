@@ -15,6 +15,8 @@ import { Pencil } from "lucide-react";
 import { PaymentUpdateDialog } from "./dialogs/PaymentUpdateDialog";
 import { useState } from "react";
 import { formatCurrency } from "@/lib/currency";
+import { PaymentCard } from "./PaymentCard";
+import useSize from "@/hooks/useSize";
 
 interface PaymentsListProps {
   payments: Payment[];
@@ -94,7 +96,34 @@ const PaymentsWaitingBody = ({ limit = 10 }: { limit?: number }) => (
   </>
 );
 
+const PaymentsWaitingCards = ({ limit = 10 }: { limit?: number }) => (
+  <div className="flex flex-col gap-4">
+    {Array(limit)
+      .fill(0)
+      .map((_, i) => (
+        <div key={i} className="border rounded-lg p-6 space-y-4">
+          <div className="flex justify-between items-start">
+            <div>
+              <Skeleton className="h-6 w-32 mb-2" />
+              <Skeleton className="h-4 w-24" />
+            </div>
+            <Skeleton className="h-6 w-16" />
+          </div>
+          <div className="space-y-3">
+            {Array(5).fill(0).map((_, j) => (
+              <div key={j} className="flex justify-between items-center">
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-4 w-24" />
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+  </div>
+);
+
 export default function PaymentsList({ payments, isLoading, onUpdatedPayment }: PaymentsListProps) {
+  const [innerWidth] = useSize();
   const [isOpenPaymentDialog, setIsOpenPaymentDialog] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
 
@@ -105,31 +134,50 @@ export default function PaymentsList({ payments, isLoading, onUpdatedPayment }: 
 
   return (
     <div className="space-y-4">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="text-center">Fecha</TableHead>
-            <TableHead className="text-center">Cedula</TableHead>
-            <TableHead className="text-center">Cliente</TableHead>
-            <TableHead className="text-center">Expira</TableHead>
-            <TableHead className="text-center">Servicio</TableHead>
-            <TableHead className="text-center">Monto</TableHead>
-            <TableHead className="text-center">Método de Pago</TableHead>
-            <TableHead className="text-center">Referencia</TableHead>
-            <TableHead className="text-center">Estado</TableHead>
-            <TableHead className="text-center">Acciones</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
+      {innerWidth > 981 ? (
+        // Desktop Table View
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="text-center">Fecha</TableHead>
+              <TableHead className="text-center">Cédula</TableHead>
+              <TableHead className="text-center">Cliente</TableHead>
+              <TableHead className="text-center">Expira</TableHead>
+              <TableHead className="text-center">Servicio</TableHead>
+              <TableHead className="text-center">Monto</TableHead>
+              <TableHead className="text-center">Método de Pago</TableHead>
+              <TableHead className="text-center">Referencia</TableHead>
+              <TableHead className="text-center">Estado</TableHead>
+              <TableHead className="text-center">Acciones</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {isLoading ? (
+              <PaymentsWaitingBody />
+            ) : (
+              payments.map(payment => (
+                <PaymentRow key={payment._id} payment={payment} onUpdate={handleUpdatePayment} />
+              ))
+            )}
+          </TableBody>
+        </Table>
+      ) : (
+        // Mobile Cards View
+        <section className="flex flex-col gap-4">
           {isLoading ? (
-            <PaymentsWaitingBody />
+            <PaymentsWaitingCards />
           ) : (
-            payments.map(payment => (
-              <PaymentRow key={payment._id} payment={payment} onUpdate={handleUpdatePayment} />
+            payments.length > 0 && payments.map(payment => (
+              <PaymentCard
+                key={payment._id}
+                payment={payment}
+                onEdit={handleUpdatePayment}
+              />
             ))
           )}
-        </TableBody>
-      </Table>
+        </section>
+      )}
+      
       {selectedPayment && (
         <PaymentUpdateDialog
           onPaymentUpdated={onUpdatedPayment}

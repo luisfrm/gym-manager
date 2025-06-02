@@ -169,10 +169,10 @@ export const PaymentUpdateDialog = ({ isOpen, onOpenChange, payment, onPaymentUp
     <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
       <ModalHeader title="Actualizar pago" description="Actualiza la información del pago." />
       <ModalBody>
-        <form onSubmit={handleSubmit(handleUpdatePayment)} className="grid grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit(handleUpdatePayment)} className="grid grid-cols-1 md:grid-cols-2 gap-4">
           
           {/* TÍTULO CON ÍCONO */}
-          <div className="col-span-2 mb-2">
+          <div className="col-span-1 md:col-span-2 mb-2">
             <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2 border-b pb-2">
               <Edit className="w-5 h-5 text-orange-600" />
               Editar Información del Pago
@@ -285,8 +285,8 @@ export const PaymentUpdateDialog = ({ isOpen, onOpenChange, payment, onPaymentUp
             />
           </FormGroup>
           
-          <FormGroup className="col-span-2 flex justify-end">
-            <Button disabled={updatePartialPaymentMutation.isPending} type="submit">
+          <FormGroup className="col-span-1 md:col-span-2 flex justify-end">
+            <Button disabled={updatePartialPaymentMutation.isPending} type="submit" className="w-full sm:w-auto">
               {updatePartialPaymentMutation.isPending ? <Loader2 className="animate-spin" /> : "Actualizar pago"}
             </Button>
           </FormGroup>

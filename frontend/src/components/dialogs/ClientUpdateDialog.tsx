@@ -135,10 +135,10 @@ export const ClientUpdateDialog = ({ isOpen, onOpenChange, client, onClientUpdat
     <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
       <ModalHeader title="Actualizar cliente" description="Actualiza la información del cliente." />
       <ModalBody>
-        <form onSubmit={handleSubmit(handleUpdateClient)} className="grid grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit(handleUpdateClient)} className="grid grid-cols-1 md:grid-cols-2 gap-4">
           
           {/* TÍTULO CON ÍCONO */}
-          <div className="col-span-2 mb-2">
+          <div className="col-span-1 md:col-span-2 mb-2">
             <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2 border-b pb-2">
               <Edit className="w-5 h-5 text-orange-600" />
               Editar Información del Cliente
@@ -220,7 +220,7 @@ export const ClientUpdateDialog = ({ isOpen, onOpenChange, client, onClientUpdat
             />
           </FormGroup>
           
-          <FormGroup className="flex flex-col gap-2 col-span-2">
+          <FormGroup className="flex flex-col gap-2 col-span-1 md:col-span-2">
             <FormInput
               label="Dirección"
               name="address"
@@ -231,8 +231,8 @@ export const ClientUpdateDialog = ({ isOpen, onOpenChange, client, onClientUpdat
             />
           </FormGroup>
           
-          <FormGroup className="col-span-2 flex justify-end">
-            <Button disabled={updateClientMutation.isPending} type="submit">
+          <FormGroup className="col-span-1 md:col-span-2 flex justify-end">
+            <Button disabled={updateClientMutation.isPending} type="submit" className="w-full sm:w-auto">
               {updateClientMutation.isPending ? <Loader2 className="animate-spin" /> : "Actualizar"}
             </Button>
           </FormGroup>

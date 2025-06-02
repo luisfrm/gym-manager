@@ -51,14 +51,15 @@ export const ClientRemoveDialog = ({ isOpen, onOpenChange, client, onClientDelet
     <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
       <ModalHeader title="Eliminar cliente" description={`¿Estás seguro de que quieres eliminar a ${client?.firstname} ${client?.lastname}?`} />
       <ModalBody>
-        <div className="flex items-center justify-end gap-2 mt-4">
-          <Button variant="outline" onClick={onOpenChange}>
+        <div className="flex flex-col sm:flex-row items-center justify-end gap-2 mt-4">
+          <Button variant="outline" onClick={onOpenChange} className="w-full sm:w-auto">
             Cancelar
           </Button>
           <Button 
             variant="destructive" 
             onClick={handleDelete}
             disabled={deleteClientMutation.isPending}
+            className="w-full sm:w-auto"
           >
             {deleteClientMutation.isPending ? (
               <>

@@ -252,10 +252,10 @@ export const ClientWithPaymentDialog = ({ isOpen, onOpenChange, onClientAndPayme
     <Modal isOpen={isOpen} onOpenChange={onOpenChange} className="sm:max-w-4xl">
       <ModalHeader title="Registrar cliente con primer pago" description="Crea un nuevo cliente y registra su primer pago en una sola operación." />
       <ModalBody>
-        <form onSubmit={handleSubmit(handleCreateClientWithPayment)} className="grid grid-cols-3 gap-4">
+        <form onSubmit={handleSubmit(handleCreateClientWithPayment)} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           
           {/* DATOS DEL CLIENTE */}
-          <div className="col-span-3">
+          <div className="col-span-1 sm:col-span-2 lg:col-span-3">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">📋 Datos del Cliente</h3>
           </div>
           
@@ -329,7 +329,7 @@ export const ClientWithPaymentDialog = ({ isOpen, onOpenChange, onClientAndPayme
             />
           </FormGroup>
           
-          <FormGroup className="col-span-3">
+          <FormGroup className="col-span-1 sm:col-span-2 lg:col-span-3">
             <FormInput
               label="Dirección"
               name="address"
@@ -340,9 +340,9 @@ export const ClientWithPaymentDialog = ({ isOpen, onOpenChange, onClientAndPayme
           </FormGroup>
 
           {/* REGISTRO FACIAL */}
-          <FormGroup className="col-span-3">
+          <FormGroup className="col-span-1 sm:col-span-2 lg:col-span-3">
             <div className="space-y-3">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <label className="text-sm font-medium">Registro Facial (Opcional)</label>
                 <div className="flex items-center gap-2">
                   {faceData.encoding ? (
@@ -363,7 +363,7 @@ export const ClientWithPaymentDialog = ({ isOpen, onOpenChange, onClientAndPayme
                       type="button"
                       variant="outline"
                       onClick={() => setShowFaceCapture(true)}
-                      className="flex items-center gap-2"
+                      className="flex items-center gap-2 w-full sm:w-auto"
                     >
                       <Camera className="w-4 h-4" />
                       Capturar rostro
@@ -386,7 +386,7 @@ export const ClientWithPaymentDialog = ({ isOpen, onOpenChange, onClientAndPayme
 
           {/* Componente de captura facial */}
           {showFaceCapture && (
-            <FormGroup className="col-span-3">
+            <FormGroup className="col-span-1 sm:col-span-2 lg:col-span-3">
               <div 
                 className={`transition-all duration-700 ease-in-out overflow-hidden ${
                   isClosingFaceCapture 
@@ -419,7 +419,7 @@ export const ClientWithPaymentDialog = ({ isOpen, onOpenChange, onClientAndPayme
           )}
 
           {/* DATOS DEL PAGO */}
-          <div className="col-span-3 mt-6">
+          <div className="col-span-1 sm:col-span-2 lg:col-span-3 mt-6">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">💳 Datos del Primer Pago</h3>
           </div>
           
@@ -509,8 +509,8 @@ export const ClientWithPaymentDialog = ({ isOpen, onOpenChange, onClientAndPayme
             />
           </FormGroup>
           
-          <FormGroup className="col-span-3 flex justify-end mt-6">
-            <Button disabled={createClientWithPaymentMutation.isPending} type="submit" className="px-8">
+          <FormGroup className="col-span-1 sm:col-span-2 lg:col-span-3 flex justify-end mt-6">
+            <Button disabled={createClientWithPaymentMutation.isPending} type="submit" className="w-full sm:w-auto px-8">
               {createClientWithPaymentMutation.isPending ? <Loader2 className="animate-spin" /> : "Crear Cliente y Pago"}
             </Button>
           </FormGroup>

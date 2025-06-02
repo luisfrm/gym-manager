@@ -3,7 +3,7 @@ import Template from "./Template";
 import { GetPaymentsResponse } from "@/lib/types";
 import { useStore } from "@/hooks/useStore";
 import SquareWidget from "@/components/SquareWidget";
-import { ChartNoAxesCombined, DollarSign, Search, Receipt, Calendar } from "lucide-react";
+import { ChartNoAxesCombined, DollarSign, Search, Receipt, Calendar, Plus, UserPlus } from "lucide-react";
 import { PaymentDialog } from "@/components/dialogs/PaymentDialog";
 import { ClientWithPaymentDialog } from "@/components/dialogs/ClientWithPaymentDialog";
 import { useEffect, useState } from "react";
@@ -18,9 +18,35 @@ import { formatReportTitle } from "@/lib/reports";
 import WidgetsContainer from "@/components/WidgetsContainer";
 import { useQueryClient } from "@tanstack/react-query";
 import { ROLES } from "@/lib/config";
+import SelectComponent from "@/components/Select";
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 10;
+
+interface Option {
+  value: string;
+  label: string;
+}
+
+const sortOptions: Option[] = [
+  { value: "updatedAt", label: "Última actualización" },
+  { value: "clientCedula", label: "Cédula" },
+  { value: "date", label: "Fecha" },
+  { value: "serviceName", label: "Servicio" },
+  { value: "paymentStatus", label: "Estado" },
+];
+
+const orderOptions: Option[] = [
+  { value: "asc", label: "Ascendente" },
+  { value: "desc", label: "Descendente" },
+];
+
+const limitsOptions: Option[] = [
+  { value: "10", label: "10" },
+  { value: "20", label: "20" },
+  { value: "30", label: "30" },
+  { value: "50", label: "50" },
+];
 
 const Payments = () => {
   const username = useStore(state => state.auth.user?.username ?? "");
@@ -154,61 +180,63 @@ const Payments = () => {
             className="bg-blue-500 flex-1"
             title={formatReportTitle(paymentTotals?.currentMonthTotal?.current || { USD: 0, VES: 0 })}
             subtitle="Total de ingresos del mes actual"
-            icon={<DollarSign className="text-slate-900 w-8 h-8" />}
+            icon={<DollarSign className="text-white w-8 h-8" />}
             fontColor="text-white"
+            iconBgColor="bg-blue-700"
           />
         )}
       </WidgetsContainer>
-      <section className="data-table w-full flex flex-col gap-4">
-        <div className="flex justify-between items-center gap-2">
-          <div className="flex gap-2">
-            <Button className="bg-slate-900 text-white" onClick={onOpenChangePaymentDialog}>
-              Agregar pago
-            </Button>
-            <Button variant="outline" onClick={handleOpenClientWithPaymentModal}>
-              Cliente + Pago
-            </Button>
-          </div>
-          <div className="relative w-full">
-            <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
-            <Input
-              placeholder="Buscar por servicio o cliente..."
-              onChange={handleSearchPayments}
-              className="pl-8 w-full"
-            />
-          </div>
-          <Select onValueChange={handleChangeSortField}>
-            <SelectTrigger className="w-full lg:w-[250px]">
-              <SelectValue defaultValue="updatedAt" placeholder="Ordenar por" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="updatedAt">Última actualización</SelectItem>
-              <SelectItem value="clientCedula">Cedula</SelectItem>
-              <SelectItem value="date">Fecha</SelectItem>
-              <SelectItem value="serviceName">Servicio</SelectItem>
-              <SelectItem value="paymentStatus">Estado</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select onValueChange={handleChangeSortOrder}>
-            <SelectTrigger className="w-[250px]">
-              <SelectValue defaultValue="desc" placeholder="Descendente" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="asc">Ascendente</SelectItem>
-              <SelectItem value="desc">Descendente</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select onValueChange={handleChangeLimit}>
-            <SelectTrigger className="w-full lg:w-[250px]">
-              <SelectValue defaultValue="10" placeholder="Limite de clientes" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="10">10</SelectItem>
-              <SelectItem value="20">20</SelectItem>
-              <SelectItem value="30">30</SelectItem>
-            </SelectContent>
-          </Select>
+
+      <section
+        id="payments-filter-bar"
+        className="flex flex-col-reverse lg:flex-row justify-between items-center gap-4 w-full"
+      >
+        <div className="flex gap-2 w-full lg:w-auto">
+          <Button variant="default" className="flex-1 lg:flex-none" onClick={onOpenChangePaymentDialog}>
+            <Plus className="w-4 h-4 mr-2" />
+            Agregar pago
+          </Button>
+          <Button variant="outline" className="flex-1 lg:flex-none" onClick={handleOpenClientWithPaymentModal}>
+            <UserPlus className="w-4 h-4 mr-2" />
+            Cliente + Pago
+          </Button>
         </div>
+        
+        <div className="relative w-full lg:max-w-sm">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+          <Input
+            placeholder="Buscar por servicio o cliente..."
+            onChange={handleSearchPayments}
+            className="pl-10 w-full"
+          />
+        </div>
+        
+        <SelectComponent
+          onValueChange={handleChangeSortField}
+          className="w-full lg:w-[200px]"
+          items={sortOptions}
+          defaultValue="updatedAt"
+          placeholder="Ordenar por"
+        />
+        
+        <SelectComponent
+          onValueChange={handleChangeSortOrder}
+          className="w-full lg:w-[150px]"
+          items={orderOptions}
+          defaultValue="desc"
+          placeholder="Orden"
+        />
+        
+        <SelectComponent
+          onValueChange={handleChangeLimit}
+          className="w-full lg:w-[120px]"
+          items={limitsOptions}
+          defaultValue="10"
+          placeholder="Mostrar"
+        />
+      </section>
+
+      <section className="data-table w-full">
         <PaymentList onUpdatedPayment={handleDataRefresh} payments={payments} isLoading={isLoadingPayments} />
         {pages > 1 && (
           <Pagination
