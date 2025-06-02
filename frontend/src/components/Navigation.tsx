@@ -1,4 +1,4 @@
-import { CreditCard, Home, LogOut, PanelLeft, Settings, User2, Shield } from "lucide-react";
+import { CreditCard, Home, LogOut, PanelLeft, Settings, User2, Shield, FileBarChart, Target, Zap } from "lucide-react";
 
 import {
   Sidebar,
@@ -35,6 +35,26 @@ const items = [
     url: "#",
     icon: CreditCard,
     slug: "/payments",
+  },
+  {
+    title: "Reportes",
+    url: "#",
+    icon: FileBarChart,
+    slug: "/reports",
+  },
+  {
+    title: "Clientes+",
+    url: "#",
+    icon: Target,
+    slug: "/reports/clients",
+    isSubItem: true,
+  },
+  {
+    title: "Pagos+",
+    url: "#",
+    icon: Zap,
+    slug: "/reports/payments",
+    isSubItem: true,
   },
   {
     title: "Verificación Facial",
@@ -83,7 +103,7 @@ export function Navigation() {
                 {!isMobile && <SidebarTrigger className={`${open && "hidden"}`} />}
                 {items.map(item => (
                   <SidebarMenuItem
-                    className={`${pathname === item.slug ? "bg-slate-700 rounded-md" : ""}`}
+                    className={`${pathname === item.slug ? "bg-slate-700 rounded-md" : ""} ${item.isSubItem ? "ml-4" : ""}`}
                     key={item.title}
                   >
                     <SidebarMenuButton asChild>

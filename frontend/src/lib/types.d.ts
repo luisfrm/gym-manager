@@ -280,3 +280,289 @@ export interface UIConfiguration {
 export interface AppConfiguration extends UIConfiguration, BackupConfiguration {}
 
 // #endregion UI CONFIGURATION
+
+// #region REPORTS
+export type ReportType = 
+  | "daily"
+  | "date_specific" 
+  | "last_7_days"
+  | "current_week"
+  | "current_month"
+  | "month_specific"
+  | "income_summary"
+  | "client_summary";
+
+export interface ReportDateRange {
+  startDate: Date;
+  endDate: Date;
+}
+
+export interface PaymentStats {
+  totalPayments: number;
+  totalAmountUSD: number;
+  totalAmountVES: number;
+  paidPayments: number;
+  pendingPayments: number;
+  failedPayments: number;
+  paymentMethods: Record<string, number>;
+  services: Record<string, number>;
+  dailyBreakdown: Record<string, {
+    count: number;
+    amountUSD: number;
+    amountVES: number;
+  }>;
+}
+
+export interface PaymentsReportResponse {
+  reportType: ReportType;
+  dateRange: ReportDateRange;
+  currency: string;
+  stats: PaymentStats;
+  payments: Payment[];
+}
+
+export interface ClientStats {
+  totalClients: number;
+  newClientsInPeriod: number;
+  clientsWithPayments: number;
+  clientsWithFaceRecognition: number;
+  activeClients: number;
+  expiredClients: number;
+  clientsByMonth: Record<string, number>;
+}
+
+export interface ClientPaymentSummary {
+  client: Client;
+  paymentCount: number;
+  totalAmountUSD: number;
+  totalAmountVES: number;
+  lastPayment: Date | null;
+}
+
+export interface ClientsReportResponse {
+  reportType: ReportType;
+  dateRange: ReportDateRange;
+  stats: ClientStats;
+  newClients: Client[];
+  clientPaymentSummary: ClientPaymentSummary[];
+}
+
+export interface IncomeSummary {
+  totalIncomeUSD: number;
+  totalIncomeVES: number;
+  totalTransactions: number;
+  averageTransactionUSD: number;
+  averageTransactionVES: number;
+}
+
+export interface IncomeByMethod {
+  method: string;
+  currency: string;
+  amount: number;
+  count: number;
+}
+
+export interface IncomeByService {
+  service: string;
+  currency: string;
+  amount: number;
+  count: number;
+}
+
+export interface DailyIncome {
+  date: string;
+  amountUSD: number;
+  amountVES: number;
+  count: number;
+}
+
+export interface IncomeSummaryReportResponse {
+  reportType: ReportType;
+  dateRange: ReportDateRange;
+  summary: IncomeSummary;
+  incomeByMethod: IncomeByMethod[];
+  incomeByService: IncomeByService[];
+  dailyIncome: DailyIncome[];
+}
+
+export interface DashboardOverview {
+  today: {
+    incomeUSD: number;
+    incomeVES: number;
+    transactionCount: number;
+  };
+  month: {
+    incomeUSD: number;
+    incomeVES: number;
+    transactionCount: number;
+    newClients: number;
+  };
+  clients: {
+    total: number;
+    active: number;
+    newThisMonth: number;
+  };
+}
+
+export interface ReportRequest {
+  reportType: ReportType;
+  specificDate?: string;
+  specificMonth?: string;
+  currency?: "USD" | "VES" | "ALL";
+}
+
+// ===================================
+// #region DETAILED REPORTS
+// ===================================
+
+export interface DetailedClientSummary {
+  totalClients: number;
+  expiredClients: number;
+  activeClients: number;
+  renewedClients: number;
+  newClients: number;
+  clientsAtRisk: number;
+  clientsWithFace: number;
+  premium: number;
+  regular: number;
+  basic: number;
+}
+
+export interface ClientDetail {
+  _id: string;
+  name: string;
+  cedula: string;
+  email: string;
+  phone: string;
+  expiredDate?: string;
+  daysExpired?: number;
+  daysUntilExpiry?: number | null;
+  hasFaceRegistered: boolean;
+  createdAt?: string;
+  daysAsClient?: number;
+}
+
+export interface RenewedClientDetail {
+  client: Client;
+  paymentsCount: number;
+  totalAmountUSD: number;
+  totalAmountVES: number;
+  lastPaymentDate: string;
+}
+
+export interface DetailedClientsReportResponse {
+  reportType: string;
+  month: string;
+  dateRange: ReportDateRange;
+  summary: DetailedClientSummary;
+  expiredClients: ClientDetail[];
+  activeClients: ClientDetail[];
+  renewedClients: RenewedClientDetail[];
+  newClients: ClientDetail[];
+  clientsAtRisk: ClientDetail[];
+}
+
+export interface PaymentAnalytics {
+  dailyTrends: Record<string, {
+    date: string;
+    paid: number;
+    pending: number;
+    failed: number;
+    totalAmount: {
+      USD: number;
+      VES: number;
+    };
+  }>;
+  methodPerformance: Record<string, {
+    total: number;
+    paid: number;
+    pending: number;
+    failed: number;
+    successRate: number;
+    totalAmount: {
+      USD: number;
+      VES: number;
+    };
+  }>;
+  serviceAnalytics: Record<string, {
+    count: number;
+    revenue: {
+      USD: number;
+      VES: number;
+    };
+    avgAmount: {
+      USD: number;
+      VES: number;
+    };
+    successRate: number;
+    paid: number;
+  }>;
+  currencyDistribution: {
+    USD: {
+      count: number;
+      amount: number;
+      percentage: number;
+    };
+    VES: {
+      count: number;
+      amount: number;
+      percentage: number;
+    };
+  };
+  clientBehavior: {
+    newCustomers: number;
+    returningCustomers: number;
+    averagePaymentValue: {
+      USD: number;
+      VES: number;
+    };
+    topSpenders: Array<{
+      client: Client;
+      totalUSD: number;
+      totalVES: number;
+      paymentCount: number;
+    }>;
+  };
+  timeAnalytics: {
+    peakDays: Record<string, number>;
+    averagePaymentsPerDay: number;
+    successRate: number;
+    responseTime: string;
+  };
+}
+
+export interface DetailedPaymentSummary {
+  totalPayments: number;
+  paidPayments: number;
+  pendingPayments: number;
+  failedPayments: number;
+  successRate: number;
+  totalRevenueUSD: number;
+  totalRevenueVES: number;
+  averageTransactionUSD: number;
+  averageTransactionVES: number;
+}
+
+export interface PendingPaymentDetail extends Payment {
+  daysPending: number;
+}
+
+export interface FailedPaymentDetail extends Payment {
+  failureReason: string;
+}
+
+export interface DetailedPaymentsReportResponse {
+  reportType: string;
+  month: string;
+  dateRange: ReportDateRange;
+  summary: DetailedPaymentSummary;
+  paidPayments: Payment[];
+  pendingPayments: PendingPaymentDetail[];
+  failedPayments: FailedPaymentDetail[];
+  highValueTransactions: Payment[];
+  analytics: PaymentAnalytics | null;
+}
+
+// #endregion DETAILED REPORTS
+
+// #endregion REPORTS

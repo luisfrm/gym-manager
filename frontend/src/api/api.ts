@@ -337,4 +337,139 @@ export const registerFace = async (clientId: string, encoding: number[]): Promis
   return res.data;
 };
 
+export const faceLoginRequest = async (encodedImage: string): Promise<{ success: boolean, clientData?: any, message: string }> => {
+  try {
+    const response = await api.post('/face/login', { encodedImage });
+    return response.data;
+  } catch (error: any) {
+    if (error.response?.data?.message) {
+      throw new Error(error.response.data.message);
+    }
+    throw new Error('Error en el reconocimiento facial');
+  }
+};
+
 // #endregion FACE RECOGNITION
+
+// ===================================
+// #region REPORTS
+// ===================================
+
+export const getPaymentsReportRequest = async (params: {
+  reportType: string;
+  specificDate?: string;
+  specificMonth?: string;
+  currency?: string;
+}): Promise<any> => {
+  try {
+    const queryParams = new URLSearchParams();
+    queryParams.append('reportType', params.reportType);
+    if (params.specificDate) queryParams.append('specificDate', params.specificDate);
+    if (params.specificMonth) queryParams.append('specificMonth', params.specificMonth);
+    if (params.currency) queryParams.append('currency', params.currency);
+
+    const response = await api.get(`/reports/payments?${queryParams.toString()}`);
+    return response.data;
+  } catch (error: any) {
+    if (error.response?.data?.message) {
+      throw new Error(error.response.data.message);
+    }
+    throw new Error('Error al generar el reporte de pagos');
+  }
+};
+
+export const getClientsReportRequest = async (params: {
+  reportType: string;
+  specificDate?: string;
+  specificMonth?: string;
+}): Promise<any> => {
+  try {
+    const queryParams = new URLSearchParams();
+    queryParams.append('reportType', params.reportType);
+    if (params.specificDate) queryParams.append('specificDate', params.specificDate);
+    if (params.specificMonth) queryParams.append('specificMonth', params.specificMonth);
+
+    const response = await api.get(`/reports/clients?${queryParams.toString()}`);
+    return response.data;
+  } catch (error: any) {
+    if (error.response?.data?.message) {
+      throw new Error(error.response.data.message);
+    }
+    throw new Error('Error al generar el reporte de clientes');
+  }
+};
+
+export const getIncomeSummaryReportRequest = async (params: {
+  reportType: string;
+  specificDate?: string;
+  specificMonth?: string;
+}): Promise<any> => {
+  try {
+    const queryParams = new URLSearchParams();
+    queryParams.append('reportType', params.reportType);
+    if (params.specificDate) queryParams.append('specificDate', params.specificDate);
+    if (params.specificMonth) queryParams.append('specificMonth', params.specificMonth);
+
+    const response = await api.get(`/reports/income?${queryParams.toString()}`);
+    return response.data;
+  } catch (error: any) {
+    if (error.response?.data?.message) {
+      throw new Error(error.response.data.message);
+    }
+    throw new Error('Error al generar el reporte de ingresos');
+  }
+};
+
+export const getDashboardOverviewRequest = async (): Promise<any> => {
+  try {
+    const response = await api.get('/reports/dashboard');
+    return response.data;
+  } catch (error: any) {
+    if (error.response?.data?.message) {
+      throw new Error(error.response.data.message);
+    }
+    throw new Error('Error al obtener la vista general del dashboard');
+  }
+};
+
+// ===================================
+// #region DETAILED REPORTS
+// ===================================
+
+export const getDetailedClientsReportRequest = async (params: {
+  month?: string;
+}): Promise<any> => {
+  try {
+    const queryParams = new URLSearchParams();
+    if (params.month) queryParams.append('month', params.month);
+    
+    const response = await api.get(`/reports/clients/detailed?${queryParams.toString()}`);
+    return response.data;
+  } catch (error: any) {
+    if (error.response?.data?.message) {
+      throw new Error(error.response.data.message);
+    }
+    throw new Error('Error al obtener el reporte detallado de clientes');
+  }
+};
+
+export const getDetailedPaymentsReportRequest = async (params: {
+  month?: string;
+  analytics?: string;
+}): Promise<any> => {
+  try {
+    const queryParams = new URLSearchParams();
+    if (params.month) queryParams.append('month', params.month);
+    if (params.analytics) queryParams.append('analytics', params.analytics);
+    
+    const response = await api.get(`/reports/payments/detailed?${queryParams.toString()}`);
+    return response.data;
+  } catch (error: any) {
+    if (error.response?.data?.message) {
+      throw new Error(error.response.data.message);
+    }
+    throw new Error('Error al obtener el reporte detallado de pagos');
+  }
+};
+
+// #endregion DETAILED REPORTS

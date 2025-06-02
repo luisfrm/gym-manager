@@ -12,6 +12,10 @@ const Payments = lazy(() => import("./pages/Payments"));
 const Profile = lazy(() => import("./pages/Profile"));
 const ClientDetails = lazy(() => import("./pages/ClientDetails"));
 const FaceVerification = lazy(() => import("./pages/FaceVerification"));
+const Reports = lazy(() => import("./pages/Reports"));
+const DetailedClientsReport = lazy(() => import("./pages/DetailedClientsReport"));
+const DetailedPaymentsReport = lazy(() => import("./pages/DetailedPaymentsReport"));
+const NotFound = lazy(() => import("./components/NotFound"));
 
 function App() {
   const [isServerReady, setIsServerReady] = useState(false);
@@ -51,11 +55,14 @@ function App() {
             <Route path="/clients" element={<Clients />} />
             <Route path="/clients/:cedula" element={<ClientDetails />} />
             <Route path="/payments" element={<Payments />} />
+            <Route path="/reports" element={<Reports />} />
+            <Route path="/reports/clients" element={<DetailedClientsReport />} />
+            <Route path="/reports/payments" element={<DetailedPaymentsReport />} />
             <Route path="/settings" element={<Profile />} />
             <Route path="/face-verification" element={<FaceVerification />} />
             <Route path="/logout" element={<div>Logout</div>} />
           </Route>
-          <Route path="*" element={<div>404</div>} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
     </Router>
