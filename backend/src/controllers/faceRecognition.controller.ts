@@ -51,7 +51,7 @@ export const registerFace = async (req: MulterRequest, res: Response): Promise<v
     });
 
     if (clientsWithFaces.length > 0) {
-      const threshold = 0.6; // Mismo umbral que en verificación
+      const threshold = 0.35; // Mismo umbral que en verificación (65% mínimo)
       
       for (const existingClient of clientsWithFaces) {
         if (existingClient.faceEncoding && existingClient.faceEncoding.length > 0) {
@@ -121,7 +121,7 @@ export const verifyFace = async (req: Request, res: Response): Promise<void> => 
     // Comparar con cada cliente registrado
     let bestMatch = null;
     let bestDistance = Infinity;
-    const threshold = 0.6; // Umbral de similitud
+    const threshold = 0.35; // Umbral de similitud (65% mínimo)
 
     for (const client of clientsWithFaces) {
       if (client.faceEncoding && client.faceEncoding.length > 0) {
@@ -255,7 +255,7 @@ export const validateFaceEncoding = async (req: Request, res: Response): Promise
     }
 
     // Comparar con cada cliente registrado
-    const threshold = 0.6; // Mismo umbral que en verificación
+    const threshold = 0.35; // Mismo umbral que en verificación (65% mínimo)
     
     for (const existingClient of clientsWithFaces) {
       if (existingClient.faceEncoding && existingClient.faceEncoding.length > 0) {

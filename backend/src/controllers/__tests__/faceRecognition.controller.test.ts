@@ -23,7 +23,7 @@ describe("Face Recognition Controller - Face Duplication Validation", () => {
   describe("Face encoding similarity detection", () => {
     it("should detect very similar face encodings as duplicates", () => {
       const distance = calculateEuclideanDistance(mockFaceEncoding1, mockSimilarEncoding);
-      const threshold = 0.6;
+      const threshold = 0.35; // 65% mínimo de similitud
       
       expect(distance).toBeLessThan(threshold);
       expect(distance).toBeGreaterThan(0); // Not exactly the same but very similar
@@ -31,7 +31,7 @@ describe("Face Recognition Controller - Face Duplication Validation", () => {
 
     it("should not flag different face encodings as duplicates", () => {
       const distance = calculateEuclideanDistance(mockFaceEncoding1, mockFaceEncoding2);
-      const threshold = 0.6;
+      const threshold = 0.35; // 65% mínimo de similitud
       
       expect(distance).toBeGreaterThan(threshold);
     });
@@ -59,7 +59,7 @@ describe("Face Recognition Controller - Face Duplication Validation", () => {
 
       // Simulate new face encoding validation request
       const newEncoding = mockSimilarEncoding;
-      const threshold = 0.6;
+      const threshold = 0.35; // 65% mínimo de similitud
 
       // Test validation logic
       type ValidationResult = {
@@ -121,7 +121,7 @@ describe("Face Recognition Controller - Face Duplication Validation", () => {
 
       // Simulate completely different face encoding
       const newEncoding = mockFaceEncoding2;
-      const threshold = 0.6;
+      const threshold = 0.35; // 65% mínimo de similitud
 
       // Test validation logic with proper typing
       type ValidationResult = {
@@ -226,7 +226,7 @@ describe("Face Recognition Controller - Face Duplication Validation", () => {
 
       // Calculate similarity
       const distance = calculateEuclideanDistance(existingClient.faceEncoding, newRegistrationEncoding);
-      const threshold = 0.6;
+      const threshold = 0.35; // 65% mínimo de similitud
       const similarity = Math.max(0, 1 - distance);
 
       if (distance < threshold) {
@@ -255,7 +255,7 @@ describe("Face Recognition Controller - Face Duplication Validation", () => {
       const newEncoding = mockFaceEncoding2;
       
       const distance = calculateEuclideanDistance(existingEncoding, newEncoding);
-      const threshold = 0.6;
+      const threshold = 0.35; // 65% mínimo de similitud
       
       expect(distance).toBeGreaterThan(threshold); // Should allow registration
     });

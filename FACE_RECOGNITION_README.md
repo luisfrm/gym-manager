@@ -347,7 +347,7 @@ const encoding = Array.from(detections.descriptor); // 128 dimensiones
 
 ### Umbral de Similitud
 ```typescript
-const threshold = 0.6; // Ajustable en el controlador
+const threshold = 0.35; // Ajustable en el controlador (65% mínimo de similitud)
 ```
 
 ### Modelos Utilizados

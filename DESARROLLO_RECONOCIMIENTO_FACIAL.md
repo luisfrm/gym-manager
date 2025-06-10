@@ -250,7 +250,7 @@ export const verifyFace = async (req: Request, res: Response) => {
     // Comparar con cada cliente registrado
     let bestMatch = null;
     let bestDistance = Infinity;
-    const threshold = 0.6; // Umbral de similitud
+    const threshold = 0.35; // Umbral de similitud (65% mínimo)
 
     for (const client of clientsWithFaces) {
       if (client.faceEncoding && client.faceEncoding.length > 0) {

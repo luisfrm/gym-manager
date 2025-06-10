@@ -159,7 +159,7 @@ function calculateEuclideanDistance(vector1: number[], vector2: number[]): numbe
 ```
 
 ### Umbral de Similitud
-- **Threshold**: 0.6 (60% de similitud)
+- **Threshold**: 0.35 (65% mínimo de similitud)
 - **Encoding Length**: 128 dimensiones
 - **Consistencia**: Mismo umbral en validación y verificación
 

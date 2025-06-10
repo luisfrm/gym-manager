@@ -165,7 +165,7 @@ describe("Client Controller - Face Duplication Validation", () => {
 
       // Simulate new client face encoding (very similar to existing)
       const newClientEncoding = mockSimilarEncoding;
-      const threshold = 0.6;
+      const threshold = 0.35; // 65% mínimo de similitud
 
       // Test duplication detection logic
       let isDuplicate = false;
@@ -205,7 +205,7 @@ describe("Client Controller - Face Duplication Validation", () => {
 
       // Simulate new client with completely different face encoding
       const newClientEncoding = mockFaceEncoding2;
-      const threshold = 0.6;
+      const threshold = 0.35; // 65% mínimo de similitud
 
       // Test duplication detection logic
       let isDuplicate = false;

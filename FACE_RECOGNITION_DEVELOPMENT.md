@@ -250,7 +250,7 @@ export const verifyFace = async (req: Request, res: Response) => {
     // Compare with each registered client
     let bestMatch = null;
     let bestDistance = Infinity;
-    const threshold = 0.6; // Similarity threshold
+    const threshold = 0.35; // Similarity threshold (65% minimum)
 
     for (const client of clientsWithFaces) {
       if (client.faceEncoding && client.faceEncoding.length > 0) {

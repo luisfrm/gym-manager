@@ -55,7 +55,7 @@ class ClientController {
           });
 
           if (clientsWithFaces.length > 0) {
-            const threshold = 0.6; // Mismo umbral que en verificación
+            const threshold = 0.35; // Mismo umbral que en verificación (65% mínimo)
             
             for (const existingClient of clientsWithFaces) {
               if (existingClient.faceEncoding && existingClient.faceEncoding.length > 0) {
@@ -333,7 +333,7 @@ async function createClientWithPaymentSequential(req: AppRequest, res: any) {
       });
 
       if (clientsWithFaces.length > 0) {
-        const threshold = 0.6;
+        const threshold = 0.35; // Umbral de similitud (65% mínimo)
         
         for (const existingClient of clientsWithFaces) {
           if (existingClient.faceEncoding && existingClient.faceEncoding.length > 0) {
