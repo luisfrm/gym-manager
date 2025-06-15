@@ -56,37 +56,6 @@ const FaceVerification = () => {
     errorAudio.src = URL.createObjectURL(new Blob([errorBuffer], { type: "audio/wav" }));
     errorAudioRef.current = errorAudio;
 
-    // Inicializar síntesis de voz y cargar voces disponibles
-    if ("speechSynthesis" in window) {
-      // Función para cargar voces (puede ser asíncrono en algunos navegadores)
-      const loadVoices = () => {
-        const voices = window.speechSynthesis.getVoices();
-        console.log(
-          "Voces disponibles:",
-          voices.map(v => `${v.name} (${v.lang})`),
-        );
-      };
-
-      // Cargar voces inmediatamente
-      loadVoices();
-
-      // También escuchar el evento de voces cargadas (necesario en algunos navegadores)
-      window.speechSynthesis.addEventListener("voiceschanged", loadVoices);
-
-              return () => {
-          window.speechSynthesis.removeEventListener("voiceschanged", loadVoices);
-          if (cooldownIntervalRef.current) {
-            clearInterval(cooldownIntervalRef.current);
-          }
-          if (successAudioRef.current) {
-            URL.revokeObjectURL(successAudioRef.current.src);
-          }
-          if (errorAudioRef.current) {
-            URL.revokeObjectURL(errorAudioRef.current.src);
-          }
-        };
-    }
-
     return () => {
       if (cooldownIntervalRef.current) {
         clearInterval(cooldownIntervalRef.current);
@@ -100,7 +69,6 @@ const FaceVerification = () => {
     };
   }, []);
 
-  // Función para crear sonidos sintéticos
   const createBeepSound = (frequency: number, duration: number, volume: number): ArrayBuffer => {
     const sampleRate = 44100;
     const samples = Math.floor((sampleRate * duration) / 1000);
@@ -158,16 +126,16 @@ const FaceVerification = () => {
     }
   };
 
-  // Función para síntesis de voz
+  // Voice synthesis
   const playVoiceMessage = (isSuccess: boolean, clientName?: string) => {
     try {
-      // Verificar si el navegador soporta Speech Synthesis
+      // Verify if the browser supports Speech Synthesis
       if (!("speechSynthesis" in window)) {
         console.warn("Speech Synthesis no soportado en este navegador");
         return;
       }
 
-      // Cancelar cualquier síntesis de voz en curso
+      // Cancel any ongoing voice synthesis
       window.speechSynthesis.cancel();
 
       let message = "";
@@ -181,16 +149,16 @@ const FaceVerification = () => {
         message = "Acceso denegado. No se encontró registro facial en el sistema.";
       }
 
-      // Crear y configurar la síntesis de voz
+      // Create and configure the voice synthesis
       const utterance = new SpeechSynthesisUtterance(message);
 
-      // Configurar propiedades de la voz
-      utterance.lang = "es-ES"; // Español
-      utterance.rate = 1.0; // Velocidad normal
-      utterance.pitch = isSuccess ? 1.2 : 0.8; // Tono más alto para éxito, más bajo para error
-      utterance.volume = 0.8; // Volumen al 80%
+      // Configure voice properties
+      utterance.lang = "es-ES"; // Spanish
+      utterance.rate = 1.0;
+      utterance.pitch = isSuccess ? 1.2 : 0.8;
+      utterance.volume = 0.8;
 
-      // Intentar usar una voz en español si está disponible
+      // Try to use a Spanish voice if available
       const voices = window.speechSynthesis.getVoices();
       const spanishVoice = voices.find(voice => voice.lang.includes("es") || voice.lang.includes("ES"));
 
@@ -198,7 +166,7 @@ const FaceVerification = () => {
         utterance.voice = spanishVoice;
       }
 
-      // Reproducir el mensaje
+      // Play the message
       window.speechSynthesis.speak(utterance);
     } catch (error) {
       console.error("Error en síntesis de voz:", error);
@@ -387,7 +355,6 @@ const FaceVerification = () => {
     onError: (error: Error) => {
       setIsVerifying(false);
       playSound(false);
-      console.error("Error verifying face:", error);
       toastUtils.access.denied(error.message || "No se encontró coincidencia facial.");
     },
   });

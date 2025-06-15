@@ -40,7 +40,7 @@ export const SuggestionsDropdown: React.FC<SuggestionsDropdownProps> = ({
                   <CommandItem
                     key={option.id}
                     onSelect={() => onSelect(option)}
-                    className="flex items-center gap-2 cursor-pointer hover:bg-accent hover:text-accent-foreground rounded-md mb-1"
+                    className="flex items-center gap-2 cursor-pointer hover:text-accent-foreground rounded-md mb-1"
                   >
                     {option.icon && (
                       <div className="text-muted-foreground">

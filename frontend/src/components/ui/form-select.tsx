@@ -47,7 +47,7 @@ export function FormSelect<T extends string>({
         </SelectTrigger>
         <SelectContent>
           {options.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
+            <SelectItem className="cursor-pointer hover:bg-gray-200" key={option.value} value={option.value}>
               {option.label}
             </SelectItem>
           ))}
