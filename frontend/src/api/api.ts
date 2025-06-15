@@ -49,6 +49,40 @@ api.interceptors.request.use(config => {
   return config;
 });
 
+// Response interceptor to handle 401 errors globally
+let isLoggingOut = false; // Flag to prevent multiple logout attempts
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (!error.response) {
+      console.error('Network error:', error);
+      return Promise.reject(error);
+    }
+
+    if (error.response?.status === 401) {
+      const authState = useStore.getState().auth;
+      
+      if (authState.isAuthenticated && !isLoggingOut) {
+        isLoggingOut = true;
+        
+        const { logout } = useStore.getState();
+        logout();
+        localStorage.removeItem("token");
+        
+        if (window.location.pathname !== '/' && window.location.pathname !== '/login') {
+          window.location.href = '/';
+        }
+        
+        setTimeout(() => {
+          isLoggingOut = false;
+        }, 1000);
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 // ===================================
 // #region SERVER HEALTH
 // ===================================

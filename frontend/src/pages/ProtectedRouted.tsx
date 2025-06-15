@@ -7,8 +7,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Outlet, Navigate, useNavigate } from "react-router-dom";
 import { toastUtils } from "@/lib/toast";
 
-const TOKEN_CHECK_INTERVAL = 30000; // 30 segundos
-const TOKEN_EXPIRY_WARNING = 60; // segundos antes de expirar para mostrar el popup
+const TOKEN_EXPIRY_WARNING = 60;
 
 const ProtectedRoute: React.FC = () => {
   const navigate = useNavigate();
@@ -22,7 +21,7 @@ const ProtectedRoute: React.FC = () => {
   const { refetch: validateToken, isError } = useQuery({
     queryKey: ["validateToken"],
     queryFn: validateTokenRequest,
-    enabled: false, // No se ejecuta automáticamente
+    enabled: false,
     retry: false
   });
 
@@ -41,7 +40,6 @@ const ProtectedRoute: React.FC = () => {
       setIsTokenExpiredPopupVisible(false);
       refreshAttemptsRef.current = 0;
       
-      // Recalculate time left with new token
       if (data.tokenExpiration) {
         const expirationDate = new Date(data.tokenExpiration);
         const currentTime = Date.now();
@@ -51,9 +49,11 @@ const ProtectedRoute: React.FC = () => {
       
       toastUtils.access.sessionRenewed();
     },
-    onError: () => {
-      toastUtils.access.sessionExpired();
-      handleLogout();
+    onError: (error: any) => {
+      if (error?.response?.status !== 401) {
+        console.error("Refresh token error:", error);
+        toastUtils.access.connectionError();
+      }
     },
   });
 
@@ -67,7 +67,6 @@ const ProtectedRoute: React.FC = () => {
     setWasTokenExpiredShowed(true);
   }, []);
 
-  // Efecto para calcular el tiempo inicial
   useEffect(() => {
     if (tokenExpiration) {
       const expirationDate = new Date(tokenExpiration);
@@ -75,15 +74,17 @@ const ProtectedRoute: React.FC = () => {
       const timeUntilExpiration = Math.floor((expirationDate.getTime() - currentTime) / 1000);
 
       if (timeUntilExpiration <= 0) {
-        handleLogout();
-        return;
+        // Usar un pequeño timeout para evitar actualizaciones durante el render
+        const timeoutId = setTimeout(() => {
+          handleLogout();
+        }, 0);
+        return () => clearTimeout(timeoutId);
       }
 
       setTimeLeft(timeUntilExpiration);
     }
   }, [handleLogout, tokenExpiration]);
 
-  // Effect for handling the timer and periodic validation
   useEffect(() => {
     if (timeLeft <= 0) return;
 
@@ -91,7 +92,10 @@ const ProtectedRoute: React.FC = () => {
       setTimeLeft(prevTime => {
         const newTime = prevTime - 1;
         if (newTime <= 0) {
-          handleLogout();
+          // Usar un pequeño timeout para evitar actualizaciones durante el render
+          setTimeout(() => {
+            handleLogout();
+          }, 0);
           return 0;
         }
         return newTime;
@@ -103,18 +107,7 @@ const ProtectedRoute: React.FC = () => {
     };
   }, [handleLogout, timeLeft]);
 
-  // Separate effect for token validation
-  useEffect(() => {
-    const tokenCheckInterval = setInterval(() => {
-      validateToken();
-    }, TOKEN_CHECK_INTERVAL);
-
-    return () => {
-      clearInterval(tokenCheckInterval);
-    };
-  }, [validateToken]);
-
-  // Efecto para manejar la visibilidad del popup
+  // Handle token expiry popup
   useEffect(() => {
     if (timeLeft <= TOKEN_EXPIRY_WARNING && timeLeft > 0 && !wasTokenExpiredShowed) {
       setIsTokenExpiredPopupVisible(true);
@@ -124,10 +117,25 @@ const ProtectedRoute: React.FC = () => {
     }
   }, [timeLeft, wasTokenExpiredShowed]);
 
-  // Efecto para manejar errores de validación
+  // Validate token on component mount (page refresh/reload)
+  useEffect(() => {
+    // Usar un pequeño timeout para evitar actualizaciones durante el render
+    const timeoutId = setTimeout(() => {
+      validateToken();
+    }, 0);
+    
+    return () => clearTimeout(timeoutId);
+  }, []); // Only runs once when component mounts
+
+  // Handle validation errors
   useEffect(() => {
     if (isError) {
-      handleLogout();
+      // Usar un pequeño timeout para evitar actualizaciones durante el render
+      const timeoutId = setTimeout(() => {
+        handleLogout();
+      }, 0);
+      
+      return () => clearTimeout(timeoutId);
     }
   }, [isError, handleLogout]);
 

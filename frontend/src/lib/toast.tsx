@@ -313,9 +313,37 @@ export const toastUtils = {
 
   // Acceso y autenticación
   access: {
-    authorized: (clientName?: string) => 
-      showToast('success', '¡Acceso autorizado!', {
-        description: clientName ? `Bienvenido, ${clientName}` : 'Acceso concedido al gimnasio',
+    sessionExpired: () => 
+      showToast('error', 'Sesión expirada', {
+        description: 'Tu sesión ha caducado. Inicia sesión nuevamente.',
+        category: 'auth',
+        duration: 4000
+      }),
+
+    sessionRenewed: () => 
+      showToast('success', 'Sesión renovada', {
+        description: 'Tu sesión ha sido renovada exitosamente.',
+        category: 'auth',
+        duration: 3000
+      }),
+
+    loginError: (message: string) => 
+      showToast('error', 'Error de inicio de sesión', {
+        description: message,
+        category: 'auth',
+        duration: 5000
+      }),
+
+    connectionError: () => 
+      showToast('warning', 'Error de conexión', {
+        description: 'Se perdió la conexión con el servidor. Reintentando...',
+        category: 'system',
+        duration: 3000
+      }),
+
+    authorized: (clientName: string) => 
+      showToast('success', 'Acceso autorizado', {
+        description: `Bienvenido/a ${clientName}. Acceso concedido al gimnasio.`,
         category: 'access',
         duration: 4000
       }),
@@ -332,27 +360,6 @@ export const toastUtils = {
         description: reason || 'No se pudo verificar la identidad',
         category: 'access',
         duration: 5000
-      }),
-
-    loginError: (details?: string) => 
-      showToast('error', 'Error al iniciar sesión', {
-        description: details || 'Credenciales incorrectas',
-        category: 'auth',
-        duration: 5000
-      }),
-
-    sessionExpired: () => 
-      showToast('warning', 'Sesión expirada', {
-        description: 'Por favor, inicia sesión nuevamente.',
-        category: 'auth',
-        duration: 5000
-      }),
-
-    sessionRenewed: () => 
-      showToast('success', 'Sesión renovada', {
-        description: 'Sesión renovada exitosamente',
-        category: 'auth',
-        duration: 3000
       })
   },
 
