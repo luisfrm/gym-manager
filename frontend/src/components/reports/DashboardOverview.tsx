@@ -48,7 +48,7 @@ const DashboardOverview = () => {
     {
       title: "Ingresos del día (USD)",
       value: formatCurrency(overview.today.incomeUSD, "USD"),
-      description: `${overview.today.transactionCount} transacciones`,
+      description: `${overview.today.transactionCount} transacciones en total (USD y VES)`,
       icon: DollarSign,
       color: "text-green-600"
     },

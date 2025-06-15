@@ -24,51 +24,6 @@ import DetailedPaymentsReport from "@/components/reports/DetailedPaymentsReport"
 const Reports = () => {
   const [activeTab, setActiveTab] = useState("overview");
 
-  const reportOptions = [
-    {
-      id: "daily",
-      title: "Reporte del día",
-      description: "Resumen de actividad del día actual",
-      icon: <CalendarDays className="h-5 w-5" />,
-      color: "bg-blue-500"
-    },
-    {
-      id: "date_specific",
-      title: "Fecha específica",
-      description: "Selecciona una fecha específica para revisar",
-      icon: <Calendar className="h-5 w-5" />,
-      color: "bg-green-500"
-    },
-    {
-      id: "last_7_days",
-      title: "Últimos 7 días",
-      description: "Actividad de la última semana",
-      icon: <Clock className="h-5 w-5" />,
-      color: "bg-purple-500"
-    },
-    {
-      id: "current_week",
-      title: "Semana actual",
-      description: "Desde el lunes hasta hoy",
-      icon: <TrendingUp className="h-5 w-5" />,
-      color: "bg-orange-500"
-    },
-    {
-      id: "current_month",
-      title: "Mes actual",
-      description: "Resumen del mes en curso",
-      icon: <FileBarChart className="h-5 w-5" />,
-      color: "bg-red-500"
-    },
-    {
-      id: "month_specific",
-      title: "Mes específico",
-      description: "Selecciona un mes específico",
-      icon: <Calendar className="h-5 w-5" />,
-      color: "bg-indigo-500"
-    }
-  ];
-
   return (
     <Template>
       <div className="space-y-6">
@@ -78,35 +33,6 @@ const Reports = () => {
           <p className="text-muted-foreground">
             Genera reportes detallados de pagos, clientes e ingresos
           </p>
-        </div>
-
-        {/* Quick Report Options */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {reportOptions.map((option) => (
-            <Card key={option.id} className="hover:shadow-md transition-shadow cursor-pointer">
-              <CardHeader className="flex flex-row items-center space-y-0 pb-2">
-                <div className={`${option.color} text-white p-2 rounded-md`}>
-                  {option.icon}
-                </div>
-              </CardHeader>
-              <CardContent>
-                <CardTitle className="text-lg">{option.title}</CardTitle>
-                <CardDescription className="mt-1">
-                  {option.description}
-                </CardDescription>
-                <div className="flex space-x-2 mt-3">
-                  <Badge variant="secondary" className="text-xs">
-                    <Users className="h-3 w-3 mr-1" />
-                    Clientes
-                  </Badge>
-                  <Badge variant="secondary" className="text-xs">
-                    <DollarSign className="h-3 w-3 mr-1" />
-                    Pagos
-                  </Badge>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
         </div>
 
         {/* Report Tabs */}

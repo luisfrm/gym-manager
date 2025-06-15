@@ -16,11 +16,11 @@ export default function TokenExpiryPopup({ onRenew, onDismiss, timeLeft, isVisib
     <AnimatePresence>
       {isVisible && (
         <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 50 }}
+          initial={{ opacity: 0, y: 50, x: "-50%" }}
+          animate={{ opacity: 1, y: 0, x: "-50%" }}
+          exit={{ opacity: 0, y: 50, x: "-50%" }}
           transition={{ duration: 0.3 }}
-          className="fixed bottom-4 right-4 z-50"
+          className="fixed top-4 left-1/2 z-[9999]"
         >
           <Alert variant="default" className="bg-white lg:w-[26rem] border-2 border-red-600 py-4 flex gap-4 z-50">
             <section>
@@ -34,10 +34,10 @@ export default function TokenExpiryPopup({ onRenew, onDismiss, timeLeft, isVisib
                   renovarla?
                 </p>
                 <div className="flex justify-end space-x-2">
-                  <Button variant="outline" size="sm" onClick={onDismiss}>
+                  <Button variant="outline" size="sm" onClick={onDismiss} style={{ pointerEvents: "auto" }}>
                     Ignorar
                   </Button>
-                  <Button variant="destructive" size="sm" onClick={onRenew}>
+                  <Button variant="destructive" size="sm" onClick={onRenew} style={{ pointerEvents: "auto" }}>
                     Renovar
                   </Button>
                 </div>

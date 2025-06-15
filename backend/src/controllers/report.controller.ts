@@ -443,7 +443,7 @@ export const getDashboardOverview = async (req: Request, res: Response): Promise
       createdAt: { $gte: startOfMonth }
     });
     const activeClients = await Payment.distinct("clientCedula", {
-      date: { $gte: thirtyDaysAgo.toISOString().split('T')[0] }
+      expiredDate: { $gte: thirtyDaysAgo.toISOString().split('T')[0] }
     });
 
     // Calculate totals
