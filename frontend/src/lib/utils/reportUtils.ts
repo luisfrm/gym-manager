@@ -127,21 +127,40 @@ export const exportToCSV = (data: any[], filename: string) => {
   if (!data.length) return;
   
   const headers = Object.keys(data[0]);
+  
+  // Function to properly escape CSV values
+  const escapeCSVValue = (value: any): string => {
+    if (value === null || value === undefined) return "";
+    
+    const stringValue = String(value);
+    
+    // If the value contains commas, quotes, or newlines, wrap it in quotes
+    if (stringValue.includes(",") || stringValue.includes('"') || stringValue.includes("\n") || stringValue.includes("\r")) {
+      // Escape existing quotes by doubling them
+      const escapedValue = stringValue.replace(/"/g, '""');
+      return `"${escapedValue}"`;
+    }
+    
+    return stringValue;
+  };
+  
+  // Build CSV content
   const csvContent = [
-    headers.join(","),
+    headers.map(escapeCSVValue).join(","),
     ...data.map(row => 
-      headers.map(header => {
-        const value = row[header];
-        // Handle values that might contain commas
-        if (typeof value === "string" && value.includes(",")) {
-          return `"${value}"`;
-        }
-        return value;
-      }).join(",")
+      headers.map(header => escapeCSVValue(row[header])).join(",")
     )
   ].join("\n");
   
-  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  // Add UTF-8 BOM (Byte Order Mark) to ensure proper encoding recognition
+  const BOM = "\uFEFF";
+  const finalContent = BOM + csvContent;
+  
+  // Create blob with explicit UTF-8 encoding
+  const blob = new Blob([finalContent], { 
+    type: "text/csv;charset=utf-8;" 
+  });
+  
   const link = document.createElement("a");
   const url = URL.createObjectURL(blob);
   link.setAttribute("href", url);
@@ -150,6 +169,9 @@ export const exportToCSV = (data: any[], filename: string) => {
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+  
+  // Clean up
+  URL.revokeObjectURL(url);
 };
 
 export const getPaymentStatusColor = (status: string) => {
