@@ -1,5 +1,6 @@
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays } from "date-fns";
 import { es } from "date-fns/locale";
+import { LocalDate } from "./LocalDate";
 
 export const reportTypeLabels: Record<string, string> = {
   daily: "Reporte del día",
@@ -84,8 +85,8 @@ export const formatDateRange = (startDate: Date, endDate: Date) => {
 };
 
 export const formatDate = (date: Date | string) => {
-  const dateObj = typeof date === "string" ? new Date(date) : date;
-  return format(dateObj, "dd/MM/yyyy", { locale: es });
+  const localDate = new LocalDate(date);
+  return localDate.getFullDate("DD/MM/YYYY");
 };
 
 export const formatDateTime = (date: Date | string) => {

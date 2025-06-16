@@ -2,6 +2,13 @@ import { Request, Response } from "express";
 import Payment from "../models/payment.model";
 import Client from "../models/client.model";
 import mongoose from "mongoose";
+import { LocalDate } from "../utils/LocalDate";
+import { getActiveClients } from "../utils/global";
+
+// Temporary helper for backward compatibility
+const formatDateLocal = (date: Date): string => {
+  return new LocalDate(date).toISODateString();
+};
 
 // Utility function to get date ranges
 const getDateRanges = (reportType: string, specificDate?: string, specificMonth?: string) => {
@@ -12,14 +19,14 @@ const getDateRanges = (reportType: string, specificDate?: string, specificMonth?
   switch (reportType) {
     case "daily":
       startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+      endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       break;
     
     case "date_specific":
       if (!specificDate) throw new Error("Fecha específica requerida");
       const targetDate = new Date(specificDate);
       startDate = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
-      endDate = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate() + 1);
+      endDate = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
       break;
     
     case "last_7_days":
@@ -37,14 +44,14 @@ const getDateRanges = (reportType: string, specificDate?: string, specificMonth?
     
     case "current_month":
       startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-      endDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+      endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0); // Last day of current month
       break;
     
     case "month_specific":
       if (!specificMonth) throw new Error("Mes específico requerido (YYYY-MM)");
       const [year, month] = specificMonth.split("-").map(Number);
-      startDate = new Date(year, month - 1, 1);
-      endDate = new Date(year, month, 1);
+      startDate = new Date(year, month - 1, 1); // Month - 1 because months are 0-indexed
+      endDate = new Date(year, month, 0); // Last day of the specified month
       break;
     
     default:
@@ -76,11 +83,13 @@ export const getPaymentsReport = async (req: Request, res: Response): Promise<vo
 
     const { startDate, endDate } = getDateRanges(reportType, specificDate, specificMonth);
 
+    console.log(startDate, endDate);
+
     // Build query filter
     const filter: any = {
       date: {
-        $gte: startDate.toISOString().split('T')[0],
-        $lte: endDate.toISOString().split('T')[0]
+        $gte: new LocalDate(startDate).toISODateString(),
+        $lte: new LocalDate(endDate).toISODateString()
       }
     };
 
@@ -205,8 +214,8 @@ export const getClientsReport = async (req: Request, res: Response): Promise<voi
     // Get payments for all clients in the date range
     const payments = await Payment.find({
       date: {
-        $gte: startDate.toISOString().split('T')[0],
-        $lte: endDate.toISOString().split('T')[0]
+        $gte: new LocalDate(startDate).toISODateString(),
+        $lte: new LocalDate(endDate).toISODateString()
       }
     }).populate('client', 'firstname lastname cedula');
 
@@ -216,7 +225,7 @@ export const getClientsReport = async (req: Request, res: Response): Promise<voi
       newClientsInPeriod: newClients.length,
       clientsWithPayments: new Set(payments.map(p => p.clientCedula)).size,
       clientsWithFaceRecognition: allClients.filter(c => c.hasFaceRegistered).length,
-      activeClients: 0, // Clients with payments in the last 30 days
+      activeClients: 0,
       expiredClients: 0,
       clientsByMonth: {},
     };
@@ -224,7 +233,7 @@ export const getClientsReport = async (req: Request, res: Response): Promise<voi
     // Calculate active and expired clients
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
     const recentPayments = await Payment.find({
-      date: { $gte: thirtyDaysAgo.toISOString().split('T')[0] }
+      date: { $gte: new LocalDate(thirtyDaysAgo).toISODateString() }
     });
     stats.activeClients = new Set(recentPayments.map(p => p.clientCedula)).size;
 
@@ -247,8 +256,8 @@ export const getClientsReport = async (req: Request, res: Response): Promise<voi
       const clientPayments = await Payment.find({
         clientCedula: client.cedula,
         date: {
-          $gte: startDate.toISOString().split('T')[0],
-          $lte: endDate.toISOString().split('T')[0]
+          $gte: formatDateLocal(startDate),
+          $lte: formatDateLocal(endDate)
         }
       });
 
@@ -323,10 +332,9 @@ export const getIncomeSummaryReport = async (req: Request, res: Response): Promi
     // Get all payments in the date range
     const payments = await Payment.find({
       date: {
-        $gte: startDate.toISOString().split('T')[0],
-        $lte: endDate.toISOString().split('T')[0]
-      },
-      paymentStatus: "paid" // Only count paid payments for income
+        $gte: formatDateLocal(startDate),
+        $lte: formatDateLocal(endDate)
+      }
     });
 
     // Calculate income by currency and payment method
@@ -420,21 +428,18 @@ export const getDashboardOverview = async (req: Request, res: Response): Promise
     const now = new Date();
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
     // Today's stats
     const todayPayments = await Payment.find({
-      date: startOfToday.toISOString().split('T')[0],
-      paymentStatus: "paid"
+      date: formatDateLocal(startOfToday)
     });
 
     // Month stats
     const monthPayments = await Payment.find({
       date: {
-        $gte: startOfMonth.toISOString().split('T')[0],
-        $lte: now.toISOString().split('T')[0]
-      },
-      paymentStatus: "paid"
+        $gte: formatDateLocal(startOfMonth),
+        $lte: formatDateLocal(now)
+      }
     });
 
     // Client stats
@@ -442,9 +447,7 @@ export const getDashboardOverview = async (req: Request, res: Response): Promise
     const newClientsThisMonth = await Client.countDocuments({
       createdAt: { $gte: startOfMonth }
     });
-    const activeClients = await Payment.distinct("clientCedula", {
-      expiredDate: { $gte: thirtyDaysAgo.toISOString().split('T')[0] }
-    });
+    const activeClients = await getActiveClients(Client);
 
     // Calculate totals
     const todayIncomeUSD = todayPayments.filter(p => p.currency === "USD").reduce((sum, p) => sum + p.amount, 0);
@@ -507,25 +510,15 @@ export const getSpecificClientsReport = async (req: Request, res: Response): Pro
 
     // Clients currently active (expired date is in the future or null, and had payments in last 30 days)
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    const recentPayments = await Payment.find({
-      date: { $gte: thirtyDaysAgo.toISOString().split('T')[0] },
-      paymentStatus: "paid"
-    });
-    const activeClientCedulas = new Set(recentPayments.map(p => p.clientCedula));
     
-    const activeClients = allClients.filter(client => {
-      const isNotExpired = !client.expiredDate || new Date(client.expiredDate) > now;
-      const hasRecentPayments = activeClientCedulas.has(client.cedula);
-      return isNotExpired && hasRecentPayments;
-    });
+    const activeClients = await getActiveClients(Client);
 
     // Clients who renewed in the target month (had payments)
     const renewalPayments = await Payment.find({
       date: {
         $gte: targetMonth.toISOString().split('T')[0],
         $lt: nextMonth.toISOString().split('T')[0]
-      },
-      paymentStatus: "paid"
+      }
     }).populate('client', 'firstname lastname cedula email phone expiredDate');
 
     const renewedClientsMap = new Map();

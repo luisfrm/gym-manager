@@ -5,6 +5,12 @@ import { AppRequest } from "../utils/types";
 import { Request, Response } from "express";
 import { paymentPartialSchema } from "../schemas/payment.schema";
 import { ZodError } from "zod";
+import { LocalDate } from "../utils/LocalDate";
+
+// Helper function for backward compatibility
+const formatDateLocal = (date: Date): string => {
+  return new LocalDate(date).toISODateString();
+};
 
 interface PaymentTotal {
   current: {
@@ -243,13 +249,13 @@ class PaymentController {
       const lastDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
       const firstDayOfLastMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
       const lastDayOfLastMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0);
-      const today = currentDate.toISOString().split('T')[0];
+      const today = formatDateLocal(currentDate);
 
       // Get current month totals
       const currentMonthPayments = await Payment.find({
         date: {
-          $gte: firstDayOfMonth.toISOString().split('T')[0],
-          $lte: lastDayOfMonth.toISOString().split('T')[0]
+          $gte: formatDateLocal(firstDayOfMonth),
+          $lte: formatDateLocal(lastDayOfMonth)
         },
         paymentStatus: "paid"
       });
@@ -257,8 +263,8 @@ class PaymentController {
       // Get last month totals
       const lastMonthPayments = await Payment.find({
         date: {
-          $gte: firstDayOfLastMonth.toISOString().split('T')[0],
-          $lte: lastDayOfLastMonth.toISOString().split('T')[0]
+          $gte: formatDateLocal(firstDayOfLastMonth),
+          $lte: formatDateLocal(lastDayOfLastMonth)
         },
         paymentStatus: "paid"
       });

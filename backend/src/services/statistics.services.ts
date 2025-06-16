@@ -1,3 +1,4 @@
+import { formatDateLocal } from "../utils/global";
 import { Client } from "../utils/types";
 
 export const getNewClientsLastMonth = (clients: Client[]) => {
@@ -34,8 +35,8 @@ export const getClientsExpiringNext30Days = (clients: Client[]) => {
 };
 
 export const getActiveClients = (clients: Client[]) => {
-  const today = new Date();
-  const activeClients = clients.filter(client => new Date(client.expiredDate) >= today);
+  const today = formatDateLocal(new Date());
+  const activeClients = clients.filter(client => client.expiredDate >= today);
   return activeClients.length;
 };
 

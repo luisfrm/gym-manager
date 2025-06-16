@@ -295,7 +295,7 @@ const PaymentsReport = () => {
                               {payment.client?.firstname} {payment.client?.lastname}
                             </p>
                             <p className="text-sm text-muted-foreground">
-                              {payment.clientCedula} • {formatDate(payment.createdAt || new Date())}
+                              {payment.clientCedula} • {formatDate(payment.date || new Date())}
                             </p>
                           </div>
                           <Badge className={getPaymentStatusColor(payment.paymentStatus)}>
