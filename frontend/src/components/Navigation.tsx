@@ -1,4 +1,4 @@
-import { CreditCard, Home, LogOut, PanelLeft, Settings, User2, Shield, FileBarChart, Target, Zap } from "lucide-react";
+import { CreditCard, Home, LogOut, PanelLeft, Settings, User2, Shield, FileBarChart, Target, Zap, Crown, UserCheck } from "lucide-react";
 
 import {
   Sidebar,
@@ -74,6 +74,7 @@ export function Navigation() {
   const { isMobile, open, setOpenMobile } = useSidebar();
   const { pathname } = useLocation();
   const { logout } = useStore();
+  const { user } = useStore(state => state.auth);
 
   const handleToggleSidebar = () => {
     setOpenMobile(true);
@@ -120,6 +121,62 @@ export function Navigation() {
                     <span>Cerrar sesión</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
+                {/* User Info Section */}
+                <div className={`mt-4 pt-4 border-t border-slate-700 ${!open && !isMobile ? "px-2" : "px-3"}`}>
+                  {open || isMobile ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center space-x-3">
+                        <div className="relative">
+                          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                            {user?.username?.charAt(0).toUpperCase() || 'U'}
+                          </div>
+                          <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-slate-900"></div>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-white truncate">
+                            {user?.username || 'Usuario'}
+                          </p>
+                          <div className="flex items-center space-x-1">
+                            {user?.role === 'admin' ? (
+                              <>
+                                <Crown className="w-3 h-3 text-yellow-400" />
+                                <p className="text-xs text-slate-300">Administrador</p>
+                              </>
+                            ) : (
+                              <>
+                                <UserCheck className="w-3 h-3 text-blue-400" />
+                                <p className="text-xs text-slate-300">Empleado</p>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="bg-slate-800 rounded-lg p-2">
+                        <div className="flex items-center justify-between text-xs text-slate-300">
+                          <span>Estado:</span>
+                          <span className="text-green-400 flex items-center">
+                            <div className="w-1.5 h-1.5 bg-green-400 rounded-full mr-1 animate-pulse"></div>
+                            En línea
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center space-y-2">
+                      <div className="relative">
+                        <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-xs">
+                          {user?.username?.charAt(0).toUpperCase() || 'U'}
+                        </div>
+                        <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full border border-slate-900"></div>
+                      </div>
+                      {user?.role === 'admin' ? (
+                        <Crown className="w-3 h-3 text-yellow-400" />
+                      ) : (
+                        <UserCheck className="w-3 h-3 text-blue-400" />
+                      )}
+                    </div>
+                  )}
+                </div>
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>

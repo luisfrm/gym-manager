@@ -17,9 +17,7 @@ import { AxiosError } from "axios";
 import { useNavigate } from "react-router-dom";
 
 const loginSchema = z.object({
-  email: z.string().email({
-    message: "*Email inválido",
-  }),
+  email: z.string().nonempty("*Requerido"),
   password: z.string().nonempty("*Requerido"),
 });
 
@@ -96,10 +94,10 @@ export default function LoginForm() {
           <div className="grid w-full items-center gap-4">
             <FormGroup>
               <FormLabel>
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">Email o Usuario</Label>
                 {errors.email && <FormLabelError>{errors.email.message}</FormLabelError>}
               </FormLabel>
-              <Input id="name" placeholder="Ingresa tu correo" type="email" {...register("email")} />
+              <Input id="name" placeholder="Ingresa tu correo" type="text" {...register("email")} />
             </FormGroup>
             <FormGroup className="relative flex flex-col gap-2">
               <FormLabel>

@@ -47,7 +47,7 @@ class AuthController {
     try {
       const { email, password } = req.body;
 
-      const user = await Auth.findOne({ email });
+      const user = await Auth.findOne({ $or: [{ email }, { username: email }] });
 
       if (!user) {
         return res.status(400).json({ message: "Email o contraseña inválidos." });
