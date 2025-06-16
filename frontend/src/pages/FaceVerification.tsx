@@ -5,6 +5,7 @@ import { toastUtils } from "@/lib/toast";
 import { CircleCheckBig, CircleX, Loader2, Camera, Shield, Clock, User, Play, Pause, Volume2 } from "lucide-react";
 import { useFaceRecognition } from "@/hooks/useFaceRecognition";
 import Template from "./Template";
+import { LocalDate } from "@/lib/utils/LocalDate";
 
 interface VerificationResult {
   message: string;
@@ -21,7 +22,7 @@ interface VerificationResult {
   isActive: boolean;
 }
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 const FaceVerification = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -284,8 +285,9 @@ const FaceVerification = () => {
         body: JSON.stringify({ faceEncoding: encoding }),
       });
 
-            if (response.ok) {
+      if (response.ok) {
         const data: VerificationResult = await response.json();
+        console.log(data);
         setVerificationResult(data);
         
         // Reproducir sonido y voz según el resultado
@@ -334,6 +336,7 @@ const FaceVerification = () => {
       return response.json() as Promise<VerificationResult>;
     },
         onSuccess: data => {
+      console.log(data);
       setVerificationResult(data);
       setIsVerifying(false);
       
@@ -430,11 +433,7 @@ const FaceVerification = () => {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("es-ES", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
+    return new LocalDate(dateString).getFullDate("DD de MMMM del YYYY");
   };
 
   if (!isLoaded) {
