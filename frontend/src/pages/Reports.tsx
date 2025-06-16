@@ -1,12 +1,7 @@
 import { useState } from "react";
 import Template from "./Template";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
-  CalendarDays, 
-  Calendar, 
-  Clock, 
   TrendingUp, 
   Users, 
   DollarSign,

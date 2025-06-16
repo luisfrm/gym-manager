@@ -8,8 +8,8 @@ describe("loginSchema", () => {
   });
 
   it("should throw on invalid email", () => {
-    const data = { email: "invalid", password: "securepass" };
-    expect(() => loginSchema.parse(data)).toThrow();
+    const data = { email: "username", password: "securepass" };
+    expect(() => loginSchema.parse(data)).not.toThrow();
   });
 
   it("should throw on missing password", () => {

@@ -1,10 +1,11 @@
 import { describe, expect, it, beforeEach, afterEach } from "bun:test";
 import safeTrim from "../../utils/safeTrim";
 
-// Mock face encodings for testing
-const mockFaceEncoding1 = Array.from({ length: 128 }, () => Math.random() * 2 - 1);
-const mockFaceEncoding2 = Array.from({ length: 128 }, () => Math.random() * 2 - 1);
-const mockSimilarEncoding = mockFaceEncoding1.map(val => val + (Math.random() * 0.1 - 0.05));
+// Mock face encodings for testing - using deterministic values
+const mockFaceEncoding1 = Array.from({ length: 128 }, (_, i) => Math.sin(i * 0.1) * 0.8);
+const mockFaceEncoding2 = Array.from({ length: 128 }, (_, i) => Math.cos(i * 0.1) * 0.8);
+// Similar encoding with small controlled differences (distance ~0.2)
+const mockSimilarEncoding = mockFaceEncoding1.map(val => val + 0.02);
 
 // Function to calculate euclidean distance (same as in controller)
 function calculateEuclideanDistance(vector1: number[], vector2: number[]): number {
@@ -188,6 +189,11 @@ describe("Client Controller - Face Duplication Validation", () => {
       expect(isDuplicate).toBe(true);
       expect(duplicateClient?.firstname).toBe("Juan");
       expect(similarity).toBeGreaterThan(0.5);
+      
+      // Additional verification: check that distance calculation is working
+      const calculatedDistance = calculateEuclideanDistance(newClientEncoding, mockFaceEncoding1);
+      expect(calculatedDistance).toBeLessThan(threshold);
+      expect(calculatedDistance).toBeCloseTo(0.226, 2); // Expected distance ~0.226
     });
 
     it("should allow client creation with different face encodings", () => {
